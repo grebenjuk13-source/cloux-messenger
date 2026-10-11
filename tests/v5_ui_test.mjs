@@ -12,8 +12,10 @@ await page.route('**/api/**', async route=>{
  const request=route.request(),url=new URL(request.url()),path=url.pathname,method=request.method();
  const json=(status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
  if(path==='/api/me')return json(signedIn?200:401,signedIn?me:{detail:'Увійдіть до акаунта'});
- if(path==='/api/v5/config')return json(200,{sms_enabled:false,strict_registration:false,avatar_url:'/assets/cloux-default-avatar.jpg'});
- if(path==='/api/login'&&method==='POST'){signedIn=true;return json(200,{ok:true})}
+ if(path==='/api/v6/config')return json(200,{email_enabled:true,registration:'gmail'});
+ if(path==='/api/v6/email/send')return json(200,{ok:true,retry_after:60});
+ if(path==='/api/v6/email/verify')return json(200,{grant:'fake-client-test-grant',expires_in:600});
+ if(path==='/api/v6/login'&&method==='POST'){signedIn=true;return json(200,{ok:true})}
  if(path==='/api/v5/ui-prefs'&&method==='GET')return json(200,{preferences:{}});
  if(path==='/api/v5/ui-prefs'&&method==='PUT')return json(200,{ok:true});
  if(path==='/api/chats'&&method==='GET')return json(200,{chats});
@@ -26,9 +28,14 @@ await page.route('**/api/**', async route=>{
  return json(404,{detail:'Not mocked: '+path});
 });
 await page.goto('http://127.0.0.1:4173/v5/',{waitUntil:'networkidle'});
-await page.getByRole('heading',{name:'Твій номер телефону'}).waitFor();
-await page.getByRole('button',{name:/Маю акаунт/}).click();
-await page.getByPlaceholder('+380...').fill('+380671234567');
+await page.getByRole('heading',{name:'Твоя Google-пошта'}).waitFor();
+await page.getByRole('textbox',{name:'Електронна пошта'}).fill('frontend.test@gmail.com');
+await page.getByRole('button',{name:'Надіслати код'}).click();
+await page.getByRole('heading',{name:'Підтверди пошту'}).waitFor();
+assert.equal(await page.locator('.mail-code input').count(),6);
+await page.reload({waitUntil:'networkidle'});
+await page.getByRole('button',{name:/Увійти/}).first().click();
+await page.getByPlaceholder('example@gmail.com').fill('frontend.test@gmail.com');
 await page.locator('input[type=password]').fill('SomeExistingPassword123');
 await page.getByRole('button',{name:/Увійти$/}).first().click();
 await page.locator('.chat-entry').first().waitFor();
