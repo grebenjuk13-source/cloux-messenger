@@ -4,6 +4,7 @@ Without Twilio Verify credentials this module NEVER generates a pretend SMS code
 The existing legacy registration remains unchanged until CLOUX_REQUIRE_SMS is switched on
 by the operator; then this flow is the sole registration path.
 """
+import json
 import base64
 import hashlib
 import hmac
@@ -77,10 +78,14 @@ class VerifiedRegistration(BaseModel):
     password: str = Field(min_length=8,max_length=128)
 
 
-def install(app,db,fail,limit,set_cookie,seed_user):
+def install(app,db,auth,fail,limit,set_cookie,seed_user):
     with db() as c:
         c.execute("""CREATE TABLE IF NOT EXISTS cloux_v5_grants(
         token_hash TEXT PRIMARY KEY,phone TEXT NOT NULL,expires INTEGER NOT NULL)""")
+        c.execute("""CREATE TABLE IF NOT EXISTS cloux_v5_ui_prefs(
+          uid TEXT PRIMARY KEY REFERENCES users(id),
+          value TEXT NOT NULL DEFAULT '{}',
+          updated INTEGER NOT NULL)""")
         c.execute("""CREATE TABLE IF NOT EXISTS cloux_v5_sms_limits(
         phone TEXT PRIMARY KEY,last_sent INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0)""")
 
@@ -155,3 +160,36 @@ def install(app,db,fail,limit,set_cookie,seed_user):
             except sqlite3.IntegrityError:fail('Номер або позивний уже зайнятий.',409)
         seed_user(db,uid)
         return set_cookie(JSONResponse({'ok':True}),uid)
+    class UISettings(BaseModel):
+        theme: str = 'dark'
+        accent: str = '#54BBD6'
+        wallpaper: str = 'w0'
+        font_size: int = Field(default=15,ge=12,le=23)
+        compact: bool = False
+        glass: bool = True
+        emoji_style: str = 'telegram'
+        wall_blur: int = Field(default=0,ge=0,le=20)
+        wall_dim: int = Field(default=12,ge=0,le=75)
+
+    @app.get('/api/v5/ui-prefs')
+    def get_ui_preferences(request:Request):
+        user=auth(request)
+        with db() as c:
+            row=c.execute('SELECT value FROM cloux_v5_ui_prefs WHERE uid=?',(user['id'],)).fetchone()
+        return {'preferences':json.loads(row['value']) if row else {}}
+
+    @app.put('/api/v5/ui-prefs')
+    def save_ui_preferences(body:UISettings,request:Request):
+        user=auth(request)
+        if body.theme not in ('dark','light','amoled','auto'):
+            fail('Невідома тема.')
+        if body.emoji_style not in ('apple','telegram'):
+            fail('Невідомий набір емодзі.')
+        if not re.fullmatch(r'#[0-9a-fA-F]{6}',body.accent):
+            fail('Некоректний колір.')
+        if body.wallpaper!='custom' and not (re.fullmatch(r'w\\d+',body.wallpaper) and 0<=int(body.wallpaper[1:])<34):
+            fail('Невідомі шпалери.')
+        data=body.model_dump_json()
+        with db() as c:
+            c.execute('INSERT INTO cloux_v5_ui_prefs(uid,value,updated) VALUES(?,?,?) ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated',(user['id'],data,int(time.time())))
+        return {'ok':True}
