@@ -33,7 +33,7 @@ function renderSidebar(){
  <div class="side-search"><input data-search placeholder="Пошук чатів та людей" aria-label="Пошук"></div>
  <div class="tabs-filter">${[['all','Усі'],['direct','Особисті'],['group','Групи'],['channel','Канали'],['archived','Архів']].map(([key,label])=>`<button data-filter="${key}" class="${S.filter===key?'active':''}">${label}</button>`).join('')}</div>
  <section class="chat-list" id="chat-list" aria-label="Список чатів"></section>`;
- const shell=$('.shell');let nav=shell.querySelector('.bottom-nav');if(!nav){nav=document.createElement('nav');shell.append(nav)}nav.outerHTML=navHTML();$('[data-nav]',shell).forEach(b=>b.onclick=()=>navigate(b.dataset.nav));
+ const shell=$('.shell');let nav=shell.querySelector('.bottom-nav');if(!nav){nav=document.createElement('nav');shell.append(nav)}nav.outerHTML=navHTML();$$('[data-nav]',shell).forEach(b=>b.onclick=()=>navigate(b.dataset.nav));
  $('[data-create]',side).onclick=createConversation;
  $$('[data-filter]',side).forEach(b=>b.onclick=()=>{S.filter=b.dataset.filter;renderSidebar()});
  $('[data-search]',side).oninput=e=>renderChats(e.target.value);
