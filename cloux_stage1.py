@@ -187,7 +187,7 @@ def install(app,db,auth,fail,limit,set_cookie,seed_user):
             fail('Невідомий набір емодзі.')
         if not re.fullmatch(r'#[0-9a-fA-F]{6}',body.accent):
             fail('Некоректний колір.')
-        if body.wallpaper!='custom' and not (re.fullmatch(r'w\\d+',body.wallpaper) and 0<=int(body.wallpaper[1:])<34):
+        if body.wallpaper!='custom' and not (re.fullmatch(r'w[0-9]+',body.wallpaper) and 0<=int(body.wallpaper[1:])<34):
             fail('Невідомі шпалери.')
         data=body.model_dump_json()
         with db() as c:
