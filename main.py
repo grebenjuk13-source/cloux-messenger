@@ -269,7 +269,7 @@ def send(chat_id: str, payload: Message, request: Request):
             if not owner or owner["owner_id"]!=user["id"]: fail("Писати в канал може лише власник.",403)
         if not payload.text.strip(): fail("Порожнє повідомлення.")
         now=int(time.time())
-        cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created) VALUES(?,?,?,?)"
+        cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created) VALUES(?,?,?,?)",
                        (chat_id,user["id"],payload.text.strip(),now))
         mid=cursor.lastrowid
     return {"id":mid,"created":now}
