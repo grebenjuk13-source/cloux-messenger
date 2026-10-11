@@ -5,7 +5,7 @@ import os
 import tempfile
 
 os.environ['CLOUX_DATA']=tempfile.mkdtemp(prefix='cloux-social-test-')
-from main import app
+from main import app,requests_by_ip
 from fastapi.testclient import TestClient
 from PIL import Image
 
@@ -22,6 +22,7 @@ def test_default_avatar_is_exact_original_bytes():
 
 
 def test_profile_media_reactions_reads_roles():
+    requests_by_ip.clear()  # Independent test client rate-limit state.
     with TestClient(app,base_url='https://testserver') as a,TestClient(app,base_url='https://testserver') as b:
         assert a.post('/api/register',json={'phone':'+380670090011','display':'Олена','username':'person_aa','password':'HelloAA123'}).status_code==200
         assert b.post('/api/register',json={'phone':'+380670090012','display':'Макс','username':'person_bb','password':'HelloBB123'}).status_code==200
