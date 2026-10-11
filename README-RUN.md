@@ -17,7 +17,9 @@ This creates a persistent Docker volume for SQLite and uploaded media. Without a
 Fill `.env` with a random `CLOUX_EMAIL_PEPPER` and either:
 
 - Resend: `CLOUX_EMAIL_PROVIDER=resend`, `RESEND_API_KEY` and verified `CLOUX_EMAIL_FROM`
-- Gmail SMTP: `CLOUX_EMAIL_PROVIDER=smtp`, `GMAIL_SMTP_USER`, `GMAIL_SMTP_APP_PASSWORD` (an App Password, not your Google password)
+- Gmail SMTP (local development or paid hosting only): `CLOUX_EMAIL_PROVIDER=smtp`, `GMAIL_SMTP_USER`, `GMAIL_SMTP_APP_PASSWORD` (an App Password, not your Google password)
+
+**Render Free:** SMTP ports 25/465/587 are blocked, so use the HTTPS Resend API. Render service is configured with `CLOUX_HTTPS_EMAIL_ONLY=1` and an independent secure OTP pepper. The external provider still requires a legitimate, verified sender domain and `RESEND_API_KEY` plus `CLOUX_EMAIL_FROM` environment variables. Do not commit real API keys or email app passwords to GitHub. A code is never considered sent unless the provider accepts the request.
 
 Restart with `sh run.sh` after configuring email. Gmail addresses are normalized for dot/plus aliases; a verified email is required before issuing a session. Code validity: 10 minutes, maximum 5 attempts, lockout 15 minutes, resend cooldown 60 seconds and 5 send requests per hour/email/IP. OTP digests and passwords are stored as HMAC-SHA256 and Argon2 respectively.
 
