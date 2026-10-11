@@ -60,11 +60,26 @@ def email_pepper() -> str:
     return primary if len(primary) >= 32 else os.getenv('CLOUX_EMAIL_PEPPER_BOOTSTRAP', '')
 
 
+def email_provider() -> str:
+    """Choose a fully configured sender, even when provider selector was omitted."""
+    preferred = os.getenv('CLOUX_EMAIL_PROVIDER', '').strip().lower()
+    resend_ok = bool(os.getenv('RESEND_API_KEY') and os.getenv('CLOUX_EMAIL_FROM'))
+    gmail_ok = bool(os.getenv('GMAIL_SMTP_USER') and os.getenv('GMAIL_SMTP_APP_PASSWORD'))
+    if preferred == 'smtp' and gmail_ok:
+        return 'smtp'
+    if preferred == 'resend' and resend_ok:
+        return 'resend'
+    if gmail_ok and not resend_ok:
+        return 'smtp'
+    if resend_ok and not gmail_ok:
+        return 'resend'
+    return preferred if preferred in ('resend', 'smtp') else 'resend'
+
+
 def email_ready() -> bool:
-    key = email_pepper()
-    if len(key) < 32:
+    if len(email_pepper()) < 32:
         return False
-    provider = os.getenv('CLOUX_EMAIL_PROVIDER', 'resend').lower()
+    provider = email_provider()
     if provider == 'resend':
         return bool(os.getenv('RESEND_API_KEY') and os.getenv('CLOUX_EMAIL_FROM'))
     if provider == 'smtp':
@@ -113,7 +128,7 @@ def send_email(address: str, code: str, purpose: str) -> None:
     <div style="letter-spacing:10px;font-size:42px;font-weight:800;color:#fff;padding:25px 0">{code}</div>
     <p style="line-height:1.7;color:#bdc8d7">Код діє 10 хвилин. Нікому не повідомляйте його. Якщо ви не запитували код, просто проігноруйте лист.</p>
     </div></body></html>'''
-    provider = os.getenv('CLOUX_EMAIL_PROVIDER', 'resend').lower()
+    provider = email_provider()
     if provider == 'resend':
         payload = json.dumps({'from': os.environ['CLOUX_EMAIL_FROM'], 'to': [address],
                               'subject': subject, 'html': html}).encode('utf-8')
