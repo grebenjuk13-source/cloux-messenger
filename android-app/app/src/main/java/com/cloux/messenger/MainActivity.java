@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
-        settings.setMediaPlaybackRequiresUserGesture(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
@@ -110,6 +110,10 @@ public class MainActivity extends Activity {
             PermissionRequest req=pendingCall;pendingCall=null;
             grantAllowed(req);
         }
+    }
+    @Override protected void onPause() {
+        CookieManager.getInstance().flush();
+        super.onPause();
     }
     @Override protected void onSaveInstanceState(Bundle out) {
         web.saveState(out);super.onSaveInstanceState(out);
