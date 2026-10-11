@@ -19,4 +19,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt httpx pytest
-      - run: pytest -q tests/test_smoke.py
+      - run: PYTHONPATH=. pytest -q tests/test_smoke.py
