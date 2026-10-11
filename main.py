@@ -154,6 +154,7 @@ def register(payload: Register, request: Request):
                 (uid,phone,username,display,hash_password(payload.password),int(time.time())))
     except sqlite3.IntegrityError:
         fail("Номер або позивний уже зайнятий.",409)
+    cloux_features.seed_user(db,uid)
     return set_cookie(JSONResponse({"ok": True}),uid)
 
 @app.post("/api/login")
@@ -181,15 +182,16 @@ def users(request: Request, q: str = ""):
     needle=q.strip().lower()
     if len(needle)<2: return {"users":[]}
     with db() as c:
-        rows=c.execute("""SELECT id,username,display FROM users WHERE id!=?
-           AND (username LIKE ? OR display LIKE ?) LIMIT 20""",
-           (me["id"],"%"+needle+"%","%"+needle+"%")).fetchall()
+        rows=c.execute("""SELECT id,username,display FROM users WHERE id!=? AND id!='cloux-system'
+           AND (username LIKE ? OR display LIKE ?)
+           AND NOT EXISTS (SELECT 1 FROM cloux_preferences p WHERE p.uid=users.id AND p.searchable=0)
+           LIMIT 20""", (me["id"],"%"+needle+"%","%"+needle+"%")).fetchall()
     return {"users":[dict(x) for x in rows]}
 
 @app.post("/api/direct/{other_id}")
 def direct(other_id: str, request: Request):
     user=auth(request)
-    if other_id==user["id"]: fail("Не можна створити чат із собою.")
+    if other_id==user["id"] or other_id=="cloux-system": fail("Не можна створити цей чат.")
     with db() as c:
         other=c.execute("SELECT username,display FROM users WHERE id=?",(other_id,)).fetchone()
         if not other: fail("Користувача не знайдено.",404)
@@ -222,6 +224,7 @@ def new_group(payload: Group, request: Request):
 @app.get("/api/chats")
 def chats(request: Request):
     user=auth(request)
+    cloux_features.seed_user(db,user["id"])
     with db() as c:
         rows=c.execute("""SELECT ch.id,ch.kind,ch.title,
            (SELECT m.text FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_text,
@@ -235,7 +238,12 @@ def chats(request: Request):
                 other=c.execute("""SELECT u.display,u.username FROM users u JOIN chat_members m ON m.user_id=u.id
                   WHERE m.chat_id=? AND u.id!=? LIMIT 1""",(d["id"],user["id"])).fetchone()
                 if other: d["title"]=other["display"]
+            pr=c.execute("SELECT pinned,archived,muted FROM cloux_chat_prefs WHERE uid=? AND chat_id=?", (user["id"],d["id"])).fetchone()
+            d.update(dict(pr) if pr else {"pinned":0,"archived":0,"muted":0})
+            owner=c.execute("SELECT owner_id FROM cloux_owners WHERE chat_id=?",(d["id"],)).fetchone()
+            d["is_owner"]=bool(owner and owner["owner_id"]==user["id"])
             result.append(d)
+    result.sort(key=lambda x:(x["pinned"],x["last_time"] or 0),reverse=True)
     return {"chats":result}
 
 @app.get("/api/chats/{chat_id}/messages")
@@ -254,8 +262,20 @@ def send(chat_id: str, payload: Message, request: Request):
     limit(request,120)
     with db() as c:
         if not member(c,user["id"],chat_id): fail("Немає доступу.",403)
+        kind=c.execute("SELECT kind FROM chats WHERE id=?",(chat_id,)).fetchone()
+        if kind and kind["kind"]=="news": fail("Офіційний канал тільки для читання.",403)
+        if kind and kind["kind"]=="channel":
+            owner=c.execute("SELECT owner_id FROM cloux_owners WHERE chat_id=?",(chat_id,)).fetchone()
+            if not owner or owner["owner_id"]!=user["id"]: fail("Писати в канал може лише власник.",403)
+        if not payload.text.strip(): fail("Порожнє повідомлення.")
         now=int(time.time())
-        cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created) VALUES(?,?,?,?)",
+        cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created) VALUES(?,?,?,?)"
                        (chat_id,user["id"],payload.text.strip(),now))
         mid=cursor.lastrowid
     return {"id":mid,"created":now}
+
+
+# Optional Cloux features initialized after the base routes are registered.
+import cloux_features
+cloux_features.initialize(db,hash_password)
+cloux_features.install(app,db,auth,fail,hash_password,check_password,member,limit)
