@@ -42,6 +42,21 @@ def test_registration_notes_news_preferences_direct_and_signaling():
         assert copied["forwarded_from"]=="user_one"
         assert copied["text"]=="Тест: привіт!"
 
+        png=b"\x89PNG\r\n\x1a\n"+b"00"+"image"
+        bad=a.post(f"/api/chats/{cid}/media",content=b"<script>alert(1)</script>",headers={"content-type":"text/html"})
+        assert bad.status_code==415
+        sent_file=a.post(f"/api/chats/{cid}/media",content=png,headers={"content-type":"image/png","x-cloux-filename":"sample.png"})
+        assert sent_file.status_code==200,sent_file.text
+        media_id=sent_file.json()["media_id"]
+        viewed=b.get(f"/api/chats/{cid}/media/{media_id}")
+        assert viewed.status_code==200
+        assert viewed.content==png
+        assert viewed.headers["content-type"].startswith("image/png")
+        messages=b.get(f"/api/chats/{cid}/messages").json()["messages"]
+        assert messages[-1]["attachment_id"]==media_id
+        assert messages[-1]["media_mime"]=="image/png"
+
+
         invite=a.post("/api/channels",json={"title":"Наш тестовий канал"})
         assert invite.status_code==200
         ch=invite.json()["chat_id"]
