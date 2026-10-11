@@ -25,7 +25,8 @@ export default function CallOverlay({chatId,title,mode,onClose}:Props){
     local=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:mode==='video'?{facingMode:'user'}:false});
     if(stopping.current){local.getTracks().forEach(x=>x.stop());return}
     streamRef.current=local;if(localRef.current)localRef.current.srcObject=local;
-    pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]});
+    const ice = await fetch('/api/v6/ice',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).catch(()=>null);
+    pc=new RTCPeerConnection({iceServers:Array.isArray(ice?.iceServers)?ice.iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
     pcRef.current=pc;
     local.getTracks().forEach(track=>pc!.addTrack(track,local!));
     pc.ontrack=e=>{if(remoteRef.current){remoteRef.current.srcObject=e.streams[0];void remoteRef.current.play().catch(()=>{})}};
