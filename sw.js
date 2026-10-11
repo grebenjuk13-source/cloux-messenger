@@ -1,5 +1,5 @@
-const VERSION="cloux-2-shell-v1";
-const SHELL=["/cloux-icon.svg","/cloux-v2.js","/cloux-plus.js"];
+const VERSION="cloux-3-shell-v1";
+const SHELL=["/assets/cloux-official-192.jpg","/assets/cloux-official-512.jpg","/cloux-v2.js","/cloux-plus.js"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener("fetch",e=>{
