@@ -14,4 +14,4 @@ COPY ui/ ./ui/
 COPY --from=cloux_client /client/dist ./frontend_dist
 ENV PYTHONUNBUFFERED=1 CLOUX_DATA=/tmp/cloux
 EXPOSE 10000
-CMD ["sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000} --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1"]
+CMD ["sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000} --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1 --no-access-log"]
