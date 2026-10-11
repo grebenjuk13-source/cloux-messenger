@@ -1,0 +1,27 @@
+services:
+  cloux:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:10000:10000"
+    environment:
+      PORT: "10000"
+      CLOUX_DATA: /var/lib/cloux
+      CLOUX_EMAIL_PROVIDER: ${CLOUX_EMAIL_PROVIDER:-resend}
+      CLOUX_EMAIL_FROM: ${CLOUX_EMAIL_FROM:-}
+      CLOUX_EMAIL_PEPPER: ${CLOUX_EMAIL_PEPPER:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      GMAIL_SMTP_USER: ${GMAIL_SMTP_USER:-}
+      GMAIL_SMTP_APP_PASSWORD: ${GMAIL_SMTP_APP_PASSWORD:-}
+      TURN_URL: ${TURN_URL:-}
+      TURN_USERNAME: ${TURN_USERNAME:-}
+      TURN_PASSWORD: ${TURN_PASSWORD:-}
+    volumes:
+      - cloux_data:/var/lib/cloux
+    healthcheck:
+      test: ["CMD","python","-c","import urllib.request;urllib.request.urlopen('http://127.0.0.1:10000/api/health',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  cloux_data:
