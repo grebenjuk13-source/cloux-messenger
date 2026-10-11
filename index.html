@@ -2,8 +2,12 @@
 <html lang="uk">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0a0a0a">
-<title>Cloux — Месенджер</title>
+<meta name="theme-color" content="#101014">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/cloux-icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Cloux — Messenger</title>
 <style>
 :root{color-scheme:dark;--bg:#0a0a0a;--panel:#111113;--hover:#1e1e21;--red:#e11d2e;--muted:#85858c;--line:#28282c;--text:#f8f7f8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px}
@@ -131,4 +135,5 @@ setInterval(()=>{if(state.me){refreshMessages();if(!state.searching)loadChats();
 boot();
 </script>
 <script src="/cloux-plus.js?v=2"></script>
+<script src="/cloux-v2.js?v=2"></script>
 </body></html>
