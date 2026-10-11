@@ -4,6 +4,7 @@ Media flows peer-to-peer through WebRTC, not through this server.
 A public TURN server is required for reliable calls behind restrictive networks.
 """
 import hashlib
+import os
 import json
 import time
 from urllib.parse import urlparse
@@ -12,6 +13,17 @@ from fastapi import WebSocket, WebSocketDisconnect
 rooms = {}
 
 def install(app, db):
+    @app.get("/api/v6/ice")
+    def ice_config():
+        servers=[{"urls":["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302"]}]
+        turn=os.getenv("TURN_URL","").strip()
+        username=os.getenv("TURN_USERNAME","").strip()
+        password=os.getenv("TURN_PASSWORD","")
+        if turn and username and password:
+            if turn.startswith(("turn:","turns:")):
+                servers.append({"urls":turn,"username":username,"credential":password})
+        return {"iceServers":servers}
+
     @app.websocket("/ws/calls/{chat_id}")
     async def signaling(ws: WebSocket, chat_id: str):
         token = ws.cookies.get("cloux_session")
