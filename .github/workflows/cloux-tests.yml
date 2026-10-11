@@ -6,6 +6,7 @@ on:
       - "main.py"
       - "cloux_features.py"
       - "cloux_calls.py"
+      - "cloux_messages.py"
       - "tests/**"
       - ".github/workflows/cloux-tests.yml"
   workflow_dispatch:
