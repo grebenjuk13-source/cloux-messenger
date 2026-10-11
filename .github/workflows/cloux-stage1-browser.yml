@@ -1,0 +1,35 @@
+name: Cloux Stage 1 Browser Smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "tests/v5_ui_test.mjs"
+      - ".github/workflows/cloux-stage1-browser.yml"
+  workflow_dispatch:
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --prefix frontend --no-audit --no-fund
+      - run: npm run --prefix frontend build
+      - run: npm install --no-save playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - name: Start Vite preview
+        run: |
+          npm exec --prefix frontend -- vite preview --host 127.0.0.1 --port 4173 > vite.log 2>&1 &
+          for i in $(seq 1 40); do if curl -fsS http://127.0.0.1:4173/v5/ >/dev/null; then break; fi; sleep 1; done
+      - name: Test responsive Cloux
+        run: node tests/v5_ui_test.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloux-stage1-browser-preview
+          path: |
+            cloux-v5-*.png
+            vite.log
