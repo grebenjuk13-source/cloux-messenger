@@ -85,3 +85,7 @@
 .call-invite>div{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
 .call-invite>div button{padding:13px;border-radius:16px;background:#b83c52;color:#fff}
 .call-invite>div button.primary{background:#30895f;color:#fff}
+
+/* Allow elevated reaction popover above its click-away curtain. */
+.messages-area{isolation:auto}
+.chat-room:has(.msg-actions) .message-stack{z-index:18}
