@@ -11,6 +11,7 @@ on:
       - "cloux_social.py"
       - "cloux_stage1.py"
       - "cloux_email.py"
+      - "cloux_resend_oauth.py"
       - "ui/**"
       - "modern.html"
       - "requirements.txt"
