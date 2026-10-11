@@ -4,3 +4,4 @@ uvicorn[standard]==0.34.2
 pillow==11.3.0
 phonenumbers==8.13.55
 argon2-cffi==25.1.0
+cryptography==45.0.7
