@@ -95,3 +95,19 @@ def test_five_wrong_codes_lockout(monkeypatch):
             assert a.post('/api/v6/email/verify',json={'email':mail,'code':wrong}).status_code==401
         assert a.post('/api/v6/email/verify',json={'email':mail,'code':code}).status_code==429
         assert a.post('/api/v6/email/send',json={'email':mail}).status_code==429
+
+def test_render_free_uses_https_provider_only(monkeypatch):
+    monkeypatch.setenv('CLOUX_HTTPS_EMAIL_ONLY','1')
+    monkeypatch.setenv('CLOUX_EMAIL_PEPPER_BOOTSTRAP','s'*48)
+    monkeypatch.delenv('CLOUX_EMAIL_PEPPER',raising=False)
+    monkeypatch.setenv('CLOUX_EMAIL_PROVIDER','smtp')
+    monkeypatch.setenv('GMAIL_SMTP_USER','sender@gmail.com')
+    monkeypatch.setenv('GMAIL_SMTP_APP_PASSWORD','not-a-real-app-password')
+    monkeypatch.delenv('RESEND_API_KEY',raising=False)
+    monkeypatch.delenv('CLOUX_EMAIL_FROM',raising=False)
+    assert cloux_email.email_provider() == 'resend'
+    assert not cloux_email.email_ready()
+    monkeypatch.setenv('RESEND_API_KEY','test-api-key-only')
+    monkeypatch.setenv('CLOUX_EMAIL_FROM','Cloux <mailer@verified-domain.example>')
+    assert cloux_email.email_ready()
+    assert len(cloux_email.digest('test','example'))==64
