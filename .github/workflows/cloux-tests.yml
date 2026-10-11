@@ -21,3 +21,25 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements.txt httpx pytest
       - run: PYTHONPATH=. pytest -q tests/test_smoke.py
+      - name: Check browser JavaScript syntax
+        run: |
+          node --check cloux-plus.js
+          node --check cloux-v2.js
+          node --check cloux-v3.js
+      - name: Check published Cloux pages
+        run: |
+          python - <<'PY'
+          from urllib.request import urlopen
+          for p, expected in [
+              ('/api/health','application/json'),
+              ('/download','text/html'),
+              ('/assets/cloux-official-512.jpg','image/jpeg'),
+              ('/cloux-v3.js','javascript')]:
+              with urlopen('https://cloux-messenger.onrender.com'+p, timeout=60) as r:
+                  body=r.read()
+                  typ=r.headers.get('Content-Type','')
+                  assert r.status==200,(p,r.status)
+                  assert expected in typ,(p,typ)
+                  assert len(body)>20,p
+                  print(p,r.status,typ,len(body))
+          PY
