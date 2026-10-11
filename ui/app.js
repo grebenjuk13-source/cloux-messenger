@@ -4,7 +4,7 @@ import {createEmojiPicker} from './emoji.js';
 import {cropAndUpload,getPhotoUrl} from './avatar.js';
 import {startCall} from './calls.js';
 
-const NAV=[['chats','💬','Чати'],['contacts','👥','Контакти'],['servers','▦','Сервери'],['settings','⚙️','Налаштування'],['profile','◉','Профіль']];
+const NAV=[['chats','💬','Чати'],['contacts','👥','Контакти'],['servers','▦','Сервери'],['settings','⚙️','Налашт.'],['profile','◉','Профіль']];
 let timer=null,heartbeat=null,rendered='',emojiPicker=null,recording=null,profileAvatar=BASE_AVATAR,profileBanner=null;
 const icon=()=>BASE_AVATAR;
 const openImg=(url,size='')=>`<img class="avatar ${size}" src="${esc(url||BASE_AVATAR)}" alt="Аватар" loading="lazy" onerror="this.onerror=null;this.src='${BASE_AVATAR}'">`;
@@ -26,7 +26,7 @@ function navigate(tab){S.tab=tab;S.current=null;S.reply=null;rendered='';emojiPi
  const shell=$('.shell');shell?.classList.remove('mobile-chat','mobile-page');if(tab!=='chats')shell?.classList.add('mobile-page');
  renderSidebar();if(tab==='chats')renderWelcome();else if(tab==='contacts')renderContacts();else if(tab==='servers')renderServers();else if(tab==='settings')renderSettings();else if(tab==='profile')renderProfile();
 }
-function navHTML(){return `<nav class="bottom-nav" aria-label="Головна навігація">${NAV.map(([id,ic,title])=>`<button data-nav="${id}" class="${S.tab===id?'active':''}"><span class="navicon">${ic}</span>${title}</button>`).join('')}</nav>`}
+function navHTML(){return `<nav class="bottom-nav" aria-label="Головна навігація">${NAV.map(([id,ic,title])=>`<button data-nav="${id}" aria-label="${id==='settings'?'Налаштування':title}" class="${S.tab===id?'active':''}"><span class="navicon">${ic}</span>${title}</button>`).join('')}</nav>`}
 function renderSidebar(){
  const side=$('#sidebar');if(!side)return;
  side.innerHTML=`<header class="side-head"><img src="${BASE_AVATAR}" style="height:39px;width:39px;border-radius:12px" alt="Cloux"><strong class="wordmark">Cloux.</strong><button class="icon-btn" data-create title="Створити чат">＋</button></header>
