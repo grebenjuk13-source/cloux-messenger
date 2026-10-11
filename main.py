@@ -260,7 +260,11 @@ def messages(chat_id: str, request: Request, after: int = 0):
     user=auth(request)
     with db() as c:
         if not member(c,user["id"],chat_id): fail("Немає доступу.",403)
-        rows=c.execute("""SELECT m.id,m.text,m.created,m.sender,u.display,u.username FROM messages m
+        rows=c.execute("""SELECT m.id,m.text,m.created,m.sender,u.display,u.username,
+              m.reply_to,m.forwarded_from,
+              (SELECT substr(m2.text,1,140) FROM messages m2 WHERE m2.id=m.reply_to) reply_text,
+              (SELECT u2.display FROM messages m2 JOIN users u2 ON u2.id=m2.sender WHERE m2.id=m.reply_to) reply_author
+              FROM messages m
             JOIN users u ON u.id=m.sender WHERE m.chat_id=? AND m.id>? ORDER BY m.id ASC LIMIT 200""",
             (chat_id,max(after,0))).fetchall()
     return {"messages":[dict(x) for x in rows]}
@@ -327,3 +331,7 @@ def cloux_official_icon(size: int):
     if size not in (192,512):
         fail("Невідомий розмір іконки.",404)
     return FileResponse(_ClouxPath(__file__).parent/"assets"/f"cloux-official-{size}.jpg",media_type="image/jpeg",headers={"Cache-Control":"public, max-age=3600"})
+
+import cloux_messages
+cloux_messages.init(db)
+cloux_messages.install(app,db,auth,member,fail,limit)
