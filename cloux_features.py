@@ -10,21 +10,25 @@ from pydantic import BaseModel, Field
 
 NEWS="cloux-official-news"
 SYSTEM="cloux-system"
-DEFAULTS={"accent":"#E11D2E","wallpaper":"default","font_size":15,"compact":False,"notify":True,"searchable":True,"avatar":"💬","bio":""}
+DEFAULTS={"accent":"#F5F5F5","wallpaper":"default","font_size":15,"compact":False,"notify":True,"searchable":True,"avatar":"💬","bio":""}
 
 def initialize(db, hash_password):
     with db() as c:
         c.executescript("""
         CREATE TABLE IF NOT EXISTS cloux_preferences(
           uid TEXT PRIMARY KEY REFERENCES users(id),
-          accent TEXT NOT NULL DEFAULT '#E11D2E',
+          accent TEXT NOT NULL DEFAULT '#F5F5F5',
           wallpaper TEXT NOT NULL DEFAULT 'default',
           font_size INTEGER NOT NULL DEFAULT 15,
           compact INTEGER NOT NULL DEFAULT 0,
           notify INTEGER NOT NULL DEFAULT 1,
           searchable INTEGER NOT NULL DEFAULT 1,
           avatar TEXT NOT NULL DEFAULT '💬',
-          bio TEXT NOT NULL DEFAULT '');
+          bio TEXT NOT NULL DEFAULT '',
+          bubble_style TEXT NOT NULL DEFAULT 'rounded',
+          glass INTEGER NOT NULL DEFAULT 1,
+          animations INTEGER NOT NULL DEFAULT 1,
+          show_previews INTEGER NOT NULL DEFAULT 1);
         CREATE TABLE IF NOT EXISTS cloux_chat_prefs(
           uid TEXT NOT NULL REFERENCES users(id), chat_id TEXT NOT NULL REFERENCES chats(id),
           pinned INTEGER NOT NULL DEFAULT 0,
@@ -39,6 +43,11 @@ def initialize(db, hash_password):
           chat_id TEXT NOT NULL REFERENCES chats(id),
           created INTEGER NOT NULL);
         """)
+        for column,typ in (("bubble_style","TEXT NOT NULL DEFAULT 'rounded'"),("glass","INTEGER NOT NULL DEFAULT 1"),("animations","INTEGER NOT NULL DEFAULT 1"),("show_previews","INTEGER NOT NULL DEFAULT 1")):
+            if column not in {row["name"] for row in c.execute("PRAGMA table_info(cloux_preferences)").fetchall()}:
+                c.execute("ALTER TABLE cloux_preferences ADD COLUMN "+column+" "+typ)
+        # Migrate old red accents to the new Cloux monochrome identity.
+        c.execute("UPDATE cloux_preferences SET accent='#F5F5F5' WHERE accent IN ('#E11D2E','#E84E61','#BC193A','#F04438')")
         c.execute("INSERT OR IGNORE INTO users(id,phone,username,display,password_hash,created) VALUES(?,?,?,?,?,?)",
                   (SYSTEM,"+99900000000001","cloux_official","Cloux",hash_password(secrets.token_urlsafe(36)),int(time.time())))
         c.execute("INSERT OR IGNORE INTO chats(id,title,kind,created) VALUES(?,?,?,?)",
@@ -69,6 +78,10 @@ class PrefUpdate(BaseModel):
     notify: bool | None = None
     searchable: bool | None = None
     avatar: str | None = None
+    bubble_style: str | None = None
+    glass: bool | None = None
+    animations: bool | None = None
+    show_previews: bool | None = None
 
 class ProfileUpdate(BaseModel):
     display: str = Field(min_length=1,max_length=60)
@@ -108,7 +121,7 @@ def install(app, db, auth, fail, hash_password, check_password, member, limit):
         me=auth(request)
         seed_user(db,me["id"])
         changes=data.model_dump(exclude_none=True)
-        if "accent" in changes and changes["accent"] not in ("#E11D2E","#E84E61","#BC193A","#F04438"):
+        if "accent" in changes and changes["accent"] not in ("#F5F5F5","#DDDDDD","#BFC0C4","#878A92"):
             fail("Непідтримуваний колір.")
         if "wallpaper" in changes and changes["wallpaper"] not in ("default","plain","dots","gradient"):
             fail("Непідтримуваний фон.")
@@ -116,7 +129,8 @@ def install(app, db, auth, fail, hash_password, check_password, member, limit):
             fail("Розмір тексту 13–21.")
         if "avatar" in changes and not 1<=len(changes["avatar"])<=10:
             fail("Некоректний аватар.")
-        for key in ("compact","notify","searchable"):
+        if "bubble_style" in changes and changes["bubble_style"] not in ("rounded","square","soft"): fail("Непідтримуваний стиль повідомлень.")
+        for key in ("compact","notify","searchable","glass","animations","show_previews"):
             if key in changes: changes[key]=int(changes[key])
         with db() as c:
             if changes:
