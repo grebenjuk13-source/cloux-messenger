@@ -67,7 +67,7 @@ export default function EmailWizard({onDone,onLegacy}:{onDone:()=>void;onLegacy:
    setPhase('welcome');setTimeout(onDone,1800);
  })}
  async function login(){await action(async()=>{
-   try{await call('/api/v6/login',{email:email.trim(),password:loginPassword});onDone()}catch(e){if(e instanceof Error&&e.message.includes('Підтвердіть пошту')){switchMode('register');setError('Підтверди пошту, щоб завершити реєстрацію.');return}throw e}
+   try{await call('/api/v6/login',{email:email.trim(),password:loginPassword});onDone()}catch(e){if(e instanceof Error&&e.message.includes('Підтвердіть пошту')){try{await call('/api/v6/email/send',{email:email.trim(),purpose:'register'})}catch{/* Existing code might still be valid during cooldown. */}switchMode('register');setPhase('otp');setRetry(60);setError('Введи код із Gmail, щоб завершити реєстрацію.');return}throw e}
  })}
  async function reset(){await action(async()=>{await call('/api/v6/password/reset',{email,grant,password});setLoginPassword('');setPassword('');setConfirm('');switchMode('login');setError('Пароль оновлено! Тепер увійди з новим паролем.')})}
  const stepNames=['Google-пошта','Код із пошти','Телефон','Профіль','Пароль','Готово'];
