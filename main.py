@@ -261,7 +261,9 @@ def messages(chat_id: str, request: Request, after: int = 0):
     with db() as c:
         if not member(c,user["id"],chat_id): fail("Немає доступу.",403)
         rows=c.execute("""SELECT m.id,m.text,m.created,m.sender,u.display,u.username,
-              m.reply_to,m.forwarded_from,
+              m.reply_to,m.forwarded_from,m.attachment_id,
+              (SELECT a.mime FROM cloux_attachments a WHERE a.id=m.attachment_id) media_mime,
+              (SELECT a.filename FROM cloux_attachments a WHERE a.id=m.attachment_id) media_filename,
               (SELECT substr(m2.text,1,140) FROM messages m2 WHERE m2.id=m.reply_to) reply_text,
               (SELECT u2.display FROM messages m2 JOIN users u2 ON u2.id=m2.sender WHERE m2.id=m.reply_to) reply_author
               FROM messages m
@@ -339,3 +341,7 @@ cloux_messages.install(app,db,auth,member,fail,limit)
 @app.get("/cloux-v3.js")
 def cloux_v3_script():
     return FileResponse(_ClouxPath(__file__).parent/"cloux-v3.js",media_type="application/javascript")
+
+import cloux_media
+cloux_media.init(db)
+cloux_media.install(app,db,auth,member,fail,limit,DATA)
