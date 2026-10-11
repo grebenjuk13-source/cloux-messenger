@@ -7,6 +7,7 @@ on:
       - "cloux_features.py"
       - "cloux_calls.py"
       - "cloux_messages.py"
+      - "cloux_media.py"
       - "tests/**"
       - ".github/workflows/cloux-tests.yml"
   workflow_dispatch:
@@ -26,6 +27,7 @@ jobs:
           node --check cloux-plus.js
           node --check cloux-v2.js
           node --check cloux-v3.js
+          node --check cloux-media.js
       - name: Check published Cloux pages
         run: |
           python - <<'PY'
