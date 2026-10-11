@@ -297,6 +297,7 @@ def send(chat_id: str, payload: Message, request: Request):
         cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created) VALUES(?,?,?,?)",
                        (chat_id,user["id"],payload.text.strip(),now))
         mid=cursor.lastrowid
+    cloux_realtime.hub.emit(chat_id,"new_message",message_id=mid)
     return {"id":mid,"created":now}
 
 
@@ -395,3 +396,7 @@ def stage1_frontend(asset:str):
     from mimetypes import guess_type
     mime=guess_type(str(file))[0] or "application/octet-stream"
     return FileResponse(file,media_type=mime,headers={"Cache-Control":"no-cache" if file.name=="index.html" else "public,max-age=3600"})
+
+# Single-instance real-time message and typing hub.
+import cloux_realtime
+cloux_realtime.install(app,db)
