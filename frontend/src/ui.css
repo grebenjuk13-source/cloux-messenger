@@ -89,3 +89,34 @@
 /* Allow elevated reaction popover above its click-away curtain. */
 .messages-area{isolation:auto}
 .chat-room:has(.msg-actions) .message-stack{z-index:18}
+
+/* Cloux identity: Telegram-like hierarchy, black / red Liquid Glass. */
+:root{--bg:#08080c;--ink:#f7f3f5;--ink-sub:#a5a0ac;--accent:#e11d2e;--surface:rgba(24,19,27,.9);--panel:rgba(31,22,29,.83);--line:rgba(255,255,255,.11);--in:#24212b;--out:#951b34;--float:#151117}
+:root[data-theme='light']{--bg:#f9f4f5;--ink:#251b26;--ink-sub:#756b7a;--surface:rgba(255,255,255,.84);--panel:rgba(247,237,240,.75);--line:rgba(82,33,50,.14);--in:#f0e9ec;--out:#e87b8f;--float:#fffafa}
+:root[data-theme='amoled']{--bg:#000;--ink:#fafafa;--ink-sub:#a29da1;--surface:rgba(11,8,11,.93);--panel:rgba(18,13,17,.82);--line:rgba(255,255,255,.13);--in:#151114;--out:#751024;--float:#050406}
+.auth-page{background:radial-gradient(circle at 13% 15%,#6c0f284f,transparent 40%),radial-gradient(circle at 88% 85%,#8f192a40,transparent 50%),#07070a}
+.auth-side h1 em,.auth-side em{color:#ff5266}
+.eyebrow{color:#fc6674}
+.auth-logo{box-shadow:0 12px 40px #af153943}
+.primary{color:#fff;background:linear-gradient(132deg,var(--accent),color-mix(in srgb,var(--accent),#7b1326 36%));box-shadow:0 6px 25px color-mix(in srgb,var(--accent),transparent 72%)}
+.primary:hover{filter:brightness(1.12)}
+.chat-room,.chat-sidebar,.settings-view{transition:background-color .3s,color .3s}
+.chat-header{border-color:#ffffff29}
+.own .bubble{background:linear-gradient(130deg,var(--out),color-mix(in srgb,var(--accent),#581629 34%));color:#fff}
+:root[data-bubble='square'] .bubble{border-radius:8px!important}
+:root[data-bubble='soft'] .bubble{border-radius:26px!important}
+:root[data-wall-motion='off'] .messages-area:before{animation:none!important}
+.chat-entry.active{border-color:color-mix(in srgb,var(--accent),transparent 61%);background:color-mix(in srgb,var(--accent),transparent 82%)}
+.liquid-nav{border:1px solid #ffffff48;background:linear-gradient(135deg,#ffffff2b,#ffffff09 55%,#ffffff19),rgba(30,20,29,.73);box-shadow:0 15px 50px #000a,inset 0 1px #ffffff4d;backdrop-filter:blur(28px) saturate(1.7);-webkit-backdrop-filter:blur(28px) saturate(1.7)}
+.liquid-nav button.active{color:#fff;background:color-mix(in srgb,var(--accent),transparent 65%);border-radius:22px}
+.msg-foot svg{color:#ffd0d8}
+.settings-chat-preview{min-height:170px;border-radius:21px;display:flex;flex-direction:column;justify-content:center;gap:9px;padding:18px 14px;overflow:hidden;margin-top:11px;border:1px solid #ffffff27;background-position:center;background-size:cover;box-shadow:inset 0 1px #ffffff30}
+.preview-bubble{align-self:flex-start;border-radius:19px 19px 19px 6px;background:#22222ccc;color:#fff;padding:9px 13px;font-size:13px;max-width:88%}
+.preview-bubble.own{align-self:flex-end;border-radius:19px 19px 6px 19px;background:color-mix(in srgb,var(--accent),#3a1621 22%)}
+.preview-bubble small{display:block;font-size:10px;opacity:.8;text-align:right;margin-top:3px}
+.wall-grid button{border:2px solid #ffffff28;transition:transform .2s,border-color .2s;box-shadow:inset 0 1px #ffffff27}
+.wall-grid button:hover{transform:translateY(-4px)}
+.wall-grid button.selected{border-color:#fff;outline:2px solid var(--accent);outline-offset:2px}
+.color-grid button.selected{outline:2px solid #fff;outline-offset:3px}
+.settings-group small{color:#fb687b}
+@media(prefers-reduced-motion:reduce){.wall-grid button,.chat-room,.chat-sidebar,.settings-view{transition:none}}
