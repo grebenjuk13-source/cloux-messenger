@@ -73,13 +73,21 @@ def install(app, db):
         hub.loop=asyncio.get_running_loop()
         hub.next_id+=1;cid=hub.next_id
         q=asyncio.Queue(maxsize=50);hub.inboxes[uid][cid]=q
+        async def pump():
+            while True:
+                await ws.send_json(await q.get())
+        sender=asyncio.create_task(pump())
         try:
             while True:
-                event=await q.get()
-                await ws.send_json(event)
+                data=await ws.receive_text()
+                if data=="ping":
+                    await ws.send_json({"type":"pong"})
         except (WebSocketDisconnect,RuntimeError):
             pass
         finally:
+            sender.cancel()
+            try:await sender
+            except (asyncio.CancelledError,RuntimeError):pass
             hub.inboxes.get(uid,{}).pop(cid,None)
             if not hub.inboxes.get(uid):hub.inboxes.pop(uid,None)
     @app.on_event("startup")
