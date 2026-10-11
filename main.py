@@ -154,6 +154,8 @@ def me(request: Request):
 
 @app.post("/api/register")
 def register(payload: Register, request: Request):
+    if __import__("cloux_email").email_ready() or os.getenv("CLOUX_REQUIRE_EMAIL") == "1":
+        fail("Нові акаунти потрібно підтвердити через Gmail.",403)
     if os.getenv("CLOUX_REQUIRE_SMS") == "1":
         fail("Реєструйтеся через SMS-підтвердження Cloux.",403)
     limit(request, 6)
@@ -400,3 +402,7 @@ def stage1_frontend(asset:str):
 # Single-instance real-time message and typing hub.
 import cloux_realtime
 cloux_realtime.install(app,db)
+
+# Gmail-only signup and recovery (without unverified account sessions).
+import cloux_email
+cloux_email.install(app,db,fail,limit,set_cookie,cloux_features.seed_user)
