@@ -133,6 +133,11 @@ async def security_headers(request, call_next):
 
 @app.get("/")
 def home():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/v5/",status_code=307)
+
+@app.get("/classic")
+def classic():
     return FileResponse(BASE / "index.html")
 
 @app.get("/api/health")
