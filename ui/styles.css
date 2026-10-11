@@ -5,3 +5,6 @@
 @media(max-width:730px){.sidebar{width:100%;min-width:0}.shell.mobile-chat .sidebar,.shell.mobile-page .sidebar{display:none}.shell:not(.mobile-chat):not(.mobile-page) .content{display:none}.content{width:100%}.chat-top{padding:8px 12px;min-height:63px}.mobile-back{display:grid}.messages{padding:14px 10px}.message{max-width:90%}.composer{padding:9px 8px calc(9px + env(safe-area-inset-bottom))}.composer .icon-btn{width:33px;height:40px}.page{padding:16px 15px 95px}.bottom-nav{left:12px;right:12px}.sheet-inner{max-width:96vw}.chat-item{padding:11px 7px}.emoji-panel{bottom:75px}}
 
 .chat-wall[data-wall='slate']{background:linear-gradient(135deg,#272832,#484854)}.chat-wall[data-wall='custom']{background:var(--bg)}
+/* Floating tab bar remains visible over profile/settings on mobile. */
+.shell{position:relative}.shell>.bottom-nav{position:fixed;left:10px;right:auto;width:345px;bottom:calc(10px + env(safe-area-inset-bottom))}
+@media(max-width:730px){.shell>.bottom-nav{left:12px;right:12px;width:auto}.shell.mobile-chat>.bottom-nav{display:none}}
