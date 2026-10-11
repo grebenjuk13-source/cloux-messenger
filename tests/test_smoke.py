@@ -27,6 +27,21 @@ def test_registration_notes_news_preferences_direct_and_signaling():
         assert a.post(f"/api/chats/{cid}/messages",json={"text":"Тест: привіт!"}).status_code==200
         got=b.get(f"/api/chats/{cid}/messages").json()["messages"]
         assert got[-1]["text"]=="Тест: привіт!"
+
+        mid=got[-1]["id"]
+        assert b.post(f"/api/chats/{cid}/reply/{mid}",json={"text":"Відповідаю!"}).status_code==200
+        latest=a.get(f"/api/chats/{cid}/messages").json()["messages"][-1]
+        assert latest["reply_to"]==mid
+        assert latest["reply_text"]=="Тест: привіт!"
+        found=a.get("/api/messages/search?q="+__import__("urllib.parse",fromlist=["quote"]).quote("привіт")).json()["messages"]
+        assert any(x["id"]==mid for x in found)
+        saved=next(x for x in chats if x["kind"]=="saved")
+        sent=a.post(f"/api/chats/{cid}/forward/{mid}",json={"target_chat_id":saved["id"]})
+        assert sent.status_code==200,sent.text
+        copied=a.get(f"/api/chats/{saved['id']}/messages").json()["messages"][-1]
+        assert copied["forwarded_from"]=="user_one"
+        assert copied["text"]=="Тест: привіт!"
+
         invite=a.post("/api/channels",json={"title":"Наш тестовий канал"})
         assert invite.status_code==200
         ch=invite.json()["chat_id"]
