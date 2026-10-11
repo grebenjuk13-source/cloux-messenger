@@ -48,7 +48,7 @@ await page.getByText('Зовнішній вигляд').click();
 await page.getByRole('button',{name:/Світла/}).click();
 assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
 await page.getByRole('button',{name:'Чати',exact:true}).click();
-await page.locator('.chat-entry').first().click();
+await page.locator('.chat-entry').filter({hasText:'Друг Cloux'}).click();
 await page.getByText('Вітаю в Cloux!').waitFor();
 await page.getByRole('textbox',{name:'Напиши повідомлення'}).fill('Нове повідомлення');
 await page.getByRole('button',{name:'Надіслати'}).click();
