@@ -187,6 +187,7 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
             if not member(c,me['id'],cid):fail('Немає доступу.',403)
             row=c.execute('SELECT COALESCE(MAX(id),0) n FROM messages WHERE chat_id=?',(cid,)).fetchone()
             c.execute('INSERT INTO cloux_reads(chat_id,uid,last_id) VALUES(?,?,?) ON CONFLICT(chat_id,uid) DO UPDATE SET last_id=MAX(last_id,excluded.last_id)',(cid,me['id'],row['n']))
+        __import__("cloux_realtime").hub.emit(cid,'read',user_id=me['id'],last_read=row['n'])
         return {'ok':True,'last_read':row['n']}
 
     @app.get('/api/chats/{cid}/read-status')
@@ -212,6 +213,7 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
             old=c.execute('SELECT 1 FROM cloux_reactions WHERE message_id=? AND uid=? AND emoji=?',(mid,me['id'],data.emoji)).fetchone()
             if old:c.execute('DELETE FROM cloux_reactions WHERE message_id=? AND uid=? AND emoji=?',(mid,me['id'],data.emoji))
             else:c.execute('INSERT INTO cloux_reactions(message_id,uid,emoji) VALUES(?,?,?)',(mid,me['id'],data.emoji))
+        __import__("cloux_realtime").hub.emit(row['chat_id'],'reactions_updated',message_id=mid)
         return {'ok':True,'added':not bool(old)}
 
     @app.get('/api/chats/{cid}/reactions')
