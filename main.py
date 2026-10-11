@@ -291,3 +291,23 @@ cloux_features.install(app,db,auth,fail,hash_password,check_password,member,limi
 
 import cloux_calls
 cloux_calls.install(app,db)
+
+from fastapi.responses import Response
+from pathlib import Path as _ClouxPath
+
+@app.get("/manifest.webmanifest")
+def cloux_manifest():
+    return FileResponse(_ClouxPath(__file__).parent/"manifest.webmanifest",media_type="application/manifest+json")
+
+@app.get("/sw.js")
+def cloux_sw():
+    return FileResponse(_ClouxPath(__file__).parent/"sw.js",media_type="application/javascript",
+        headers={"Service-Worker-Allowed":"/","Cache-Control":"no-cache"})
+
+@app.get("/cloux-v2.js")
+def cloux_frontend():
+    return FileResponse(_ClouxPath(__file__).parent/"cloux-v2.js",media_type="application/javascript")
+
+@app.get("/cloux-icon.svg")
+def cloux_icon():
+    return FileResponse(_ClouxPath(__file__).parent/"cloux-icon.svg",media_type="image/svg+xml")
