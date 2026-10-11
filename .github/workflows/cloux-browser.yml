@@ -1,0 +1,43 @@
+name: Cloux Mobile Browser Smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - "modern.html"
+      - "ui/**"
+      - "tests/modern_ui_test.mjs"
+      - "cloux_social.py"
+      - ".github/workflows/cloux-browser.yml"
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install -r requirements.txt
+      - run: npm install --no-save playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - name: Start local Cloux backend
+        run: |
+          CLOUX_DATA=$(mktemp -d) python -m uvicorn main:app --host 127.0.0.1 --port 8765 > server.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8765/modern > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8765/modern > /dev/null
+      - name: Test mobile Cloux UI
+        run: node tests/modern_ui_test.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloux-mobile-screenshots
+          path: |
+            cloux-mobile-*.png
+            server.log
