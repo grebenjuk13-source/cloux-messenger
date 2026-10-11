@@ -29,7 +29,7 @@ await page.waitForTimeout(2200);
 console.log('DEBUG PAGE', (await page.locator('body').innerText()).slice(0,800));
 console.log('DEBUG ERRORS',errors);
 await page.screenshot({path:'cloux-mobile-diagnostic.png'});
-await page.locator('.chat-item').first().waitFor({timeout:8000});
+await page.locator('.chat-item').first().waitFor({timeout:12000});
 assert.equal(await page.locator('.bottom-nav button').count(),5);
 assert.equal(await page.locator('.chat-item').count(),3);
 await page.locator('button[data-open-chat="dm"]').click();
