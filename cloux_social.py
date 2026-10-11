@@ -200,7 +200,11 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
     @app.post('/api/messages/{mid}/reactions')
     def toggle_reaction(mid:int,data:ReactionPayload,request:Request):
         me=auth(request)
-        if data.emoji not in ALLOWED_REACTIONS:fail('Ця реакція недоступна.')
+        # Emoji presentation sequences (including ZWJ/variation selectors) are allowed,
+        # while plain text and control characters are not.
+        valid_emoji=any(0x1F000<=ord(ch)<=0x1FAFF or 0x2600<=ord(ch)<=0x27BF for ch in data.emoji)
+        if not valid_emoji or any(ord(ch)<32 for ch in data.emoji):
+            fail('Оберіть емодзі, а не текст.')
         with db() as c:
             row=c.execute('SELECT chat_id FROM messages WHERE id=?',(mid,)).fetchone()
             if not row:fail('Повідомлення не знайдено.',404)
