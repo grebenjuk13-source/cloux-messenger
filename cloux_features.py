@@ -222,6 +222,7 @@ def install(app, db, auth, fail, hash_password, check_password, member, limit):
             if m["sender"]!=me["id"] or not member(c,me["id"],m["chat_id"]):fail("Можна редагувати тільки свої повідомлення.",403)
             if m["chat_id"]==NEWS:fail("Офіційні новини не редагуються.",403)
             c.execute("UPDATE messages SET text=? WHERE id=?",(data.text.strip(),mid))
+        __import__("cloux_realtime").hub.emit(m["chat_id"],"message_updated",message_id=mid)
         return {"ok":True}
 
     @app.delete("/api/messages/{mid}")
@@ -233,6 +234,7 @@ def install(app, db, auth, fail, hash_password, check_password, member, limit):
             if m["sender"]!=me["id"] or not member(c,me["id"],m["chat_id"]):fail("Можна видаляти тільки свої повідомлення.",403)
             if m["chat_id"]==NEWS:fail("Офіційні новини не видаляються.",403)
             c.execute("DELETE FROM messages WHERE id=?",(mid,))
+        __import__("cloux_realtime").hub.emit(m["chat_id"],"message_deleted",message_id=mid)
         return {"ok":True}
 
     @app.post("/api/chats/{cid}/invite")
