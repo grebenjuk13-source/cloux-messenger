@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.webkit.CookieManager;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
+import android.webkit.ValueCallback;
+import android.content.ActivityNotFoundException;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -23,8 +25,10 @@ import java.util.List;
 public class MainActivity extends Activity {
     private static final String HOST = "cloux-messenger.onrender.com";
     private static final int REQUEST_CALL_PERMISSIONS = 401;
+    private static final int REQUEST_FILE_PICKER = 402;
     private WebView web;
     private PermissionRequest pendingCall;
+    private ValueCallback<Uri[]> pendingFiles;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -57,6 +61,20 @@ public class MainActivity extends Activity {
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
+            // File input support for profile pictures, banners, wallpapers and chat media.
+            @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
+                                                       FileChooserParams params) {
+                if(pendingFiles!=null)pendingFiles.onReceiveValue(null);
+                pendingFiles=callback;
+                try {
+                    startActivityForResult(params.createIntent(),REQUEST_FILE_PICKER);
+                    return true;
+                } catch(ActivityNotFoundException err) {
+                    pendingFiles=null;
+                    callback.onReceiveValue(null);
+                    return false;
+                }
+            }
             @Override public void onPermissionRequest(PermissionRequest request) {
                 runOnUiThread(() -> checkMediaPermission(request));
             }
@@ -109,6 +127,14 @@ public class MainActivity extends Activity {
         if(code==REQUEST_CALL_PERMISSIONS && pendingCall!=null){
             PermissionRequest req=pendingCall;pendingCall=null;
             grantAllowed(req);
+        }
+    }
+    @Override protected void onActivityResult(int requestCode,int resultCode,Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+        if(requestCode==REQUEST_FILE_PICKER && pendingFiles!=null) {
+            ValueCallback<Uri[]> callback=pendingFiles;
+            pendingFiles=null;
+            callback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode,data));
         }
     }
     @Override protected void onPause() {
