@@ -6,7 +6,7 @@
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <uses-feature android:name="android.hardware.microphone" android:required="false"/>
     <application android:label="Cloux" android:theme="@style/ClouxTheme"
-        android:icon="@drawable/ic_launcher" android:usesCleartextTraffic="false"
+        android:icon="@drawable/cloux_official" android:usesCleartextTraffic="false"
         android:allowBackup="false" android:supportsRtl="true">
       <activity android:name=".MainActivity" android:exported="true">
         <intent-filter>
