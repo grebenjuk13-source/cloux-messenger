@@ -130,4 +130,5 @@ async function logout(){await api("/api/logout",{method:"POST"}).catch(()=>{});s
 setInterval(()=>{if(state.me){refreshMessages();if(!state.searching)loadChats();}},3500);
 boot();
 </script>
+<script src="/cloux-plus.js?v=2"></script>
 </body></html>
