@@ -88,7 +88,7 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
     @app.get('/assets/cloux-default-avatar.jpg')
     def default_avatar():
         # Original user-supplied bytes. CSS circle clipping does not alter the image.
-        return FileResponse(Path(base_dir)/'assets'/'cloux-default-avatar.jpg',media_type='image/png')
+        return FileResponse(Path(base_dir)/'assets'/'cloux-default-avatar.jpg',media_type='image/jpeg')
 
     @app.get('/api/profile/{uid}/media/{kind}')
     def profile_image(uid:str,kind:str,request:Request):
