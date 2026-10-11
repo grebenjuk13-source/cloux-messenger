@@ -233,9 +233,18 @@ def install(app, db, fail, limit, set_cookie, seed_user):
 
     @app.get('/api/v6/config')
     def config():
-        return {'email_enabled': email_ready(), 'code_length': 6,
+        enabled = email_ready()
+        status = "ready" if enabled else "sender_not_connected"
+        if not enabled:
+            try:
+                import cloux_resend_oauth
+                status = cloux_resend_oauth.diagnostic()
+            except (ImportError, RuntimeError, sqlite3.Error):
+                pass
+        return JSONResponse({'email_enabled': enabled, 'code_length': 6,
                 'code_ttl': OTP_LIFETIME, 'retry_after': COOLDOWN,
-                'registration': 'gmail', 'legacy_login': True}
+                'registration': 'gmail', 'legacy_login': True,
+                'email_status': status}, headers={'Cache-Control':'no-store'})
 
     @app.post('/api/v6/email/send')
     def send_code(body: EmailOnly, request: Request):
