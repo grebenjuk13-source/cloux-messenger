@@ -45,7 +45,7 @@ function renderChats(query=''){
  if(query.trim())chats=chats.filter(x=>`${x.title} ${x.last_text}`.toLowerCase().includes(query.toLowerCase()));
  if(!chats.length){list.innerHTML='<div class="empty">Тут поки немає чатів.<br>Створи групу або знайди друга в «Контактах».</div>';return}
  list.innerHTML=chats.map(c=>`<button class="chat-item ${S.current?.id===c.id?'active':''}" data-open-chat="${esc(c.id)}">
-  ${openImg(c.kind==='news'?BASE_AVATAR:(c.avatar_url||BASE_AVATAR))}<span class="chat-info"><span class="chat-info-top"><strong>${c.pinned?'📌 ':''}${esc(c.title)}</strong><small>${ago(c.last_time)}</small></span>
+  ${openImg(c.kind==='direct'&&c.other_id?'/api/profile/'+encodeURIComponent(c.other_id)+'/media/avatar':(c.avatar_url||BASE_AVATAR))}<span class="chat-info"><span class="chat-info-top"><strong>${c.pinned?'📌 ':''}${esc(c.title)}</strong><small>${ago(c.last_time)}</small></span>
   <p>${c.muted?'🔕 ':''}${esc((S.prefs.show_previews===0||S.local.show_previews===false)?'Повідомлення приховані':shortText(c.last_text||'Нова розмова'))}</p></span></button>`).join('');
  $$('[data-open-chat]',list).forEach(b=>b.onclick=()=>openChat(b.dataset.openChat));renderEmoji(list);
 }
@@ -175,7 +175,7 @@ async function renderContacts(q=''){
  page('Контакти',`<div class="setting-group"><h3>Знайти людину в Cloux</h3><input id="people-query" aria-label="Пошук людей" placeholder="Імʼя або @позивний" value="${esc(q)}"><div id="people-results" class="members"><p class="muted small">Введи мінімум 2 символи. Cloux не читає контакти телефона.</p></div></div>`);
  let timer;$('#people-query').oninput=e=>{clearTimeout(timer);timer=setTimeout(()=>search(e.target.value),250)};
  async function search(value){const target=$('#people-results');if(value.trim().length<2){target.innerHTML='<p class="muted small">Введи два символи.</p>';return}
-  const d=await api('/api/users?q='+encodeURIComponent(value.trim()));target.innerHTML=d.users.map(u=>`<button class="member" data-contact="${esc(u.id)}">${openImg(BASE_AVATAR,'sm')}<span style="flex:1;text-align:left"><strong>${esc(u.display)}</strong><br><small class="muted">@${esc(u.username)}</small></span><span>Написати →</span></button>`).join('')||'<div class="empty">Нікого не знайдено</div>';
+  const d=await api('/api/users?q='+encodeURIComponent(value.trim()));target.innerHTML=d.users.map(u=>`<button class="member" data-contact="${esc(u.id)}">${openImg('/api/profile/'+encodeURIComponent(u.id)+'/media/avatar','sm')}<span style="flex:1;text-align:left"><strong>${esc(u.display)}</strong><br><small class="muted">@${esc(u.username)}</small></span><span>Написати →</span></button>`).join('')||'<div class="empty">Нікого не знайдено</div>';
   $$('[data-contact]',target).forEach(b=>b.onclick=withError(async()=>{const d=await post('/api/direct/'+encodeURIComponent(b.dataset.contact));await refreshChats();openChat(d.chat_id)}));renderEmoji(target);
  }
  if(q)await search(q);
@@ -262,7 +262,7 @@ async function renderProfile(){S.tab='profile';try{S.profile=(await api('/api/pr
  ${settingSection('Мій Cloux',`<button class="outline" id="my-notes">📝 Нотатки</button> <button class="outline" id="cloux-news">📣 Новини Cloux</button>`)}<p class="muted small">Твоя аватарка доступна іншим користувачам, якщо файл ще зберігається на сервері.</p>`);
  $('#edit-avatar').onclick=()=>cropAndUpload('avatar',url=>{profileAvatar=url;renderProfile()});
  $('#edit-banner').onclick=()=>cropAndUpload('banner',url=>{profileBanner=url;renderProfile()});
- $('#reset-avatar').onclick=()=>{profileAvatar=BASE_AVATAR;saveLocal({avatar:'default'});renderProfile();toast('Стандартна аватарка використовується на цьому пристрої')};
+ $('#reset-avatar').onclick=withError(async()=>{profileAvatar=BASE_AVATAR;saveLocal({avatar:'default'});const db=await import('./core.js');await db.deleteCachedPhoto(S.me.id+'-avatar');await api('/api/profile/media/avatar',{method:'DELETE'});renderProfile();toast('Повернуто стандартну аватарку Cloux')});
  $('#profile-form').onsubmit=withError(async e=>{e.preventDefault();const fd=new FormData(e.target);await patch('/api/profile',{display:fd.get('display'),username:fd.get('username'),bio:fd.get('bio')});await patch('/api/profile/status',{status:fd.get('status')});S.prefs.status=fd.get('status');await renderProfile();toast('Профіль збережено')});
  $('#my-notes').onclick=()=>openKind('saved');$('#cloux-news').onclick=()=>openKind('news');
 }
@@ -277,7 +277,7 @@ async function loginUI(register=false){const root=$('#app');root.innerHTML=`<mai
 async function boot(){clearInterval(timer);clearInterval(heartbeat);
  try{S.me=await api('/api/me')}catch{S.me=null;await loginUI();return}
  try{S.prefs=(await api('/api/preferences')).preferences}catch{S.prefs={}}
- S.local=loadLocal();
+ S.local=loadLocal();if(S.prefs.photo_version>0&&S.local.avatar!=='default'){profileAvatar='/api/profile/'+encodeURIComponent(S.me.id)+'/media/avatar?v='+S.prefs.photo_version;profileBanner='/api/profile/'+encodeURIComponent(S.me.id)+'/media/banner?v='+S.prefs.photo_version;}
  // A local photo cache survives app restarts, even when the Render filesystem does not.
  for(const kind of ['avatar','banner','wallpaper']){
   const photo=await cachedPhoto(`${S.me.id}-${kind}`);
