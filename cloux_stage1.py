@@ -164,7 +164,7 @@ def install(app,db,auth,fail,limit,set_cookie,seed_user):
         return set_cookie(JSONResponse({'ok':True}),uid)
     class UISettings(BaseModel):
         theme: str = 'dark'
-        accent: str = '#54BBD6'
+        accent: str = '#E11D2E'
         wallpaper: str = 'w0'
         font_size: int = Field(default=15,ge=12,le=23)
         compact: bool = False
@@ -172,6 +172,9 @@ def install(app,db,auth,fail,limit,set_cookie,seed_user):
         emoji_style: str = 'telegram'
         wall_blur: int = Field(default=0,ge=0,le=20)
         wall_dim: int = Field(default=12,ge=0,le=75)
+        animated_wallpaper: bool = True
+        bubble_style: str = 'rounded'
+        chat_previews: bool = True
 
     @app.get('/api/v5/ui-prefs')
     def get_ui_preferences(request:Request):
@@ -187,6 +190,8 @@ def install(app,db,auth,fail,limit,set_cookie,seed_user):
             fail('Невідома тема.')
         if body.emoji_style not in ('apple','telegram'):
             fail('Невідомий набір емодзі.')
+        if body.bubble_style not in ('rounded','soft','square'):
+            fail('Невідомий стиль повідомлень.')
         if not re.fullmatch(r'#[0-9a-fA-F]{6}',body.accent):
             fail('Некоректний колір.')
         if body.wallpaper!='custom' and not (re.fullmatch(r'w[0-9]+',body.wallpaper) and 0<=int(body.wallpaper[1:])<34):
