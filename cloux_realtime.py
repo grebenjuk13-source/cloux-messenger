@@ -14,6 +14,8 @@ from fastapi import WebSocket, WebSocketDisconnect
 class ChatHub:
     def __init__(self):
         self.rooms = defaultdict(dict)  # chat_id -> connection_id -> bounded queue
+        self.inboxes = defaultdict(dict)  # user_id -> connection_id -> bounded queue
+        self.members = None
         self.loop = None
         self.next_id = 0
 
@@ -33,11 +35,53 @@ class ChatHub:
                     q.put_nowait(event)
                 except asyncio.QueueFull:
                     pass
-        loop.call_soon_threadsafe(publish)
+        members = self.members(chat_id) if self.members else []
+        def publish_all():
+            publish()
+            for uid in members:
+                for q in list(self.inboxes.get(uid, {}).values()):
+                    if q.full():
+                        try:q.get_nowait()
+                        except asyncio.QueueEmpty:pass
+                    try:q.put_nowait({"type":"inbox_update","chat_id":chat_id})
+                    except asyncio.QueueFull:pass
+        loop.call_soon_threadsafe(publish_all)
 
 hub = ChatHub()
 
 def install(app, db):
+    def members_for_chat(chat_id):
+        with db() as c:
+            rows=c.execute("SELECT user_id FROM chat_members WHERE chat_id=?",(chat_id,)).fetchall()
+        return [x["user_id"] for x in rows]
+    hub.members = members_for_chat
+
+    @app.websocket("/ws/inbox")
+    async def inbox_ws(ws:WebSocket):
+        token=ws.cookies.get("cloux_session","")
+        origin=ws.headers.get("origin","")
+        if not token or (origin and urlsplit(origin).netloc.lower()!=ws.headers.get("host","").lower()):
+            await ws.close(code=1008);return
+        with db() as c:
+            who=c.execute("""SELECT u.id FROM sessions s JOIN users u ON u.id=s.uid
+                   WHERE s.token=? AND s.expires>?""",
+                   (hashlib.sha256(token.encode()).hexdigest(),int(time.time()))).fetchone()
+        if not who:
+            await ws.close(code=1008);return
+        uid=who["id"]
+        await ws.accept()
+        hub.loop=asyncio.get_running_loop()
+        hub.next_id+=1;cid=hub.next_id
+        q=asyncio.Queue(maxsize=50);hub.inboxes[uid][cid]=q
+        try:
+            while True:
+                event=await q.get()
+                await ws.send_json(event)
+        except (WebSocketDisconnect,RuntimeError):
+            pass
+        finally:
+            hub.inboxes.get(uid,{}).pop(cid,None)
+            if not hub.inboxes.get(uid):hub.inboxes.pop(uid,None)
     @app.on_event("startup")
     async def capture_loop():
         hub.loop = asyncio.get_running_loop()
