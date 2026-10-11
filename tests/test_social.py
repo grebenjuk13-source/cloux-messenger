@@ -44,7 +44,7 @@ def test_profile_media_reactions_reads_roles():
         assert b.post(f'/api/messages/{mid}/reactions',json={'emoji':'❤️'}).status_code==200
         reactions=a.get('/api/chats/'+cid+'/reactions').json()['reactions']
         assert reactions[str(mid)]['❤️']['count']==1
-        assert a.post(f'/api/messages/{mid}/reactions',json={'emoji':'🚫'}).status_code==400
+        assert a.post(f'/api/messages/{mid}/reactions',json={'emoji':'hello'}).status_code==400
         assert b.post('/api/chats/'+cid+'/read').status_code==200
         assert a.get('/api/chats/'+cid+'/read-status').json()['reads'][bb]>=mid
         server=a.post('/api/servers',json={'name':'Cloux Fans','description':'Команда'}).json()
