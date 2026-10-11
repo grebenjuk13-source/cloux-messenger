@@ -61,7 +61,9 @@ def email_pepper() -> str:
 
 
 def email_provider() -> str:
-    """Choose a fully configured sender, even when provider selector was omitted."""
+    """Use HTTPS delivery on Render Free: outbound SMTP ports are blocked there."""
+    if os.getenv('CLOUX_HTTPS_EMAIL_ONLY', '').lower() in ('1','true','yes'):
+        return 'resend'
     preferred = os.getenv('CLOUX_EMAIL_PROVIDER', '').strip().lower()
     resend_ok = bool(os.getenv('RESEND_API_KEY') and os.getenv('CLOUX_EMAIL_FROM'))
     gmail_ok = bool(os.getenv('GMAIL_SMTP_USER') and os.getenv('GMAIL_SMTP_APP_PASSWORD'))
