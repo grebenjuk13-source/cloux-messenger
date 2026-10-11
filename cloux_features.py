@@ -123,7 +123,7 @@ def install(app, db, auth, fail, hash_password, check_password, member, limit):
         changes=data.model_dump(exclude_none=True)
         if "accent" in changes and changes["accent"] not in ("#F5F5F5","#DDDDDD","#BFC0C4","#878A92"):
             fail("Непідтримуваний колір.")
-        if "wallpaper" in changes and changes["wallpaper"] not in ("default","plain","dots","gradient"):
+        if "wallpaper" in changes and changes["wallpaper"] not in ("default","plain","dots","gradient","waves","slate","custom"):
             fail("Непідтримуваний фон.")
         if "font_size" in changes and not 13<=changes["font_size"]<=21:
             fail("Розмір тексту 13–21.")
