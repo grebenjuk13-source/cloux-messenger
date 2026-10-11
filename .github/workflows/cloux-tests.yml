@@ -10,6 +10,7 @@ on:
       - "cloux_media.py"
       - "cloux_social.py"
       - "cloux_stage1.py"
+      - "cloux_email.py"
       - "ui/**"
       - "modern.html"
       - "requirements.txt"
