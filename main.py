@@ -411,3 +411,7 @@ cloux_realtime.install(app,db)
 # Gmail-only signup and recovery (without unverified account sessions).
 import cloux_email
 cloux_email.install(app,db,fail,limit,set_cookie,cloux_features.seed_user)
+
+# One-click email sender approval (Resend OAuth 2.1 + PKCE).
+import cloux_resend_oauth
+cloux_resend_oauth.install(app,db)
