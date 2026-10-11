@@ -6,6 +6,8 @@ from main import app
 from fastapi.testclient import TestClient
 
 def test_registration_notes_news_preferences_direct_and_signaling():
+    from main import requests_by_ip
+    requests_by_ip.clear()  # Tests share TestClient IP, not production clients.
     with TestClient(app, base_url="https://testserver") as a, TestClient(app, base_url="https://testserver") as b:
         r=a.post("/api/register",json={"phone":"+380670000011","username":"user_one","display":"Перший","password":"SecureDev1!"})
         assert r.status_code==200,r.text
