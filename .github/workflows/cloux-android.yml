@@ -33,6 +33,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.10.2"
+      - name: Install official Cloux icon
+        run: |
+          mkdir -p android-app/app/src/main/res/drawable-nodpi
+          cp assets/cloux-official-512.jpg android-app/app/src/main/res/drawable-nodpi/cloux_official.jpg
       - name: Build APK
         run: gradle -p android-app --no-daemon --stacktrace assembleDebug
       - name: Publish artifact
