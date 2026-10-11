@@ -22,7 +22,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Start Vite preview
         run: |
-          npm exec --prefix frontend -- vite preview --host 127.0.0.1 --port 4173 > vite.log 2>&1 &
+          (cd frontend && ./node_modules/.bin/vite preview --host 127.0.0.1 --port 4173) > vite.log 2>&1 &
           for i in $(seq 1 40); do if curl -fsS http://127.0.0.1:4173/v5/ >/dev/null; then break; fi; sleep 1; done
       - name: Test responsive Cloux
         run: node tests/v5_ui_test.mjs
