@@ -62,6 +62,8 @@ def install(app, db, auth, member, fail, limit):
             if not original: fail("Повідомлення не знайдено в цьому чаті.",404)
             cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created,reply_to) VALUES(?,?,?,?,?)",
                     (cid,user["id"],text,int(time.time()),mid))
+        __import__("cloux_realtime").hub.emit(cid,"new_message",message_id=cursor.lastrowid)
+        __import__("cloux_realtime").hub.emit(data.target_chat_id,"new_message",message_id=cursor.lastrowid)
         return {"id":cursor.lastrowid,"ok":True}
 
     @app.post("/api/chats/{cid}/forward/{mid}")
