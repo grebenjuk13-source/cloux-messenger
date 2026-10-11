@@ -85,6 +85,12 @@ def hash_password(password: str, salt=None):
     return salt.hex() + ":" + digest.hex()
 
 def check_password(password, stored):
+    if stored.startswith("$argon2"):
+        from argon2.exceptions import VerifyMismatchError, VerificationError
+        try:
+            return cloux_stage1.PASSWORD_HASHER.verify(stored,password)
+        except (VerifyMismatchError,VerificationError,ValueError):
+            return False
     try:
         salt_hex, digest_hex = stored.split(":")
         test = hash_password(password, bytes.fromhex(salt_hex)).split(":")[1]
@@ -148,6 +154,8 @@ def me(request: Request):
 
 @app.post("/api/register")
 def register(payload: Register, request: Request):
+    if os.getenv("CLOUX_REQUIRE_SMS") == "1":
+        fail("Реєструйтеся через SMS-підтвердження Cloux.",403)
     limit(request, 6)
     phone = re.sub(r"[\s()\-]", "", payload.phone)
     username = payload.username.strip().lower()
@@ -368,3 +376,22 @@ def modern_assets(filename:str):
              "calls.js":"application/javascript","app.js":"application/javascript"}
     if filename not in allowed:fail("Файл не знайдено.",404)
     return FileResponse(BASE/"ui"/filename,media_type=allowed[filename])
+
+# Stage 1 React + TypeScript preview, independently tested before promotion.
+import cloux_stage1
+cloux_stage1.install(app,db,fail,limit,set_cookie,cloux_features.seed_user)
+
+@app.get("/v5")
+def stage1_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/v5/",status_code=308)
+
+@app.get("/v5/{asset:path}")
+def stage1_frontend(asset:str):
+    root=(BASE/"frontend_dist").resolve()
+    file=(root/(asset or "index.html")).resolve()
+    if not file.is_relative_to(root) or not file.is_file():
+        fail("Файл не знайдено.",404)
+    from mimetypes import guess_type
+    mime=guess_type(str(file))[0] or "application/octet-stream"
+    return FileResponse(file,media_type=mime,headers={"Cache-Control":"no-cache" if file.name=="index.html" else "public,max-age=3600"})
