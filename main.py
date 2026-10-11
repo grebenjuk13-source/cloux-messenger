@@ -379,7 +379,7 @@ def modern_assets(filename:str):
 
 # Stage 1 React + TypeScript preview, independently tested before promotion.
 import cloux_stage1
-cloux_stage1.install(app,db,fail,limit,set_cookie,cloux_features.seed_user)
+cloux_stage1.install(app,db,auth,fail,limit,set_cookie,cloux_features.seed_user)
 
 @app.get("/v5")
 def stage1_redirect():
