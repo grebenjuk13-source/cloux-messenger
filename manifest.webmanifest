@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "Cloux Messenger",
+  "short_name": "Cloux",
+  "description": "Cloux — власний чорно-білий месенджер",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#08080A",
+  "theme_color": "#101014",
+  "orientation": "portrait-primary",
+  "lang": "uk",
+  "icons": [
+    {
+      "src": "/cloux-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
