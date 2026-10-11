@@ -28,6 +28,8 @@ def test_mail_owner_setup_flow(monkeypatch):
         assert meta.json()['client_id']==oauth.META
         assert meta.json()['client_uri']==oauth.BASE_URL
         assert meta.json()['scope']=='emails:send'
+        assert meta.json()['client_id'] == oauth.META
+        assert meta.json()['token_endpoint_auth_method'] == 'none'
         assert meta.json()['redirect_uris']==[oauth.CALLBACK]
         assert client.get('/admin/mail').status_code==200
         no=client.post('/api/admin/mail/start',json={'token':'bad-token'})
