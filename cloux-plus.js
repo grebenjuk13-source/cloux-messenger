@@ -83,4 +83,6 @@ refreshMessages=async function(){const cid=state.selected;if(!cid||!state.me||!$
 async function reloadMessages(){state.lastId=0;state.renderedIds.clear();if($('chat-body'))$('chat-body').innerHTML='';await refreshMessages();await loadChats();}
 boot=async function(){await originalBoot();if(state.me)await initialize();};
 if(state.me)initialize();
+const clouxInitWatch=setInterval(()=>{if(state.me&&ui.prefs){clearInterval(clouxInitWatch);}else if(state.me){initialize();}},800);
+setTimeout(()=>clearInterval(clouxInitWatch),30000);
 })();
