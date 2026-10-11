@@ -91,6 +91,7 @@ def install(app,db,auth,member,fail,limit,storage_root):
             except Exception:
                 file.unlink(missing_ok=True)
                 raise
+        __import__("cloux_realtime").hub.emit(cid,"new_message",message_id=cur.lastrowid)
         return {"ok":True,"id":cur.lastrowid,"media_id":aid,"mime":mime,"bytes":len(data)}
 
     @app.get("/api/chats/{cid}/media/{aid}")
