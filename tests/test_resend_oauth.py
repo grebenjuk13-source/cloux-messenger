@@ -45,6 +45,8 @@ def test_mail_owner_setup_flow(monkeypatch):
         callback=client.get('/oauth/resend/callback',params={'code':'approved','state':params['state'][0]})
         assert callback.status_code==200
         assert oauth.connected()
+        assert oauth.diagnostic()=='connected'
+        assert client.get('/api/v6/config').json()['email_enabled'] is True
         assert oauth.access_token()=='test-only-access'
         with db() as con:
             encrypted=con.execute('SELECT access,refresh FROM cloux_resend_oauth WHERE id=1').fetchone()
@@ -55,3 +57,30 @@ def test_mail_owner_setup_flow(monkeypatch):
         con.execute('DELETE FROM cloux_resend_pending')
         con.execute('DELETE FROM cloux_resend_oauth')
         con.execute('UPDATE cloux_resend_provisioning SET used=0 WHERE id=1')
+
+def test_oauth_failed_callback_reports_safe_reason(monkeypatch):
+    monkeypatch.setenv('CLOUX_EMAIL_PEPPER_BOOTSTRAP', 'k'*48)
+    monkeypatch.delenv('CLOUX_EMAIL_PEPPER', raising=False)
+    token='z'*48
+    monkeypatch.setenv('CLOUX_MAIL_SETUP_SHA256', hashlib.sha256(token.encode()).hexdigest())
+    monkeypatch.setenv('CLOUX_MAIL_SETUP_DEADLINE', str(int(time.time())+300))
+    with db() as con:
+        con.execute('DELETE FROM cloux_resend_pending')
+        con.execute('DELETE FROM cloux_resend_oauth')
+        con.execute('UPDATE cloux_resend_provisioning SET used=0 WHERE id=1')
+    def raise_provider_error(params):
+        raise RuntimeError('resend_http_400_invalid_grant')
+    monkeypatch.setattr(oauth, '_request_token', raise_provider_error)
+    with TestClient(app,base_url='https://cloux-messenger.onrender.com') as client:
+        request=client.post('/api/admin/mail/start',json={'token':token})
+        assert request.status_code==200
+        state=parse_qs(urlsplit(request.json()['authorize_url']).query)['state'][0]
+        callback=client.get('/oauth/resend/callback',params={'code':'mock-provider-code','state':state})
+        assert callback.status_code==200
+        assert 'resend_http_400_invalid_grant' in callback.text
+        cfg=client.get('/api/v6/config').json()
+        assert cfg['email_enabled'] is False
+        assert cfg['email_status']=='resend_http_400_invalid_grant'
+    with db() as con:
+        con.execute('DELETE FROM cloux_resend_pending')
+        con.execute('DELETE FROM cloux_resend_status')
