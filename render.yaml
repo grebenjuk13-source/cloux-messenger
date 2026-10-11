@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: cloux-messenger
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: CLOUX_DATA
+        value: /tmp/cloux
