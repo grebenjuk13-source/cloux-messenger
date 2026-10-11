@@ -9,6 +9,7 @@ on:
       - "cloux_messages.py"
       - "cloux_media.py"
       - "cloux_social.py"
+      - "cloux_stage1.py"
       - "ui/**"
       - "modern.html"
       - "requirements.txt"
