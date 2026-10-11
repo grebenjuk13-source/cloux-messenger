@@ -311,3 +311,13 @@ def cloux_frontend():
 @app.get("/cloux-icon.svg")
 def cloux_icon():
     return FileResponse(_ClouxPath(__file__).parent/"cloux-icon.svg",media_type="image/svg+xml")
+
+from fastapi.responses import RedirectResponse
+
+@app.get("/download")
+def cloux_download_page():
+    return FileResponse(_ClouxPath(__file__).parent/"download.html",media_type="text/html")
+
+@app.get("/apk")
+def cloux_apk_download():
+    return RedirectResponse("https://raw.githubusercontent.com/grebenjuk13-source/cloux-messenger/main/downloads/Cloux-Android-debug.apk",status_code=302)
