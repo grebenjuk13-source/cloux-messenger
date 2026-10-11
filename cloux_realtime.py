@@ -76,6 +76,7 @@ def install(app, db):
                 return
         sender = asyncio.create_task(forward())
         last_typing = 0
+        last_invite = 0
         try:
             while True:
                 data = await ws.receive_text()
@@ -90,6 +91,15 @@ def install(app, db):
                     continue
                 if message.get("type") == "ping":
                     await ws.send_json({"type":"pong"})
+                elif message.get("type") == "call_invite":
+                    now = time.monotonic()
+                    if now - last_invite < 10 or message.get("mode") not in ("audio","video"):
+                        continue
+                    last_invite = now
+                    event={"type":"call_invite","chat_id":chat_id,"user_id":uid,"mode":message["mode"]}
+                    for cid,other in list(hub.rooms[chat_id].items()):
+                        if cid != conn_id and not other.full():
+                            other.put_nowait(event)
                 elif message.get("type") == "typing":
                     now = time.monotonic()
                     if now - last_typing < 1.25:
