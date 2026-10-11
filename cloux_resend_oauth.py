@@ -103,6 +103,7 @@ def install(app,db):
     @app.get("/oauth/resend/client")
     def metadata():
         return JSONResponse({
+            "client_id":META,
             "client_name":"Cloux Messenger",
             "client_uri":BASE_URL,
             "redirect_uris":[CALLBACK],
