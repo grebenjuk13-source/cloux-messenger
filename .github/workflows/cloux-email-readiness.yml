@@ -1,0 +1,39 @@
+name: Cloux live email readiness
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "cloux_email.py"
+      - ".github/workflows/cloux-email-readiness.yml"
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check live mail provider readiness without issuing an OTP
+        run: |
+          python - <<'PY'
+          import json, time, urllib.request
+          endpoint="https://cloux-messenger.onrender.com/api/v6/config"
+          result=None
+          for attempt in range(5):
+              try:
+                  with urllib.request.urlopen(endpoint,timeout=55) as r:
+                      result=json.load(r)
+                      break
+              except Exception as e:
+                  print("Attempt",attempt+1,"failed:",str(e)[:140])
+                  time.sleep(8)
+          if result is None:
+              raise SystemExit("Cloux API unavailable; no code was sent")
+          print("Cloux Gmail registration configured:",bool(result.get("email_enabled")))
+          print("Code length:",result.get("code_length"),"TTL:",result.get("code_ttl"))
+          assert result.get("code_length")==6
+          assert result.get("code_ttl")==600
+          with open("cloux-email-status.txt","w") as f:
+              f.write("mail_provider_configured="+str(bool(result.get("email_enabled"))).lower()+"\n")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cloux-email-readiness
+          path: cloux-email-status.txt
