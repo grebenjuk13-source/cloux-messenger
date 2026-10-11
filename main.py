@@ -244,9 +244,11 @@ def chats(request: Request):
         for row in rows:
             d=dict(row)
             if d["kind"]=="direct":
-                other=c.execute("""SELECT u.display,u.username FROM users u JOIN chat_members m ON m.user_id=u.id
+                other=c.execute("""SELECT u.id,u.display,u.username FROM users u JOIN chat_members m ON m.user_id=u.id
                   WHERE m.chat_id=? AND u.id!=? LIMIT 1""",(d["id"],user["id"])).fetchone()
-                if other: d["title"]=other["display"]
+                if other:
+                    d["title"]=other["display"]
+                    d["other_id"]=other["id"]
             pr=c.execute("SELECT pinned,archived,muted FROM cloux_chat_prefs WHERE uid=? AND chat_id=?", (user["id"],d["id"])).fetchone()
             d.update(dict(pr) if pr else {"pinned":0,"archived":0,"muted":0})
             owner=c.execute("SELECT owner_id FROM cloux_owners WHERE chat_id=?",(d["id"],)).fetchone()
@@ -349,3 +351,20 @@ cloux_media.install(app,db,auth,member,fail,limit,DATA)
 @app.get("/cloux-media.js")
 def cloux_media_script():
     return FileResponse(_ClouxPath(__file__).parent/"cloux-media.js",media_type="application/javascript")
+
+# Modular Cloux UI and social features.
+import cloux_social
+cloux_social.init(db)
+cloux_social.install(app,db,auth,member,fail,limit,DATA,BASE)
+
+@app.get("/modern")
+def modern_ui():
+    return FileResponse(BASE/"modern.html",media_type="text/html",headers={"Cache-Control":"no-store"})
+
+@app.get("/ui/{filename}")
+def modern_assets(filename:str):
+    allowed={"styles.css":"text/css","core.js":"application/javascript",
+             "emoji.js":"application/javascript","avatar.js":"application/javascript",
+             "calls.js":"application/javascript","app.js":"application/javascript"}
+    if filename not in allowed:fail("Файл не знайдено.",404)
+    return FileResponse(BASE/"ui"/filename,media_type=allowed[filename])
