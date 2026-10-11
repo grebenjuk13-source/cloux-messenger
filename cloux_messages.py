@@ -63,7 +63,6 @@ def install(app, db, auth, member, fail, limit):
             cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created,reply_to) VALUES(?,?,?,?,?)",
                     (cid,user["id"],text,int(time.time()),mid))
         __import__("cloux_realtime").hub.emit(cid,"new_message",message_id=cursor.lastrowid)
-        __import__("cloux_realtime").hub.emit(data.target_chat_id,"new_message",message_id=cursor.lastrowid)
         return {"id":cursor.lastrowid,"ok":True}
 
     @app.post("/api/chats/{cid}/forward/{mid}")
@@ -77,4 +76,5 @@ def install(app, db, auth, member, fail, limit):
             can_send(c,user["id"],data.target_chat_id)
             cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created,forwarded_from) VALUES(?,?,?,?,?)",
                     (data.target_chat_id,user["id"],row["text"],int(time.time()),row["username"]))
+        __import__("cloux_realtime").hub.emit(data.target_chat_id,"new_message",message_id=cursor.lastrowid)
         return {"id":cursor.lastrowid,"ok":True}
