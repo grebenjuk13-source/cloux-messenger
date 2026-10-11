@@ -1,0 +1,261 @@
+"""Cloux early-access web messenger. Warning: Render Free storage is ephemeral."""
+import hashlib
+import hmac
+import os
+import re
+import secrets
+import sqlite3
+import time
+import uuid
+from collections import defaultdict, deque
+from contextlib import contextmanager
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel, Field
+
+BASE = Path(__file__).parent
+DATA = Path(os.getenv("CLOUX_DATA", str(BASE / "data")))
+DATA.mkdir(parents=True, exist_ok=True)
+DB = DATA / "cloux.db"
+app = FastAPI(title="Cloux Early Access", docs_url=None, redoc_url=None)
+requests_by_ip = defaultdict(deque)
+
+@contextmanager
+def db():
+    c = sqlite3.connect(DB, timeout=12)
+    c.row_factory = sqlite3.Row
+    c.execute("PRAGMA foreign_keys=ON")
+    try:
+        yield c
+        c.commit()
+    finally:
+        c.close()
+
+with db() as c:
+    c.executescript("""
+    CREATE TABLE IF NOT EXISTS users(
+      id TEXT PRIMARY KEY, phone TEXT NOT NULL UNIQUE, username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      display TEXT NOT NULL, password_hash TEXT NOT NULL, created INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS sessions(
+      token TEXT PRIMARY KEY, uid TEXT NOT NULL REFERENCES users(id), expires INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS chats(
+      id TEXT PRIMARY KEY, title TEXT NOT NULL, kind TEXT NOT NULL, created INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS chat_members(
+      chat_id TEXT NOT NULL REFERENCES chats(id), user_id TEXT NOT NULL REFERENCES users(id),
+      PRIMARY KEY(chat_id,user_id));
+    CREATE TABLE IF NOT EXISTS messages(
+      id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL REFERENCES chats(id),
+      sender TEXT NOT NULL REFERENCES users(id), text TEXT NOT NULL, created INTEGER NOT NULL);
+    CREATE INDEX IF NOT EXISTS messages_by_chat ON messages(chat_id,id);
+    """)
+
+class Register(BaseModel):
+    phone: str
+    password: str
+    username: str
+    display: str
+
+class Login(BaseModel):
+    phone: str
+    password: str
+
+class Message(BaseModel):
+    text: str = Field(min_length=1, max_length=4000)
+
+class Group(BaseModel):
+    title: str = Field(min_length=2, max_length=65)
+    members: list[str] = Field(default_factory=list, max_length=30)
+
+def fail(msg, status=400):
+    raise HTTPException(status_code=status, detail=msg)
+
+def limit(request, max_calls=24, period=60):
+    ip = (request.client.host if request.client else "unknown")
+    now = time.monotonic()
+    q = requests_by_ip[ip]
+    while q and now - q[0] > period: q.popleft()
+    if len(q) >= max_calls: fail("Забагато спроб. Спробуйте пізніше.", 429)
+    q.append(now)
+
+def hash_password(password: str, salt=None):
+    salt = salt or secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 240000)
+    return salt.hex() + ":" + digest.hex()
+
+def check_password(password, stored):
+    try:
+        salt_hex, digest_hex = stored.split(":")
+        test = hash_password(password, bytes.fromhex(salt_hex)).split(":")[1]
+        return hmac.compare_digest(test, digest_hex)
+    except Exception:
+        return False
+
+def auth(request):
+    token = request.cookies.get("cloux_session")
+    if not token:
+        fail("Увійдіть до акаунта.", 401)
+    with db() as c:
+        x = c.execute("""SELECT users.id, users.username, users.display, users.created FROM sessions
+            JOIN users ON users.id=sessions.uid WHERE sessions.token=? AND sessions.expires>?""",
+            (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
+    if not x: fail("Сесія недійсна. Увійдіть повторно.", 401)
+    return dict(x)
+
+def set_cookie(response, user_id):
+    secret = secrets.token_urlsafe(42)
+    expires = int(time.time()) + 30*86400
+    with db() as c:
+        c.execute("INSERT INTO sessions(token,uid,expires) VALUES(?,?,?)",
+                  (hashlib.sha256(secret.encode()).hexdigest(), user_id, expires))
+    response.set_cookie("cloux_session", secret, max_age=30*86400,
+                        httponly=True, secure=True, samesite="lax", path="/")
+    return response
+
+def member(c, uid, chat_id):
+    return c.execute("SELECT 1 FROM chat_members WHERE user_id=? AND chat_id=?",(uid,chat_id)).fetchone()
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Cache-Control"] = "no-store" if request.url.path.startswith("/api/") else "public,max-age=3600"
+    return response
+
+@app.get("/")
+def home():
+    return FileResponse(BASE / "index.html")
+
+@app.get("/api/health")
+def health():
+    return {"status":"ok","app":"cloux","stage":"early-access","persistent_storage": False}
+
+@app.get("/api/me")
+def me(request: Request):
+    return auth(request)
+
+@app.post("/api/register")
+def register(payload: Register, request: Request):
+    limit(request, 6)
+    phone = re.sub(r"[\s()\-]", "", payload.phone)
+    username = payload.username.strip().lower()
+    display = payload.display.strip()
+    if not re.fullmatch(r"\+[1-9]\d{7,14}",phone): fail("Вкажіть номер із кодом країни, наприклад +380...")
+    if not re.fullmatch(r"[a-z0-9_]{4,24}",username): fail("Позивний: 4–24 символи (a-z, 0-9, _).")
+    if not 8 <= len(payload.password) <= 128: fail("Пароль має містити від 8 до 128 символів.")
+    if not 1 <= len(display) <= 60: fail("Вкажіть ім'я.")
+    uid = str(uuid.uuid4())
+    try:
+        with db() as c:
+            c.execute("INSERT INTO users(id,phone,username,display,password_hash,created) VALUES(?,?,?,?,?,?)",
+                (uid,phone,username,display,hash_password(payload.password),int(time.time())))
+    except sqlite3.IntegrityError:
+        fail("Номер або позивний уже зайнятий.",409)
+    return set_cookie(JSONResponse({"ok": True}),uid)
+
+@app.post("/api/login")
+def login(payload: Login, request: Request):
+    limit(request, 10)
+    phone = re.sub(r"[\s()\-]", "", payload.phone)
+    with db() as c:
+        found=c.execute("SELECT id,password_hash FROM users WHERE phone=?",(phone,)).fetchone()
+    if not found or not check_password(payload.password,found["password_hash"]):
+        fail("Неправильний номер або пароль.",401)
+    return set_cookie(JSONResponse({"ok":True}),found["id"])
+
+@app.post("/api/logout")
+def logout(request: Request):
+    token = request.cookies.get("cloux_session")
+    if token:
+        with db() as c: c.execute("DELETE FROM sessions WHERE token=?",(hashlib.sha256(token.encode()).hexdigest(),))
+    response=JSONResponse({"ok":True})
+    response.delete_cookie("cloux_session",path="/")
+    return response
+
+@app.get("/api/users")
+def users(request: Request, q: str = ""):
+    me=auth(request)
+    needle=q.strip().lower()
+    if len(needle)<2: return {"users":[]}
+    with db() as c:
+        rows=c.execute("""SELECT id,username,display FROM users WHERE id!=?
+           AND (username LIKE ? OR display LIKE ?) LIMIT 20""",
+           (me["id"],"%"+needle+"%","%"+needle+"%")).fetchall()
+    return {"users":[dict(x) for x in rows]}
+
+@app.post("/api/direct/{other_id}")
+def direct(other_id: str, request: Request):
+    user=auth(request)
+    if other_id==user["id"]: fail("Не можна створити чат із собою.")
+    with db() as c:
+        other=c.execute("SELECT username,display FROM users WHERE id=?",(other_id,)).fetchone()
+        if not other: fail("Користувача не знайдено.",404)
+        existing=c.execute("""SELECT a.chat_id FROM chat_members a JOIN chat_members b ON a.chat_id=b.chat_id
+            JOIN chats t ON t.id=a.chat_id
+            WHERE a.user_id=? AND b.user_id=? AND t.kind='direct' LIMIT 1""",
+            (user["id"],other_id)).fetchone()
+        if existing: return {"chat_id":existing["chat_id"]}
+        chat_id=str(uuid.uuid4())
+        c.execute("INSERT INTO chats(id,title,kind,created) VALUES(?,?,?,?)",
+                (chat_id,other["display"],"direct",int(time.time())))
+        c.executemany("INSERT INTO chat_members(chat_id,user_id) VALUES(?,?)",
+                      [(chat_id,user["id"]),(chat_id,other_id)])
+    return {"chat_id":chat_id}
+
+@app.post("/api/groups")
+def new_group(payload: Group, request: Request):
+    user=auth(request)
+    members=list(set([user["id"]]+payload.members))
+    if len(members)>30: fail("Забагато учасників.")
+    cid=str(uuid.uuid4())
+    with db() as c:
+        existing=c.execute("SELECT id FROM users WHERE id IN ("+",".join("?" for _ in members)+")",members).fetchall()
+        if len(existing)!=len(members): fail("Не всіх учасників знайдено.")
+        c.execute("INSERT INTO chats(id,title,kind,created) VALUES(?,?,?,?)",
+            (cid,payload.title.strip(),"group",int(time.time())))
+        c.executemany("INSERT INTO chat_members(chat_id,user_id) VALUES(?,?)",[(cid,x) for x in members])
+    return {"chat_id":cid}
+
+@app.get("/api/chats")
+def chats(request: Request):
+    user=auth(request)
+    with db() as c:
+        rows=c.execute("""SELECT ch.id,ch.kind,ch.title,
+           (SELECT m.text FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_text,
+           (SELECT m.created FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_time
+           FROM chats ch JOIN chat_members cm ON cm.chat_id=ch.id WHERE cm.user_id=?
+           ORDER BY COALESCE(last_time,ch.created) DESC LIMIT 200""",(user["id"],)).fetchall()
+        result=[]
+        for row in rows:
+            d=dict(row)
+            if d["kind"]=="direct":
+                other=c.execute("""SELECT u.display,u.username FROM users u JOIN chat_members m ON m.user_id=u.id
+                  WHERE m.chat_id=? AND u.id!=? LIMIT 1""",(d["id"],user["id"])).fetchone()
+                if other: d["title"]=other["display"]
+            result.append(d)
+    return {"chats":result}
+
+@app.get("/api/chats/{chat_id}/messages")
+def messages(chat_id: str, request: Request, after: int = 0):
+    user=auth(request)
+    with db() as c:
+        if not member(c,user["id"],chat_id): fail("Немає доступу.",403)
+        rows=c.execute("""SELECT m.id,m.text,m.created,m.sender,u.display,u.username FROM messages m
+            JOIN users u ON u.id=m.sender WHERE m.chat_id=? AND m.id>? ORDER BY m.id ASC LIMIT 200""",
+            (chat_id,max(after,0))).fetchall()
+    return {"messages":[dict(x) for x in rows]}
+
+@app.post("/api/chats/{chat_id}/messages")
+def send(chat_id: str, payload: Message, request: Request):
+    user=auth(request)
+    limit(request,120)
+    with db() as c:
+        if not member(c,user["id"],chat_id): fail("Немає доступу.",403)
+        now=int(time.time())
+        cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created) VALUES(?,?,?,?)",
+                       (chat_id,user["id"],payload.text.strip(),now))
+        mid=cursor.lastrowid
+    return {"id":mid,"created":now}
