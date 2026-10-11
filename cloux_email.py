@@ -129,6 +129,14 @@ def clean_phone(raw: str) -> str | None:
         return None
 
 
+def resend_credential():
+    key = os.getenv('RESEND_API_KEY')
+    if key:
+        return key
+    import cloux_resend_oauth
+    return cloux_resend_oauth.access_token()
+
+
 def send_email(address: str, code: str, purpose: str) -> None:
     """Only send through configured provider; never simulate delivery."""
     subject = 'Код підтвердження Cloux' if purpose == 'register' else 'Відновлення пароля Cloux'
@@ -143,7 +151,7 @@ def send_email(address: str, code: str, purpose: str) -> None:
         payload = json.dumps({'from': os.environ['CLOUX_EMAIL_FROM'], 'to': [address],
                               'subject': subject, 'html': html}).encode('utf-8')
         req = urllib.request.Request('https://api.resend.com/emails', data=payload,
-             headers={'Authorization': 'Bearer ' + os.environ['RESEND_API_KEY'],
+             headers={'Authorization': 'Bearer ' + resend_credential(),
                       'Content-Type': 'application/json'}, method='POST')
         with urllib.request.urlopen(req, timeout=15) as response:
             if response.status not in (200, 201, 202):
