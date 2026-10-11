@@ -1,0 +1,27 @@
+name: Cloux Stage 1 Frontend
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "cloux_stage1.py"
+      - "tests/test_stage1.py"
+      - ".github/workflows/cloux-stage1.yml"
+  workflow_dispatch:
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install React dependencies
+        run: npm install --prefix frontend --no-audit --no-fund
+      - name: Typecheck and build Cloux
+        run: npm run --prefix frontend build
+      - name: Upload frontend preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloux-stage1-build
+          path: frontend/dist/
