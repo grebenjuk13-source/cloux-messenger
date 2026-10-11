@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Cloux Messenger">
+<defs><linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#33333A"/><stop offset=".46" stop-color="#121215"/><stop offset="1" stop-color="#040405"/></linearGradient><linearGradient id="metal" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#fff"/><stop offset=".52" stop-color="#f1f1f3"/><stop offset="1" stop-color="#b9b9c0"/></linearGradient></defs>
+<rect x="9" y="9" width="494" height="494" rx="127" fill="url(#glass)" stroke="#81818a" stroke-width="4"/>
+<path d="M354 161c-31-35-78-53-125-46-59 9-104 52-113 110-8 51 15 101 57 131l-17 45 53-20c48 16 103 3 141-33" fill="none" stroke="url(#metal)" stroke-width="47" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M171 357l-19 43 52-20" fill="url(#metal)"/>
+<path d="M94 96c41-37 125-56 211-41" fill="none" stroke="#fff" opacity=".16" stroke-width="16" stroke-linecap="round"/>
+</svg>
