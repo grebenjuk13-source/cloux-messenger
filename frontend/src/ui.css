@@ -76,3 +76,12 @@
  .chat-entry{padding:12px 10px}
 }
 @media(prefers-reduced-motion:reduce){.messages-area:before,.composer-send.recording,.typing-line>span{animation:none}.chat-entry,.chat-entry .avatar,.bubble{transition:none}}
+
+/* Incoming private calls stay in-app and require explicit acceptance. */
+.call-invite-backdrop{position:fixed;inset:0;z-index:250;background:#05060bc9;display:grid;place-items:center;padding:20px;backdrop-filter:blur(15px)}
+.call-invite{width:min(350px,100%);border-radius:28px;padding:28px;text-align:center;box-shadow:0 23px 70px #0009}
+.call-invite>svg{color:#76dba8;margin:0 auto 12px}
+.call-invite h3{margin:8px 0}.call-invite p{font-size:14px;color:var(--ink-sub)}
+.call-invite>div{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
+.call-invite>div button{padding:13px;border-radius:16px;background:#b83c52;color:#fff}
+.call-invite>div button.primary{background:#30895f;color:#fff}
