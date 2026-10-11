@@ -83,7 +83,15 @@ def email_ready() -> bool:
         return False
     provider = email_provider()
     if provider == 'resend':
-        return bool(os.getenv('RESEND_API_KEY') and os.getenv('CLOUX_EMAIL_FROM'))
+        if not os.getenv('CLOUX_EMAIL_FROM'):
+            return False
+        if os.getenv('RESEND_API_KEY'):
+            return True
+        try:
+            import cloux_resend_oauth
+            return cloux_resend_oauth.connected()
+        except (ImportError, RuntimeError):
+            return False
     if provider == 'smtp':
         return bool(os.getenv('GMAIL_SMTP_USER') and os.getenv('GMAIL_SMTP_APP_PASSWORD'))
     return False
