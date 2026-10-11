@@ -335,3 +335,7 @@ def cloux_official_icon(size: int):
 import cloux_messages
 cloux_messages.init(db)
 cloux_messages.install(app,db,auth,member,fail,limit)
+
+@app.get("/cloux-v3.js")
+def cloux_v3_script():
+    return FileResponse(_ClouxPath(__file__).parent/"cloux-v3.js",media_type="application/javascript")
