@@ -2,6 +2,7 @@ import React,{useEffect,useMemo,useRef,useState} from 'react';
 import{createRoot}from'react-dom/client';
 import {Search,Phone,Video,Settings as Gear,Users,MessageCircle,Plus,ArrowLeft,Send,Mic,Paperclip,Smile,CheckCheck,Check,ChevronRight,Eye,EyeOff,Lock,Cloud,Volume2,Sun,Moon,Monitor,Palette,ImagePlus,Bookmark,Archive,Shield,UserRound,Copy,LogOut, X, Menu,LoaderCircle,Clock,Server as ServerIcon}from'lucide-react';
 import {countries,UA,flag,formatPhone,normalizePhone,validPhone,type Country} from './phone';
+import {palette,wallpapers,DEFAULT_ACCENT} from './design';
 import './ui.css';
 import CallOverlay from './CallOverlay';
 import EmailWizard from './EmailWizard';
@@ -12,10 +13,8 @@ type User={id:string;display:string;username:string;created:number};
 type Chat={id:string;title:string;kind:string;last_text?:string;last_time?:number;other_id?:string;pinned?:number;archived?:number;muted?:number;is_owner?:boolean};
 type Message={id:number;sender:string;display:string;text:string;created:number;reply_to?:number;reply_text?:string;forwarded_from?:string;attachment_id?:string;media_mime?:string;read?:boolean;reply_author?:string;media_filename?:string};
 type Theme='dark'|'light'|'amoled'|'auto';
-type Prefs={theme:Theme;accent:string;wallpaper:string;font_size:number;compact:boolean;glass:boolean;emoji_style:'apple'|'telegram';wall_blur:number;wall_dim:number};
+type Prefs={theme:Theme;accent:string;wallpaper:string;font_size:number;compact:boolean;glass:boolean;emoji_style:'apple'|'telegram';wall_blur:number;wall_dim:number;animated_wallpaper:boolean;bubble_style:'rounded'|'soft'|'square';chat_previews:boolean};
 type Tab='chats'|'calls'|'contacts'|'servers'|'settings';
-const palette=['#54BBD6','#82A6FC','#A78BFA','#E77AA5','#D88565','#E7AA5F','#89C790','#6ADBCF','#BBC2D4','#FF8490','#C2A4FB','#FFFFFF'];
-const wallpapers=[...Array(34)].map((_,i)=>({id:'w'+i,style:i%4===0?'radial-gradient(circle at 25% 22%,#41566a,#080e1c 72%)':i%4===1?'linear-gradient(125deg,#101720,#273743,#0c1118)':i%4===2?'repeating-linear-gradient(40deg,#10151c 0 20px,#202932 21px 22px)':'radial-gradient(circle at 75% 25%,#536570,#0a1119 65%)'}));
 const emojiCategories=[{name:'Нещодавні',items:['❤️','👍','😂','🔥','🥰','👏','😭','✨']},{name:'Смайли',items:['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😍','😘','🥰','😎','🥳','😢','😭','😡','🤔','😴','🫶']},{name:'Жести',items:['👍','👎','👏','🙏','👋','🤝','💪','✌️','👌','🤟','✍️','🫰']},{name:'Символи',items:['❤️','🩵','🖤','💙','💚','💛','💜','🤍','🔥','✨','⭐','💯','✅','⚡','💬']},{name:'Природа',items:['🐈','🐱','🐼','🐶','🦊','🌙','🌷','🌲','❄️','🌊','☀️','🍁']}];
 const emojiSet=new Set(emojiCategories.flatMap(x=>x.items));
 const emojiSource=(emoji:string)=>{let points=Array.from(emoji).map(ch=>ch.codePointAt(0)!.toString(16));points=points.filter(x=>x!=='fe0f');return 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/'+points.join('-')+'.svg'};
@@ -27,7 +26,7 @@ async function patch<T>(url:string,body:unknown){return api<T>(url,{method:'PATC
 function initials(name:string){return(name||'C').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
 function fmtTime(n?:number){return n?new Date(n*1000).toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}):''}
 function readPrefs():Prefs{try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return defaults}}
-const defaults:Prefs={theme:'dark',accent:'#54BBD6',wallpaper:'w0',font_size:15,compact:false,glass:true,emoji_style:'telegram',wall_blur:0,wall_dim:12};
+const defaults:Prefs={theme:'dark',accent:DEFAULT_ACCENT,wallpaper:'w0',font_size:15,compact:false,glass:true,emoji_style:'telegram',wall_blur:0,wall_dim:12,animated_wallpaper:true,bubble_style:'rounded',chat_previews:true};
 
 
 function AvatarCropper({file,onSave,onCancel}:{file:File;onSave:(f:File,url:string)=>void;onCancel:()=>void}){
@@ -103,7 +102,7 @@ function ChatRoom({chat,me,prefs,onBack}:{chat:Chat,me:User,prefs:Prefs,onBack:(
 }
 function App(){const [me,setMe]=useState<User|null|undefined>(undefined),[chats,setChats]=useState<Chat[]>([]),[tab,setTab]=useState<Tab>('chats'),[active,setActive]=useState<string|null>(null),[search,setSearch]=useState(''),[newChat,setNewChat]=useState(false),[people,setPeople]=useState<{id:string;username:string;display:string}[]>([]),[servers,setServers]=useState<{id:string;name:string}[]>([]),[error,setError]=useState('');const {prefs,change}=useSettings();const [prefsReady,setPrefsReady]=useState(false);
  const theme=prefs.theme==='auto'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):prefs.theme;
- useEffect(()=>{document.documentElement.dataset.theme=theme;document.documentElement.style.setProperty('--accent',prefs.accent);document.documentElement.style.setProperty('--font-size',prefs.font_size+'px')},[theme,prefs]);
+ useEffect(()=>{document.documentElement.dataset.theme=theme;document.documentElement.dataset.bubble=prefs.bubble_style;document.documentElement.dataset.wallMotion=prefs.animated_wallpaper?'on':'off';document.documentElement.style.setProperty('--accent',prefs.accent);document.documentElement.style.setProperty('--font-size',prefs.font_size+'px')},[theme,prefs]);
  const bootstrap=async()=>{try{const r=await api<User>('/api/me');setMe(r)}catch{setMe(null)}};
  useEffect(()=>{bootstrap()},[]);
  useEffect(()=>{if(!me){setPrefsReady(false);return}
