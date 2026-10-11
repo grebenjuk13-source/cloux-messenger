@@ -258,12 +258,12 @@ async function renderProfile(){S.tab='profile';try{S.profile=(await api('/api/pr
  const p=S.profile;page('Мій профіль',`<div class="profile-holder"><div class="profile-hero"><img class="profile-banner" src="${esc(profileBanner||BASE_AVATAR)}" alt="Банер"></div><img class="profile-avatar" src="${esc(profileAvatar)}" alt="Аватар"></div>
  <div class="profile-head"><div><h2>${esc(p.display)}</h2><p class="profile-status">@${esc(p.username)}</p></div><button class="outline" id="edit-avatar">📷 Аватар</button></div>
  <div style="display:flex;gap:8px;margin:14px 0"><button class="outline" id="edit-banner">Змінити банер</button><button class="outline" id="reset-avatar">Повернути стандартну аватарку</button></div>
- ${settingSection('Профіль',`<form id="profile-form" class="form"><label>Нікнейм<input name="display" maxlength="60" value="${esc(p.display)}" required></label><label>Позивний<input name="username" maxlength="24" value="${esc(p.username)}" required></label><label>Про мене<textarea name="bio" maxlength="180" rows="3">${esc(p.bio||'')}</textarea></label><label>Статус<input name="status" maxlength="90" value="${esc(S.prefs.status||'')}" placeholder="Наприклад: На зв’язку"></label><button class="primary" type="submit">Зберегти профіль</button></form>`)}
+ ${settingSection('Профіль',`<form id="profile-form" class="form"><label>Нікнейм<input name="display" maxlength="60" value="${esc(p.display)}" required></label><label>Позивний<input name="username" maxlength="24" value="${esc(p.username)}" required></label><label>Про мене<textarea name="bio" maxlength="180" rows="3">${esc(p.bio||'')}</textarea></label><label>Статус<input name="status" maxlength="90" value="${esc(S.local.status||S.prefs.status||'')}" placeholder="Наприклад: На зв’язку"></label><button class="primary" type="submit">Зберегти профіль</button></form>`)}
  ${settingSection('Мій Cloux',`<button class="outline" id="my-notes">📝 Нотатки</button> <button class="outline" id="cloux-news">📣 Новини Cloux</button>`)}<p class="muted small">Твоя аватарка доступна іншим користувачам, якщо файл ще зберігається на сервері.</p>`);
  $('#edit-avatar').onclick=()=>cropAndUpload('avatar',url=>{profileAvatar=url;renderProfile()});
  $('#edit-banner').onclick=()=>cropAndUpload('banner',url=>{profileBanner=url;renderProfile()});
  $('#reset-avatar').onclick=withError(async()=>{profileAvatar=BASE_AVATAR;saveLocal({avatar:'default'});const db=await import('./core.js');await db.deleteCachedPhoto(S.me.id+'-avatar');await api('/api/profile/media/avatar',{method:'DELETE'});renderProfile();toast('Повернуто стандартну аватарку Cloux')});
- $('#profile-form').onsubmit=withError(async e=>{e.preventDefault();const fd=new FormData(e.target);await patch('/api/profile',{display:fd.get('display'),username:fd.get('username'),bio:fd.get('bio')});await patch('/api/profile/status',{status:fd.get('status')});S.prefs.status=fd.get('status');await renderProfile();toast('Профіль збережено')});
+ $('#profile-form').onsubmit=withError(async e=>{e.preventDefault();const fd=new FormData(e.target);await patch('/api/profile',{display:fd.get('display'),username:fd.get('username'),bio:fd.get('bio')});await patch('/api/profile/status',{status:fd.get('status')});S.prefs.status=fd.get('status');saveLocal({status:fd.get('status')});await renderProfile();toast('Профіль збережено')});
  $('#my-notes').onclick=()=>openKind('saved');$('#cloux-news').onclick=()=>openKind('news');
 }
 function openKind(kind){const c=S.chats.find(x=>x.kind===kind);if(c)openChat(c.id);else toast('Чат ще не готовий')}
@@ -282,6 +282,11 @@ async function boot(){clearInterval(timer);clearInterval(heartbeat);
  for(const kind of ['avatar','banner','wallpaper']){
   const photo=await cachedPhoto(`${S.me.id}-${kind}`);
   if(photo){const u=URL.createObjectURL(photo);if(kind==='avatar'&&S.local.avatar!=='default')profileAvatar=u;else if(kind==='banner')profileBanner=u;else if(kind==='wallpaper')S.local.customWallpaperUrl=u;}
+ }
+ if((S.local.wallpaper||S.prefs.wallpaper)==='custom'&&!S.local.customWallpaperUrl){
+  try{const res=await fetch('/api/profile/'+encodeURIComponent(S.me.id)+'/media/wallpaper',{credentials:'same-origin'});
+   if(res.ok){const file=await res.blob();await cachePhoto(S.me.id+'-wallpaper',file);S.local.customWallpaperUrl=URL.createObjectURL(file)}
+  }catch(e){console.warn('Wallpaper sync unavailable',e)}
  }
  syncTheme();
  $('#app').innerHTML='<div class="shell"><aside class="sidebar" id="sidebar"></aside><main class="content" id="main"></main></div>';
