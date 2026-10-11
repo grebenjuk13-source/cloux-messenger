@@ -1,42 +1,52 @@
 <!doctype html>
 <html lang="uk"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#09090B">
-<link rel="icon" type="image/jpeg" href="/assets/cloux-official-512.jpg">
-<title>Скачати Cloux — Messenger</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b070b"><link rel="icon" href="/assets/cloux-default-avatar.jpg" type="image/jpeg"><link rel="manifest" href="/manifest.webmanifest">
+<title>Cloux — завантажити месенджер</title>
 <style>
-:root{color-scheme:dark}*{box-sizing:border-box}
-body{margin:0;background:#08080a;color:#f5f5f7;font:16px system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;background-image:radial-gradient(ellipse at 50% 0%,#3f3f491e 0%,transparent 60%)}
-main{max-width:660px;margin:auto;padding:25px 20px 60px}
-header{display:flex;align-items:center;gap:12px;padding:15px 0 48px}
-header img{width:46px;height:46px;border-radius:13px}
-header strong{font-size:22px;letter-spacing:-1px}
-a{color:inherit;text-decoration:none}
-header a{margin-left:auto;color:#aeb0b7;font-size:14px}
-.hero{text-align:center}
-.hero img{width:min(40vw,145px);border-radius:34px;box-shadow:0 12px 60px #ffffff0b}
-h1{font-size:clamp(37px,9vw,60px);letter-spacing:-2px;line-height:1.08;margin:24px 0 13px}
-.lead{color:#b7b7c3;line-height:1.6}
-.pill{display:inline-block;border:1px solid #ffffff4a;background:#ffffff14;color:#dddde5;border-radius:25px;padding:7px 14px;font-size:12px}
-.actions{display:grid;gap:12px;margin:30px 0}
-.btn{border-radius:18px;padding:18px;font-weight:740;text-align:center;display:block;background:linear-gradient(135deg,#fff,#d7d7dc);color:#0a0a0c;box-shadow:0 12px 40px #ffffff12}
-.btn.secondary{background:#ffffff13;border:1px solid #ffffff4d;color:#f3f3f3;box-shadow:none}
-.platform{padding:18px;border:1px solid #ffffff24;border-radius:20px;background:#ffffff09;margin-top:13px}
-.platform p{font-size:13px;line-height:1.65;color:#aaaab7;margin-bottom:0}
-.notice{border-top:1px solid #33333d;padding-top:18px;margin-top:29px;color:#a2a2af;font-size:12px;line-height:1.65}
-footer{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;color:#8f8f9b;font-size:12px;margin-top:50px}
-</style>
-</head><body><main>
-<header><img src="/assets/cloux-official-512.jpg" alt="Іконка Cloux"><strong>Cloux.</strong><a href="/">Відкрити месенджер ↗</a></header>
-<section class="hero"><img src="/assets/cloux-official-512.jpg" alt="Cloux Messenger"><br><span class="pill">Cloux Messenger · Android + Web</span><h1>Спілкування<br>у твоєму стилі.</h1>
-<p class="lead">Чорно-білий месенджер із прозорою скляною навігацією, нотатками, чатами та голосовими й відеодзвінками 1 на 1.</p></section>
-<div class="actions">
-<a class="btn" href="/apk">⬇ Завантажити Cloux для Android (APK)</a>
-<a class="btn secondary" href="/">🌐 Відкрити Cloux у браузері</a>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#080609;color:#f9f4f7;font:16px system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh;background-image:radial-gradient(ellipse at 25% 2%,#d31b4833,transparent 44%),radial-gradient(ellipse at 90% 55%,#83143222,transparent 54%)}
+a{color:inherit;text-decoration:none}button{font:inherit;border:0;cursor:pointer}
+.container{width:min(790px,calc(100% - 34px));margin:0 auto;padding-bottom:65px}
+nav{display:flex;align-items:center;gap:10px;padding:24px 0 65px}.brand-icon{width:43px;height:43px;border-radius:14px;object-fit:cover}.brand{font-size:22px;font-weight:900;letter-spacing:-.06em}nav a:last-child{margin-left:auto;color:#b3a9b2;font-size:13px}
+.hero{text-align:center}.hero>img{width:130px;height:130px;border-radius:31px;object-fit:cover;box-shadow:0 21px 85px #e11d2e42;border:1px solid #ffffff4f}
+.chip{display:inline-block;border:1px solid #ffffff3b;padding:8px 15px;background:#ffffff10;border-radius:60px;color:#f0c0c8;font-size:12px;margin:17px}
+h1{font-size:clamp(40px,8vw,70px);line-height:1.07;letter-spacing:-.065em;margin:12px 0}h1 span{background:linear-gradient(115deg,#ff6074,#c7173d);color:transparent;background-clip:text;-webkit-background-clip:text}
+.subtitle{max-width:510px;margin:16px auto 30px;line-height:1.7;color:#b6a9b4;font-size:15px}
+.glass{background:linear-gradient(140deg,#ffffff20,#ffffff09 42%,#ffffff12),#171218d4;border:1px solid #ffffff2a;border-radius:26px;box-shadow:0 18px 60px #0007,inset 0 1px #ffffff27;backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)}
+.buttons{display:grid;gap:10px;margin:28px auto;max-width:500px}.btn{display:flex;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px 19px;border-radius:18px;font-weight:800;min-height:58px}
+.btn.red{background:linear-gradient(120deg,#ec2646,#a50f2e);box-shadow:0 11px 32px #c3183e33}.btn.alt{border:1px solid #ffffff32;background:#ffffff12}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}.label{font-size:12px;color:#c7b8c3;margin-top:8px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:36px}
+.choice{padding:23px}.choice h2{font-size:19px;margin:0 0 8px}.choice p{color:#b7aab6;font-size:13px;line-height:1.6}
+.choice .btn{margin-top:20px;min-height:48px;font-size:14px}
+.footnote{margin-top:29px;padding:16px 0;border-top:1px solid #ffffff1b;color:#a99da8;font-size:12px;line-height:1.75}
+footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:15px;font-size:12px;color:#938792;margin-top:36px}
+#android,#apple{border-color:#ffffff29}.recommended{border-color:#ff557b!important;box-shadow:0 0 0 1px #ff496735,0 18px 65px #0008}
+@media(max-width:590px){.choices{grid-template-columns:1fr}.container{width:calc(100% - 28px)}nav{padding-bottom:47px}}
+@media(prefers-reduced-motion:reduce){.btn:hover{transform:none}}
+</style></head><body><div class="container">
+<nav><img class="brand-icon" src="/assets/cloux-default-avatar.jpg" alt=""><span class="brand">Cloux.</span><a href="/v5/">Відкрити чат ↗</a></nav>
+<header class="hero"><img src="/assets/cloux-default-avatar.jpg" alt="Cloux"><br><div class="chip">CLOUX MESSENGER · LIQUID GLASS</div>
+<h1>Твій простір.<br><span>Твій стиль.</span></h1>
+<p class="subtitle">Чорно-червоний месенджер із Telegram-подібними чатами, скляними панелями та персональними шпалерами. Спробуй новий інтерфейс.</p></header>
+<section class="buttons">
+<a class="btn red" href="/v5/">✦ Спробувати оновлений Cloux</a>
+<a class="btn alt" href="/apk">↓ Завантажити Android APK</a>
+<button class="btn alt" id="install" hidden>◈ Встановити як застосунок</button>
+<span class="label" style="text-align:center">Вебверсія доступна для Android, iPhone, Mac та комп’ютера</span>
+</section>
+<section class="choices">
+<article id="android" class="choice glass"><h2>Android</h2><p>Телефони, планшети та Chromebook. Встанови APK або додай вебверсію на головний екран через Chrome.</p><a class="btn red" href="/apk">↓ Скачати APK</a></article>
+<article id="apple" class="choice glass"><h2>Apple</h2><p>iPhone, iPad, MacBook та iMac. Відкрий Cloux в Safari → Поділитися → «На екран Початок». Окремої версії App Store поки немає.</p><a class="btn alt" href="/v5/">✦ Відкрити вебверсію</a></article>
+</section>
+<div class="footnote">Примітка: Cloux перебуває в активній розробці. Реєстрація через Gmail надсилає справжній код лише після налаштування поштового провайдера власником сервера. На безплатному Render дані можуть втратитися під час перезапуску, а WebRTC-дзвінки в окремих мережах потребують TURN-сервера. Не використовуй сервіс для конфіденційних даних.</div>
+<footer><span>© Cloux Messenger</span><a href="https://github.com/grebenjuk13-source/cloux-messenger">GitHub ↗</a></footer>
 </div>
-<div class="platform"><strong>📱 Android</strong><p>Натисни «Завантажити», відкрий APK у папці «Завантаження» та підтвердь установлення. Потрібен Android 8.0 або новіший. Це підписана тестова збірка, поки не з Google Play.</p></div>
-<div class="platform"><strong>🍎 iPhone та iPad</strong><p>Відкрий вебверсію в Safari → «Поділитися» → «На екран Початок». Окремої програми з App Store наразі немає.</p></div>
-<div class="platform"><strong>💻 Комп'ютер</strong><p>Користуйся вебверсією. У підтримуваних браузерах Cloux можна додати як вебзастосунок через меню встановлення.</p></div>
-<div class="notice"><strong>Перед використанням.</strong> Cloux ще розробляється: база даних на безплатному сервері може очищатися після перезапусків; SMS-перевірки і наскрізного шифрування немає; для дзвінків в окремих мережах потрібен TURN-сервер. Не зберігай тут важливу приватну інформацію. Дозволи на мікрофон і камеру Android запитує окремо.</div>
-<footer><span>© Cloux Messenger</span><a href="https://github.com/grebenjuk13-source/cloux-messenger">Вихідний код ↗</a></footer>
-</main></body></html>
+<script>
+const agent=navigator.userAgent;
+const target=/android|cros/i.test(agent)?document.getElementById('android'):/iphone|ipad|mac/i.test(agent)?document.getElementById('apple'):null;
+target?.classList.add('recommended');
+let deferred=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;document.getElementById('install').hidden=false});
+document.getElementById('install').onclick=async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;document.getElementById('install').hidden=true};
+</script></body></html>
