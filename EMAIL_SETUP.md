@@ -31,6 +31,6 @@ The frontend calls `GET /api/v6/config`, which enables **Send code** only when a
 
 Render Free has **ephemeral storage**: SQL database, email grants, locks, registration identities and messages can be lost when it restarts. Before using this with real users: migrate DB and rate limits to persistent Postgres/Redis and files to durable object storage, test actual SMTP/Resend delivery, set up monitoring, DKIM/SPF and domain reputation, then promote to production.
 
-**Do not set `CLOUX_REQUIRE_EMAIL=1` until the provider is configured and migration of legacy registrations is planned.** When provider is configured, old unchecked `/api/register` is disabled automatically for new signups.
+New registrations using old phone/SMS endpoints are **blocked by default**, even when email delivery is not configured; this prevents unverified accounts. Only existing legacy accounts can log in by phone. A temporary emergency override `CLOUX_ALLOW_LEGACY_REGISTER=1` may restore the old endpoint while email is not configured; never use it in production.
 
 No secrets, six-digit codes, user addresses or passwords should be logged.
