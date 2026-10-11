@@ -42,7 +42,7 @@ const style=document.createElement('style');style.textContent=css;document.head.
 const oldBoot=boot,oldOpenChat=openChat,oldSettings=showSettings;
 let activeCall=null,installPrompt=null,loadingPrefs=false;
 const el=id=>document.getElementById(id);
-function icons(){document.querySelectorAll('.logo').forEach(node=>{if(node.classList.contains('cloux-logo'))return;node.classList.add('cloux-logo');node.innerHTML='<img src="/cloux-icon.svg" alt="Cloux">';});}
+function icons(){document.querySelectorAll('.logo').forEach(node=>{if(node.classList.contains('cloux-logo'))return;node.classList.add('cloux-logo');node.innerHTML='<img src="/assets/cloux-official-512.jpg" alt="Cloux">';});}
 function setDisplay(p){if(!p)return;document.body.classList.toggle('cloux-no-glass',!p.glass);document.body.classList.toggle('cloux-no-motion',!p.animations);document.body.classList.toggle('cloux-no-previews',!p.show_previews);document.body.classList.toggle('cloux-bubble-square',p.bubble_style==='square');document.body.classList.toggle('cloux-bubble-soft',p.bubble_style==='soft');}
 async function loadDisplay(){if(!state.me||loadingPrefs)return;loadingPrefs=true;try{setDisplay((await api('/api/preferences')).preferences);}catch(e){console.warn('Settings',e);}finally{loadingPrefs=false;}}
 async function saveDisplay(patch){try{const p=(await api('/api/preferences',{method:'PATCH',body:JSON.stringify(patch)})).preferences;setDisplay(p);return p;}catch(e){alert(e.message);return null;}}
