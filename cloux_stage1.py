@@ -141,6 +141,8 @@ def install(app,db,auth,fail,limit,set_cookie,seed_user):
 
     @app.post('/api/v5/register')
     def verified_register(body:VerifiedRegistration,request:Request):
+        if os.getenv('CLOUX_ALLOW_LEGACY_REGISTER') != '1':
+            fail('Реєстрація відбувається через підтверджений Gmail.',403)
         limit(request,8,3600)
         username=body.username.strip().lower()
         display=body.display.strip()
