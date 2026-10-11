@@ -321,3 +321,9 @@ def cloux_download_page():
 @app.get("/apk")
 def cloux_apk_download():
     return RedirectResponse("https://raw.githubusercontent.com/grebenjuk13-source/cloux-messenger/main/downloads/Cloux-Android-debug.apk",status_code=302)
+
+@app.get("/assets/cloux-official-{size}.jpg")
+def cloux_official_icon(size: int):
+    if size not in (192,512):
+        fail("Невідомий розмір іконки.",404)
+    return FileResponse(_ClouxPath(__file__).parent/"assets"/f"cloux-official-{size}.jpg",media_type="image/jpeg",headers={"Cache-Control":"public, max-age=3600"})
