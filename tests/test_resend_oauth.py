@@ -25,6 +25,8 @@ def test_mail_owner_setup_flow(monkeypatch):
     with TestClient(app,base_url='https://cloux-messenger.onrender.com') as client:
         meta=client.get('/oauth/resend/client')
         assert meta.status_code==200
+        assert meta.json()['client_id']==oauth.META
+        assert meta.json()['client_uri']==oauth.BASE_URL
         assert meta.json()['scope']=='emails:send'
         assert meta.json()['redirect_uris']==[oauth.CALLBACK]
         assert client.get('/admin/mail').status_code==200
