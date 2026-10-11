@@ -13,6 +13,8 @@ import threading
 import time
 import urllib.parse
 import urllib.request
+import urllib.error
+import logging
 from cryptography.fernet import Fernet
 from fastapi import Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -23,6 +25,25 @@ CALLBACK = BASE_URL + "/oauth/resend/callback"
 SCOPE = "emails:send"
 _MUTEX = threading.RLock()
 _DB = None
+
+def diagnostic():
+    """Public configuration status: only safe error IDs, never credentials."""
+    if _DB is None:
+        return "not_connected"
+    with _DB() as con:
+        row = con.execute("SELECT reason FROM cloux_resend_status WHERE id=1").fetchone()
+        return row["reason"] if row else "not_connected"
+
+
+def _set_diagnostic(reason):
+    if _DB is None:
+        return
+    if not isinstance(reason, str) or not __import__("re").fullmatch(r"[a-zA-Z0-9_-]{1,96}", reason):
+        reason = "oauth_failed"
+    with _DB() as con:
+        con.execute("""INSERT INTO cloux_resend_status(id,reason) VALUES(1,?)
+            ON CONFLICT(id) DO UPDATE SET reason=excluded.reason""",(reason,))
+
 
 def _crypto():
     from cloux_email import email_pepper
@@ -37,10 +58,24 @@ def _request_token(params):
     req = urllib.request.Request("https://api.resend.com/oauth/token", data=data,
                                  headers={"Content-Type":"application/x-www-form-urlencoded"},
                                  method="POST")
-    with urllib.request.urlopen(req, timeout=20) as response:
-        parsed = json.load(response)
-    if not parsed.get("access_token") or not parsed.get("refresh_token"):
-        raise RuntimeError("Invalid Resend OAuth token response")
+    try:
+        with urllib.request.urlopen(req, timeout=20) as response:
+            parsed = json.load(response)
+    except urllib.error.HTTPError as exc:
+        # Only log the public provider error identifier. Never log the auth code,
+        # refresh token, raw provider body, email address or access token.
+        try:
+            body = json.loads(exc.read(4096).decode("utf-8"))
+            error_id = body.get("error", "oauth_error")
+            if not isinstance(error_id, str) or not __import__("re").fullmatch(r"[a-zA-Z0-9_-]{1,64}", error_id):
+                error_id = "oauth_error"
+        except (ValueError, UnicodeError, TypeError):
+            error_id = "oauth_error"
+        raise RuntimeError(f"resend_http_{exc.code}_{error_id}") from None
+    except urllib.error.URLError:
+        raise RuntimeError("resend_connection_error") from None
+    if not isinstance(parsed, dict) or not parsed.get("access_token") or not parsed.get("refresh_token"):
+        raise RuntimeError("resend_missing_tokens")
     return parsed
 
 def connected():
@@ -95,7 +130,9 @@ def install(app,db):
          expires INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS cloux_resend_pending(
          state TEXT PRIMARY KEY,verifier TEXT NOT NULL,expires INTEGER NOT NULL);
-        CREATE TABLE IF NOT EXISTS cloux_resend_provisioning(
+        CREATE TABLE IF NOT EXISTS cloux_resend_status(
+         id INTEGER PRIMARY KEY CHECK(id=1),reason TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS cloux_resend_provisioning(
          id INTEGER PRIMARY KEY CHECK(id=1),used INTEGER NOT NULL DEFAULT 0);
         INSERT OR IGNORE INTO cloux_resend_provisioning(id,used) VALUES(1,0);
         """)
@@ -191,6 +228,12 @@ start();
                   fernet.encrypt(payload["refresh_token"].encode()).decode(),
                   int(time.time())+int(payload.get("expires_in",900))))
                 con.execute("UPDATE cloux_resend_provisioning SET used=1 WHERE id=1")
+            _set_diagnostic("connected")
             return _page("Resend підключено!","Cloux отримав дозвіл надсилати поштові коди. Якщо домен відправника підтверджений у Resend, реєстрація тепер працюватиме.")
-        except Exception:
-            return _page("Не вдалося завершити підключення","Resend не видав доступ. Спробуй ще раз, поки посилання дійсне.")
+        except Exception as exc:
+            reason = str(exc) if isinstance(exc, RuntimeError) else "oauth_exchange_failed"
+            _set_diagnostic(reason)
+            logging.getLogger("cloux.email").warning("Resend OAuth failed: %s", reason)
+            return _page("Не вдалося завершити підключення",
+                         "Resend не підтвердив обмін кодом. Причина: " + reason +
+                         ". Відкрий нове запрошення для підключення.")
