@@ -54,8 +54,14 @@ def valid_gmail(raw: str) -> tuple[str, str] | None:
     return value, canonical + '@gmail.com'
 
 
+def email_pepper() -> str:
+    # Preserve existing email identities if a permanent pepper is already configured.
+    primary = os.getenv('CLOUX_EMAIL_PEPPER', '')
+    return primary if len(primary) >= 32 else os.getenv('CLOUX_EMAIL_PEPPER_BOOTSTRAP', '')
+
+
 def email_ready() -> bool:
-    key = os.getenv('CLOUX_EMAIL_PEPPER', '')
+    key = email_pepper()
     if len(key) < 32:
         return False
     provider = os.getenv('CLOUX_EMAIL_PROVIDER', 'resend').lower()
@@ -67,7 +73,7 @@ def email_ready() -> bool:
 
 
 def digest(kind: str, value: str) -> str:
-    key = os.environ.get('CLOUX_EMAIL_PEPPER', '')
+    key = email_pepper()
     if len(key) < 32:
         raise RuntimeError('Надсилання пошти ще не налаштоване.')
     return hmac.new(key.encode('utf-8'), (kind + ':' + value).encode('utf-8'), hashlib.sha256).hexdigest()
