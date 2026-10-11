@@ -345,3 +345,7 @@ def cloux_v3_script():
 import cloux_media
 cloux_media.init(db)
 cloux_media.install(app,db,auth,member,fail,limit,DATA)
+
+@app.get("/cloux-media.js")
+def cloux_media_script():
+    return FileResponse(_ClouxPath(__file__).parent/"cloux-media.js",media_type="application/javascript")
