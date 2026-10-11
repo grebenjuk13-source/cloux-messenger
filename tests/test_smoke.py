@@ -42,7 +42,7 @@ def test_registration_notes_news_preferences_direct_and_signaling():
         assert copied["forwarded_from"]=="user_one"
         assert copied["text"]=="Тест: привіт!"
 
-        png=b"\x89PNG\r\n\x1a\n"+b"00"+"image"
+        png=b"\x89PNG\r\n\x1a\n"+b"00"+b"image"
         bad=a.post(f"/api/chats/{cid}/media",content=b"<script>alert(1)</script>",headers={"content-type":"text/html"})
         assert bad.status_code==415
         sent_file=a.post(f"/api/chats/{cid}/media",content=png,headers={"content-type":"image/png","x-cloux-filename":"sample.png"})
