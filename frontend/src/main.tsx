@@ -142,7 +142,19 @@ function App(){const [me,setMe]=useState<User|null|undefined>(undefined),[chats,
    const id=setTimeout(()=>api('/api/v5/ui-prefs',{method:'PUT',body:JSON.stringify(prefs)}).catch(e=>console.warn('Theme sync failed',e)),700);
    return()=>clearTimeout(id);
  },[prefs,me?.id,prefsReady]);
- useEffect(()=>{if(!me)return;api<{chats:Chat[]}>('/api/chats').then(x=>setChats(x.chats)).catch(()=>{});const id=setInterval(()=>api<{chats:Chat[]}>('/api/chats').then(x=>setChats(x.chats)).catch(()=>{}),10000);return()=>clearInterval(id)},[me]);
+ useEffect(()=>{if(!me)return;let stopped=false,ws:WebSocket|null=null,retry:ReturnType<typeof setTimeout>|null=null;
+ const refresh=()=>{api<{chats:Chat[]}>('/api/chats').then(x=>{if(!stopped)setChats(x.chats)}).catch(()=>{})};
+ refresh();
+ const connect=()=>{if(stopped)return;try{ws=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/ws/inbox')}catch{return}
+  ws.onmessage=e=>{try{if(JSON.parse(e.data).type==='inbox_update')refresh()}catch{}};
+  ws.onclose=()=>{if(!stopped)retry=setTimeout(connect,3000)}};
+ connect();
+ const id=setInterval(refresh,45000);
+ const ping=setInterval(()=>{if(ws?.readyState===WebSocket.OPEN)ws.send('ping')},25000);
+ const visibility=()=>{if(document.visibilityState==='visible')refresh()};
+ document.addEventListener('visibilitychange',visibility);
+ return()=>{stopped=true;ws?.close();if(retry)clearTimeout(retry);clearInterval(id);clearInterval(ping);document.removeEventListener('visibilitychange',visibility)}
+},[me?.id]);
  useEffect(()=>{if(tab==='servers'&&me)api<{servers:{id:string;name:string}[]}>('/api/servers').then(x=>setServers(x.servers)).catch(()=>{})},[tab,me]);
  useEffect(()=>{if(!newChat)return;const id=setTimeout(()=>api<{users:{id:string;username:string;display:string}[]}>('/api/users?q='+encodeURIComponent(search)).then(x=>setPeople(x.users)).catch(()=>{}),300);return()=>clearTimeout(id)},[search,newChat]);
  const visible=chats.filter(x=>!x.archived&&(!search||(x.title+' '+(x.last_text||'')).toLowerCase().includes(search.toLowerCase())));const selected=chats.find(x=>x.id===active);
