@@ -34,6 +34,10 @@ def initialize(db, hash_password):
         CREATE TABLE IF NOT EXISTS cloux_owners(
           chat_id TEXT PRIMARY KEY REFERENCES chats(id),
           owner_id TEXT NOT NULL REFERENCES users(id));
+        CREATE TABLE IF NOT EXISTS cloux_invites(
+          code TEXT PRIMARY KEY,
+          chat_id TEXT NOT NULL REFERENCES chats(id),
+          created INTEGER NOT NULL);
         """)
         c.execute("INSERT OR IGNORE INTO users(id,phone,username,display,password_hash,created) VALUES(?,?,?,?,?,?)",
                   (SYSTEM,"+99900000000001","cloux_official","Cloux",hash_password(secrets.token_urlsafe(36)),int(time.time())))
@@ -216,3 +220,36 @@ def install(app, db, auth, fail, hash_password, check_password, member, limit):
             if m["chat_id"]==NEWS:fail("Офіційні новини не видаляються.",403)
             c.execute("DELETE FROM messages WHERE id=?",(mid,))
         return {"ok":True}
+
+    @app.post("/api/chats/{cid}/invite")
+    def create_invite(cid: str, request: Request):
+        me=auth(request)
+        limit(request,40)
+        with db() as c:
+            if not member(c,me["id"],cid):fail("Немає доступу.",403)
+            row=c.execute("SELECT kind FROM chats WHERE id=?",(cid,)).fetchone()
+            if not row or row["kind"] not in ("group","channel"):fail("Запрошення лише для груп і каналів.")
+            code=secrets.token_urlsafe(12)
+            c.execute("INSERT INTO cloux_invites(code,chat_id,created) VALUES(?,?,?)",(code,cid,int(time.time())))
+        return {"link":str(request.base_url).rstrip("/")+"/?join="+code, "code":code}
+
+    @app.get("/api/invites/{code}")
+    def invite_details(code: str, request: Request):
+        auth(request)
+        with db() as c:
+            row=c.execute("SELECT c.title,c.kind FROM cloux_invites i JOIN chats c ON c.id=i.chat_id WHERE i.code=?",(code,)).fetchone()
+        if not row:fail("Недійсне запрошення.",404)
+        return {"chat":dict(row)}
+
+    @app.post("/api/invites/{code}/join")
+    def join_invite(code: str, request: Request):
+        me=auth(request)
+        limit(request,30)
+        with db() as c:
+            row=c.execute("SELECT i.chat_id,c.kind FROM cloux_invites i JOIN chats c ON c.id=i.chat_id WHERE i.code=?",(code,)).fetchone()
+            if not row:fail("Недійсне запрошення.",404)
+            if row["kind"]=="group":
+                count=c.execute("SELECT count(*) AS n FROM chat_members WHERE chat_id=?",(row["chat_id"],)).fetchone()["n"]
+                if count>=30 and not member(c,me["id"],row["chat_id"]):fail("Група заповнена.")
+            c.execute("INSERT OR IGNORE INTO chat_members(chat_id,user_id) VALUES(?,?)",(row["chat_id"],me["id"]))
+        return {"chat_id":row["chat_id"]}
