@@ -105,11 +105,11 @@ def auth(request):
 
 def set_cookie(response, user_id):
     secret = secrets.token_urlsafe(42)
-    expires = int(time.time()) + 30*86400
+    expires = int(time.time()) + 180*86400
     with db() as c:
         c.execute("INSERT INTO sessions(token,uid,expires) VALUES(?,?,?)",
                   (hashlib.sha256(secret.encode()).hexdigest(), user_id, expires))
-    response.set_cookie("cloux_session", secret, max_age=30*86400,
+    response.set_cookie("cloux_session", secret, max_age=180*86400,
                         httponly=True, secure=True, samesite="lax", path="/")
     return response
 
@@ -135,7 +135,16 @@ def health():
 
 @app.get("/api/me")
 def me(request: Request):
-    return auth(request)
+    user = auth(request)
+    token = request.cookies.get("cloux_session","")
+    if token:
+        with db() as c:
+            c.execute("UPDATE sessions SET expires=? WHERE token=?",
+                (int(time.time())+180*86400,hashlib.sha256(token.encode()).hexdigest()))
+    response = JSONResponse(user)
+    response.set_cookie("cloux_session",token,max_age=180*86400,
+        httponly=True,secure=True,samesite="lax",path="/")
+    return response
 
 @app.post("/api/register")
 def register(payload: Register, request: Request):
@@ -279,3 +288,6 @@ def send(chat_id: str, payload: Message, request: Request):
 import cloux_features
 cloux_features.initialize(db,hash_password)
 cloux_features.install(app,db,auth,fail,hash_password,check_password,member,limit)
+
+import cloux_calls
+cloux_calls.install(app,db)
