@@ -45,7 +45,7 @@ def db():
 with db() as c:
     c.executescript("""
     CREATE TABLE IF NOT EXISTS users(
-      id TEXT PRIMARY KEY, phone TEXT NOT NULL UNIQUE, username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      id TEXT PRIMARY KEY, phone TEXT NOT NULL, username TEXT NOT NULL UNIQUE COLLATE NOCASE,
       display TEXT NOT NULL, password_hash TEXT NOT NULL, created INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS sessions(
       token TEXT PRIMARY KEY, uid TEXT NOT NULL REFERENCES users(id), expires INTEGER NOT NULL);
@@ -59,6 +59,11 @@ with db() as c:
       sender TEXT NOT NULL REFERENCES users(id), text TEXT NOT NULL, created INTEGER NOT NULL);
     CREATE INDEX IF NOT EXISTS messages_by_chat ON messages(chat_id,id);
     """)
+
+# Legacy databases still have UNIQUE(phone). Rebuild transactionally for SQLite,
+# or drop only the phone unique constraint in PostgreSQL, before other modules run.
+import cloux_multiaccounts
+cloux_multiaccounts.migrate(DB, db)
 
 class Login(BaseModel):
     phone: str
@@ -201,10 +206,15 @@ def login(payload: Login, request: Request):
     limit(request, 10)
     phone = re.sub(r"[\s()\-]", "", payload.phone)
     with db() as c:
-        found=c.execute("SELECT id,password_hash FROM users WHERE phone=?",(phone,)).fetchone()
-    if not found or not check_password(payload.password,found["password_hash"]):
+        candidates=c.execute("SELECT id,password_hash FROM users WHERE phone=? LIMIT 17",(phone,)).fetchall()
+    if len(candidates)>16:
+        fail("Для входу використайте унікальний @нікнейм або пошту.",409)
+    matched=[u for u in candidates if check_password(payload.password,u["password_hash"])]
+    if len(matched)>1:
+        fail("Декілька акаунтів мають такий номер і пароль. Увійдіть через @нікнейм або пошту.",409)
+    if not matched:
         fail("Неправильний номер або пароль.",401)
-    return set_cookie(JSONResponse({"ok":True}),found["id"])
+    return set_cookie(JSONResponse({"ok":True}),matched[0]["id"])
 
 @app.post("/api/logout")
 def logout(request: Request):
