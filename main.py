@@ -45,7 +45,7 @@ def db():
 with db() as c:
     c.executescript("""
     CREATE TABLE IF NOT EXISTS users(
-      id TEXT PRIMARY KEY, phone TEXT NOT NULL, username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      id TEXT PRIMARY KEY, phone TEXT NOT NULL UNIQUE, username TEXT NOT NULL UNIQUE COLLATE NOCASE,
       display TEXT NOT NULL, password_hash TEXT NOT NULL, created INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS sessions(
       token TEXT PRIMARY KEY, uid TEXT NOT NULL REFERENCES users(id), expires INTEGER NOT NULL);
@@ -60,10 +60,11 @@ with db() as c:
     CREATE INDEX IF NOT EXISTS messages_by_chat ON messages(chat_id,id);
     """)
 
-# Legacy databases still have UNIQUE(phone). Rebuild transactionally for SQLite,
-# or drop only the phone unique constraint in PostgreSQL, before other modules run.
-import cloux_multiaccounts
-cloux_multiaccounts.migrate(DB, db)
+# Protect the 1 phone = 1 account invariant even when an earlier development
+# schema lacked a UNIQUE(phone) constraint. Never merge or delete accounts.
+# Conflicting phone rows cause a safe startup failure until reviewed.
+with db() as c:
+    c.execute("CREATE UNIQUE INDEX IF NOT EXISTS users_phone_unique_idx ON users(phone)")
 
 class Login(BaseModel):
     phone: str
@@ -86,6 +87,24 @@ def limit(request, max_calls=24, period=60):
     while q and now - q[0] > period: q.popleft()
     if len(q) >= max_calls: fail("Забагато спроб. Спробуйте пізніше.", 429)
     q.append(now)
+
+def failed_login_attempt(request, identifier: str):
+    """Limit bad password guesses, not successful account sign-ins.
+
+    Failed guesses from the same IP are capped for a short window. Every valid
+    password can still sign in repeatedly without consuming the login budget.
+    This also avoids old /api/login and new /api/v6/login having separate budgets.
+    """
+    ip = request.client.host if request.client else "unknown"
+    key = (ip, "invalid-credentials")
+    now = time.monotonic()
+    bucket = requests_by_ip[key]
+    while bucket and now - bucket[0] >= 900:
+        bucket.popleft()
+    bucket.append(now)
+    if len(bucket) > 25:
+        fail("Забагато неправильних паролів. Зачекайте 15 хвилин або перевірте дані входу.", 429)
+
 
 def hash_password(password: str, salt=None):
     salt = salt or secrets.token_bytes(16)
@@ -203,18 +222,13 @@ def me(request: Request):
 
 @app.post("/api/login")
 def login(payload: Login, request: Request):
-    limit(request, 10)
     phone = re.sub(r"[\s()\-]", "", payload.phone)
     with db() as c:
-        candidates=c.execute("SELECT id,password_hash FROM users WHERE phone=? LIMIT 17",(phone,)).fetchall()
-    if len(candidates)>16:
-        fail("Для входу використайте унікальний @нікнейм або пошту.",409)
-    matched=[u for u in candidates if check_password(payload.password,u["password_hash"])]
-    if len(matched)>1:
-        fail("Декілька акаунтів мають такий номер і пароль. Увійдіть через @нікнейм або пошту.",409)
-    if not matched:
+        found=c.execute("SELECT id,password_hash FROM users WHERE phone=?",(phone,)).fetchone()
+    if not found or not check_password(payload.password,found["password_hash"]):
+        failed_login_attempt(request, phone)
         fail("Неправильний номер або пароль.",401)
-    return set_cookie(JSONResponse({"ok":True}),matched[0]["id"])
+    return set_cookie(JSONResponse({"ok":True}),found["id"])
 
 @app.post("/api/logout")
 def logout(request: Request):
