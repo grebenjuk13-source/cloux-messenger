@@ -32,6 +32,9 @@ class ProductSettings(BaseModel):
     status_icon: str='✨'
     banner_video: bool=False
 
+class RestoreFile(BaseModel):
+    data: dict=Field(default_factory=dict)
+
 class Wallpaper(BaseModel):
     kind: Literal['preset','gradient','image']='preset'
     preset: str='w0'
@@ -376,9 +379,6 @@ def install(app,db,auth,member,fail,limit,data_dir):
         return JSONResponse(json.loads(row['value']),headers={'Cache-Control':'private,no-store',
                'Content-Disposition':'attachment; filename="Cloux-backup-'+str(bid)+'.json"'})
 
-    class RestoreFile(BaseModel):
-        data: dict=Field(default_factory=dict)
-    # FastAPI resolves JSON body in the enclosing installation scope.
     @app.post('/api/cloux/backups/restore')
     def restore_backup(body:RestoreFile,request:Request):
         u=auth(request);limit(request,12,3600)
