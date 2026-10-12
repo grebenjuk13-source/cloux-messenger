@@ -1,17 +1,22 @@
-"""Regression checks for removing all public account creation and code flows."""
+"""Regression checks for public downloads and removing account creation/code flows."""
 from fastapi.testclient import TestClient
 from main import app, BASE
 
 
-def test_registration_and_verification_routes_are_gone():
+def test_registration_routes_are_gone_and_downloads_are_public():
     with TestClient(app, base_url="https://testserver") as client:
         for route in ("/api/register", "/api/v5/register", "/api/v6/register", "/api/v5/sms/send", "/api/v5/sms/check", "/api/v6/email/send"):
             assert client.post(route, json={}).status_code == 404
 
         download = client.get("/download")
         assert download.status_code == 200
-        assert "Увійти" in download.text
+        assert "Завантаження без акаунта" in download.text
+        assert "Завантажити Windows EXE" in download.text
+        assert "Завантажити Android APK" in download.text
+        assert "Завантажити Mac DMG" in download.text
+        assert "iPhone та iPad" in download.text
         assert "Створити акаунт" not in download.text
+        assert "Увійти до Cloux" not in download.text
 
     legacy_ui = (BASE / "ui" / "app.js").read_text(encoding="utf-8")
     assert "/api/register" not in legacy_ui
