@@ -336,8 +336,8 @@ def install(app,db,auth,member,fail,limit,data_dir):
         for row in chats:
             # Export only chats this account is currently allowed to access.
             history=c.execute('''SELECT id,chat_id,sender,text,created FROM messages
-                  WHERE chat_id=? ORDER BY id DESC LIMIT 500''',(row['id'],)).fetchall()
-            messages.extend(dict(m) for m in reversed(history))
+                  WHERE chat_id=? ORDER BY id ASC''',(row['id'],)).fetchall()
+            messages.extend(dict(m) for m in history)
         return {'format':'cloux-backup-2','account':dict(user),'created':int(time.time()),
          'settings':settings(c,uid),
          'ui':json.loads(preferences['value']) if preferences else {},
