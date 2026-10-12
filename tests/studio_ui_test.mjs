@@ -47,7 +47,7 @@ assert.ok(received.suggestedFilename().endsWith('.html'),'Offline HTML export');
 const path=await received.path();
 assert.ok(path,'Downloaded file path');
 const offline=await context.newPage();
-offline.on('pageerror',e=>problems.push('Exported HTML error: '+e.message));
+offline.on('pageerror',e=>{console.log('OFFLINE SCRIPT ERROR STACK',e.stack);problems.push('Exported HTML error: '+e.message)});
 const htmlFile=path+'.html';
 await copyFile(path,htmlFile);
 await offline.goto('file://'+htmlFile,{waitUntil:'domcontentloaded'});
