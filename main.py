@@ -403,6 +403,14 @@ def cloux_version():
 def cloux_pwa_manifest():
     return FileResponse(BASE/"manifest.json",media_type="application/manifest+json",headers={"Cache-Control":"no-cache"})
 
+@app.get("/cloux-customize.js")
+def cloux_customize_js():
+    return FileResponse(BASE/"cloux-customize.js",media_type="application/javascript",headers={"Cache-Control":"no-cache"})
+
+@app.get("/cloux-customize.css")
+def cloux_customize_css():
+    return FileResponse(BASE/"cloux-customize.css",media_type="text/css",headers={"Cache-Control":"no-cache"})
+
 @app.get("/cloux-updates.js")
 def cloux_updates():
     return FileResponse(BASE/"cloux-updates.js",media_type="application/javascript",headers={"Cache-Control":"no-cache"})

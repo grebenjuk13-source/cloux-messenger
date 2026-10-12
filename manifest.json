@@ -1,8 +1,8 @@
 {
   "id": "/v5/",
-  "name": "Cloux Messenger",
+  "name": "CLOUX",
   "short_name": "Cloux",
-  "description": "Cloux — чорно-червоний месенджер",
+  "description": "CLOUX — незалежний месенджер",
   "start_url": "/v5/",
   "scope": "/",
   "display": "standalone",

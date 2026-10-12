@@ -1,8 +1,8 @@
 /* Cloux service worker — network-first shell, never cache user/API messages. */
-const CACHE='cloux-shell-v6.2.0';
+const CACHE='cloux-shell-v6.3.0';
 const STATIC=['/v5/','/studio/','/download','/version.json','/manifest.json',
   '/studio/index.html','/studio/styles.css','/studio/app.js','/studio/media.js','/studio/calls.js',
-  '/cloux-updates.js','/assets/cloux-default-avatar.jpg'];
+  '/cloux-updates.js','/cloux-customize.js','/cloux-customize.css','/assets/cloux-default-avatar.jpg'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(async cache=>{
     await Promise.all(STATIC.map(async url=>{
@@ -13,7 +13,7 @@ self.addEventListener('install',event=>{
 });
 self.addEventListener('message',event=>{
   if(event.data?.type==='SKIP_WAITING')self.skipWaiting();
-  if(event.data?.type==='GET_VERSION')event.source?.postMessage({type:'VERSION',version:'6.2.0'});
+  if(event.data?.type==='GET_VERSION')event.source?.postMessage({type:'VERSION',version:'6.3.0'});
 });
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
