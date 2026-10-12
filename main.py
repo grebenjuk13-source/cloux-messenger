@@ -24,6 +24,11 @@ requests_by_ip = defaultdict(deque)
 
 @contextmanager
 def db():
+    if os.getenv('DATABASE_URL'):
+        from cloux_db import connect
+        with connect(os.environ['DATABASE_URL']) as c:
+            yield c
+        return
     c = sqlite3.connect(DB, timeout=12)
     c.row_factory = sqlite3.Row
     c.execute("PRAGMA foreign_keys=ON")
@@ -162,7 +167,7 @@ def classic():
 
 @app.get("/api/health")
 def health():
-    return {"status":"ok","app":"cloux","stage":"early-access","persistent_storage": os.getenv("CLOUX_PERSISTENT_STORAGE") == "1"}
+    return {"status":"ok","app":"cloux","stage":"early-access","persistent_storage": bool(os.getenv("DATABASE_URL")) or os.getenv("CLOUX_PERSISTENT_STORAGE") == "1"}
 
 @app.get("/api/me")
 def me(request: Request):
@@ -252,7 +257,7 @@ def chats(request: Request):
            (SELECT m.id FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_message_id,
            (SELECT m.sender FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_sender
            FROM chats ch JOIN chat_members cm ON cm.chat_id=ch.id WHERE cm.user_id=?
-           ORDER BY COALESCE(last_time,ch.created) DESC LIMIT 200""",(user["id"],)).fetchall()
+           ORDER BY ch.created DESC LIMIT 200""",(user["id"],)).fetchall()
         result=[]
         for row in rows:
             d=dict(row)
