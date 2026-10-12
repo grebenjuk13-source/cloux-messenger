@@ -534,6 +534,9 @@ def install(app, db, auth, fail, limit, check_password, emit=None):
                 chat=c.execute("SELECT kind FROM chats WHERE id=?",(body.subject_id,)).fetchone()
                 if not chat or chat["kind"]!="direct":
                     fail("Приватний чат не знайдено.",404)
+                if not c.execute("SELECT 1 FROM chat_members WHERE chat_id=? AND user_id=?",
+                                 (body.subject_id,me["id"])).fetchone():
+                    fail("Можна скаржитися лише на власні діалоги.",403)
                 # Do not retain a direct-chat reason that might contain private content.
                 reason="[Скарга на особистий чат, без тексту повідомлень]"
             else:
