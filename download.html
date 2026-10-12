@@ -94,8 +94,9 @@ $('download-html').onclick=async()=>{
   app=app.replaceAll('/assets/cloux-default-avatar.jpg',avatar);
   index=index.replaceAll('href="/v5/"','href="https://cloux-messenger.onrender.com/v5/"');
   app=app.replaceAll("window.location.href='/v5/'","window.location.href='https://cloux-messenger.onrender.com/v5/'");
-  const script=x=>'<script>'+x.replace(/<\/script/gi,'<\\/script')+'<\\/script>'.replaceAll('\\/','/');
-  index=index.replace('</body>','<script>'+media+'<\/script><script>'+calls+'<\/script><script>'+app+'<\/script></body>');
+  // Keep each embedded module in its own lexical scope for file:// browsers.
+  const embed = value=>'<script>(function(){\n'+value+'\n})();<\\/script>';
+  index=index.replace('</body>',embed(media)+embed(calls)+embed(app)+'</body>');
   const url=URL.createObjectURL(new Blob([index],{type:'text/html;charset=utf-8'}));
   const a=document.createElement('a');a.href=url;a.download='Cloux-Studio-v6.2.0-index.html';document.body.append(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),15000);
