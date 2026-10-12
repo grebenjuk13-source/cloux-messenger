@@ -54,3 +54,31 @@ jobs:
       - run: pip install -r requirements.txt httpx
       - name: Test actual PostgreSQL startup and persisted login
         run: PYTHONPATH=. python tests/pg_startup_check.py
+
+  browser-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix frontend --no-audit --no-fund
+      - run: npm run --prefix frontend build
+      - run: npm install --no-save playwright@1.56.1
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Start standalone PWA preview
+        run: |
+          (cd frontend && ./node_modules/.bin/vite preview --host 127.0.0.1 --port 4173) > vite-v6.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/v5/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/v5/ >/dev/null
+      - name: Verify responsive mobile Chrome / WebKit
+        run: node tests/cloux_v6_browser_test.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloux-v6-browser-logs
+          path: vite-v6.log
