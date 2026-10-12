@@ -90,15 +90,12 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
 
     @app.get('/api/friends/leaderboard')
     def friends_leaderboard(request:Request):
-        me=auth(request)
+        auth(request)
         with db() as c:
-            rows=c.execute('''SELECT u.id,u.username,u.display,
-                (SELECT COUNT(*) FROM cloux_follows f JOIN cloux_follows back
-                  ON back.follower_id=f.followed_id AND back.followed_id=f.follower_id
-                  WHERE f.follower_id=u.id) AS friends,
-                EXISTS(SELECT 1 FROM cloux_follows WHERE follower_id=? AND followed_id=u.id) AS following
-                FROM users u WHERE u.id!='cloux-system'
-                ORDER BY friends DESC, u.created ASC, u.username COLLATE NOCASE ASC LIMIT 100''',(me['id'],)).fetchall()
+            rows=c.execute("""SELECT u.id,u.username,u.display,
+              (SELECT COUNT(*) FROM cloux_friendships f WHERE f.a=u.id OR f.b=u.id) friends
+              FROM users u WHERE u.id!='cloux-system'
+              ORDER BY friends DESC,u.created ASC,u.username COLLATE NOCASE ASC LIMIT 100""").fetchall()
         return {'users':[dict(x) for x in rows]}
 
     @app.post('/api/users/{uid}/follow')
