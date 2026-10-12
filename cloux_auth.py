@@ -72,7 +72,7 @@ def install(app, db, fail, limit, set_cookie, verify_password):
         with db() as conn:
             user = conn.execute('SELECT id,password_hash FROM users WHERE ' + where, args).fetchone()
         if not user:
-            fail('Електронна адреса або пароль Cloux неправильні.', 401)
+            fail('Пошта, телефон, нікнейм або пароль Cloux неправильні.', 401)
         # Use the same password verifier as the existing /api/login route.
         # Historic Cloux accounts used PBKDF2; newly registered ones use Argon2.
         # Reject unsupported/bad hashes without deleting, resetting or recreating accounts.
