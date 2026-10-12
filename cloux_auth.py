@@ -70,15 +70,20 @@ def install(app, db, fail, limit, set_cookie, verify_password):
         else:
             fail('Введіть коректну пошту, нікнейм або номер телефону.')
         with db() as conn:
-            user = conn.execute('SELECT id,password_hash FROM users WHERE ' + where, args).fetchone()
-        if not user:
+            # A phone may belong to several distinct accounts. Never choose an
+            # arbitrary row: identify the account using its own password.
+            candidates = conn.execute(
+                'SELECT id,password_hash FROM users WHERE ' + where + ' LIMIT 17', args
+            ).fetchall()
+        if len(candidates) > 16:
+            fail('Для входу використайте @нікнейм або пошту.', 409)
+        matched = [user for user in candidates
+                   if verify_password(body.password, user['password_hash'])]
+        if not matched:
             fail('Пошта, телефон, нікнейм або пароль Cloux неправильні.', 401)
-        # Use the same password verifier as the existing /api/login route.
-        # Historic Cloux accounts used PBKDF2; newly registered ones use Argon2.
-        # Reject unsupported/bad hashes without deleting, resetting or recreating accounts.
-        if not verify_password(body.password, user['password_hash']):
-            fail('Пошта, телефон, нікнейм або пароль Cloux неправильні.', 401)
-        return set_cookie(JSONResponse({'ok': True}), user['id'])
+        if len(matched) > 1:
+            fail('Цей номер мають кілька акаунтів з однаковим паролем. Увійдіть через @нікнейм або пошту.', 409)
+        return set_cookie(JSONResponse({'ok': True}), matched[0]['id'])
 
     @app.post('/api/v6/register')
     def register(body: Registration, request: Request):
