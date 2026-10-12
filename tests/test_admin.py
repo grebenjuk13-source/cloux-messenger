@@ -16,6 +16,7 @@ def app_client(tmp_path, monkeypatch):
     target = tmp_path / "cloux_test.db"
     shutil.copyfile(main.DB, target)
     monkeypatch.setattr(main, "DB", target)
+    main.requests_by_ip.clear()
     monkeypatch.setenv("OWNER_EMAIL", "verified-admin@example.test")
     monkeypatch.delenv("DATABASE_URL", raising=False)
     client = TestClient(main.app, base_url=HOST)
