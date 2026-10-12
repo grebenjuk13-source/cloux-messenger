@@ -129,3 +129,13 @@
 .cx-profile-special{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:20px}
 .cx-profile-special>label,.cx-profile-special>button{display:inline-flex;align-items:center;gap:7px;padding:11px 14px;background:#21121b;border:1px solid #ffffff2e;border-radius:14px;color:#e9ced7;cursor:pointer;font-size:12px}
 .cx-profile-special>label:hover,.cx-profile-special>button:hover{background:#3e1a28}
+
+/* New profile and settings are full pages, not the legacy hidden mobile pane. */
+@media(max-width:760px){
+ #root .app-shell:not(.has-chat) .app-content:has(.cx-profile-screen),
+ #root .app-shell:not(.has-chat) .app-content:has(.cx-settings),
+ #root .app-shell:not(.has-chat) .app-content:has(.cx-wallpaper-studio){display:block!important}
+ #root .app-shell:has(.cx-profile-screen) .chat-sidebar,
+ #root .app-shell:has(.cx-settings) .chat-sidebar,
+ #root .app-shell:has(.cx-wallpaper-studio) .chat-sidebar{display:none!important}
+}
