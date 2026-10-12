@@ -180,6 +180,7 @@ function setup(){
   let timer=0;new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(addMenu,300)}).observe(root,{childList:true,subtree:true});
  }
  addMenu();
+ document.addEventListener('cloux:open-tools',palette);
  window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();e.stopImmediatePropagation();palette()}},{capture:true});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>30000&&get('pin-hash'))lock()});
 }
