@@ -1,0 +1,58 @@
+name: CLOUX Studio static checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/**'
+      - 'download.html'
+      - 'main.py'
+      - 'Dockerfile'
+      - 'version.json'
+      - 'manifest.json'
+      - 'sw.js'
+      - 'cloux-updates.js'
+      - '.github/workflows/cloux-studio.yml'
+  workflow_dispatch:
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check studio/app.js
+          node --check studio/media.js
+          node --check studio/calls.js
+          node --check cloux-updates.js
+          node --check sw.js
+      - name: Static HTML and JSON validation
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, re
+          from html.parser import HTMLParser
+          for name in ('version.json','manifest.json'):
+              d=json.loads(pathlib.Path(name).read_text())
+              assert isinstance(d,dict) and d
+          assert json.loads(pathlib.Path('version.json').read_text())['version']=='6.1.0'
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__();self.active=False;self.parts=[];self.scripts=[]
+              def handle_starttag(self,t,a):
+                  if t=='script':self.active=not dict(a).get('src')
+              def handle_data(self,data):
+                  if self.active:self.parts.append(data)
+              def handle_endtag(self,t):
+                  if t=='script':
+                      if self.active:self.scripts.append(''.join(self.parts))
+                      self.parts=[];self.active=False
+          x=Scripts();x.feed(pathlib.Path('download.html').read_text())
+          assert x.scripts,'Missing download-page inline script'
+          pathlib.Path('/tmp/cloux-download-script.js').write_text(x.scripts[0])
+          page=pathlib.Path('studio/index.html').read_text()
+          for name in ('app.js','media.js','calls.js','styles.css'):
+              assert name in page,name
+          assert 'cloux-default-avatar.jpg' in page
+          PY
+          node --check /tmp/cloux-download-script.js
+      - name: Python syntax
+        run: python3 -m py_compile main.py
