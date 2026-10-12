@@ -51,12 +51,6 @@ with db() as c:
     CREATE INDEX IF NOT EXISTS messages_by_chat ON messages(chat_id,id);
     """)
 
-class Register(BaseModel):
-    phone: str
-    password: str
-    username: str
-    display: str
-
 class Login(BaseModel):
     phone: str
     password: str
@@ -88,7 +82,7 @@ def check_password(password, stored):
     if stored.startswith("$argon2"):
         from argon2.exceptions import VerifyMismatchError, VerificationError
         try:
-            return cloux_stage1.PASSWORD_HASHER.verify(stored,password)
+            return cloux_auth.HASHER.verify(stored,password)
         except (VerifyMismatchError,VerificationError,ValueError):
             return False
     try:
@@ -130,7 +124,9 @@ async def security_headers(request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     path = request.url.path
     offline = path in ("/offline", "/offline/")
-    response.headers["Cache-Control"] = "no-store" if offline or path.startswith("/api/") else "public,max-age=3600"
+    no_store = (offline or path.startswith("/api/") or path == "/download"
+                or path in ("/v5", "/v5/") or path.endswith("/index.html"))
+    response.headers["Cache-Control"] = "no-store" if no_store else "public,max-age=3600"
     if offline:
         response.headers["Content-Security-Policy"] = (
             "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; "
@@ -145,7 +141,8 @@ def home():
 
 @app.get("/classic")
 def classic():
-    return FileResponse(BASE / "index.html")
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/v5/",status_code=308)
 
 @app.get("/api/health")
 def health():
@@ -163,30 +160,6 @@ def me(request: Request):
     response.set_cookie("cloux_session",token,max_age=180*86400,
         httponly=True,secure=True,samesite="lax",path="/")
     return response
-
-@app.post("/api/register")
-def register(payload: Register, request: Request):
-    if os.getenv("CLOUX_ALLOW_LEGACY_REGISTER") != "1" or __import__("cloux_email").email_ready():
-        fail("Нові акаунти потрібно підтвердити через Gmail.",403)
-    if os.getenv("CLOUX_REQUIRE_SMS") == "1":
-        fail("Реєструйтеся через SMS-підтвердження Cloux.",403)
-    limit(request, 6)
-    phone = re.sub(r"[\s()\-]", "", payload.phone)
-    username = payload.username.strip().lower()
-    display = payload.display.strip()
-    if not re.fullmatch(r"\+[1-9]\d{7,14}",phone): fail("Вкажіть номер із кодом країни, наприклад +380...")
-    if not re.fullmatch(r"[a-z0-9_]{4,24}",username): fail("Позивний: 4–24 символи (a-z, 0-9, _).")
-    if not 8 <= len(payload.password) <= 128: fail("Пароль має містити від 8 до 128 символів.")
-    if not 1 <= len(display) <= 60: fail("Вкажіть ім'я.")
-    uid = str(uuid.uuid4())
-    try:
-        with db() as c:
-            c.execute("INSERT INTO users(id,phone,username,display,password_hash,created) VALUES(?,?,?,?,?,?)",
-                (uid,phone,username,display,hash_password(payload.password),int(time.time())))
-    except sqlite3.IntegrityError:
-        fail("Номер або позивний уже зайнятий.",409)
-    cloux_features.seed_user(db,uid)
-    return set_cookie(JSONResponse({"ok": True}),uid)
 
 @app.post("/api/login")
 def login(payload: Login, request: Request):
@@ -349,10 +322,6 @@ from fastapi.responses import RedirectResponse
 def cloux_download_page():
     return FileResponse(_ClouxPath(__file__).parent/"download.html",media_type="text/html")
 
-@app.get("/codes")
-def cloux_codes_page():
-    return FileResponse(_ClouxPath(__file__).parent/"codes.html", media_type="text/html", headers={"Cache-Control":"no-store"})
-
 @app.get("/apk")
 def cloux_apk_download():
     return RedirectResponse("https://raw.githubusercontent.com/grebenjuk13-source/cloux-messenger/main/downloads/Cloux-Android-debug.apk",status_code=302)
@@ -400,9 +369,9 @@ def modern_assets(filename:str):
     if filename not in allowed:fail("Файл не знайдено.",404)
     return FileResponse(BASE/"ui"/filename,media_type=allowed[filename])
 
-# Stage 1 React + TypeScript preview, independently tested before promotion.
-import cloux_stage1
-cloux_stage1.install(app,db,auth,fail,limit,set_cookie,cloux_features.seed_user)
+# User interface preferences remain supported; old code and SMS verification routes are removed.
+import cloux_preferences
+cloux_preferences.install(app,db,auth,fail)
 
 @app.get("/v5")
 def stage1_redirect():
@@ -423,13 +392,9 @@ def stage1_frontend(asset:str):
 import cloux_realtime
 cloux_realtime.install(app,db)
 
-# Gmail-only signup and recovery (without unverified account sessions).
-import cloux_email
-cloux_email.install(app,db,fail,limit,set_cookie,cloux_features.seed_user)
-
-# One-click email sender approval (Resend OAuth 2.1 + PKCE).
-import cloux_resend_oauth
-cloux_resend_oauth.install(app,db)
+# Email address and separate Cloux password registration/login; no mailbox verification.
+import cloux_auth
+cloux_auth.install(app,db,fail,limit,set_cookie,cloux_features.seed_user)
 
 
 # Isolated, network-blocked, single-HTML local demo; existing online Cloux is unchanged.
