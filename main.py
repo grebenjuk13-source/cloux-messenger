@@ -128,7 +128,14 @@ async def security_headers(request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "no-referrer"
     response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Cache-Control"] = "no-store" if request.url.path.startswith("/api/") else "public,max-age=3600"
+    path = request.url.path
+    offline = path in ("/offline", "/offline/")
+    response.headers["Cache-Control"] = "no-store" if offline or path.startswith("/api/") else "public,max-age=3600"
+    if offline:
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; "
+            "img-src data:; base-uri 'none'; form-action 'none'"
+        )
     return response
 
 @app.get("/")
