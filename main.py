@@ -232,7 +232,9 @@ def chats(request: Request):
     with db() as c:
         rows=c.execute("""SELECT ch.id,ch.kind,ch.title,
            (SELECT m.text FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_text,
-           (SELECT m.created FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_time
+           (SELECT m.created FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_time,
+           (SELECT m.id FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_message_id,
+           (SELECT m.sender FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_sender
            FROM chats ch JOIN chat_members cm ON cm.chat_id=ch.id WHERE cm.user_id=?
            ORDER BY COALESCE(last_time,ch.created) DESC LIMIT 200""",(user["id"],)).fetchall()
         result=[]
