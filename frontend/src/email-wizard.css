@@ -1,65 +1,14 @@
-/* Isolated verification wizard; matches Cloux Liquid Glass theme. */
-.mail-auth .auth-card{position:relative;min-height:455px;overflow:visible}
-.mail-card{transition:height .3s cubic-bezier(.2,.8,.2,1)}
+.mail-auth{min-height:100dvh;background:radial-gradient(ellipse at 20% 0%,#a41b3838 0%,transparent 55%),radial-gradient(ellipse at 92% 94%,#56132155 0%,transparent 48%),#07070a}
+.mail-auth .auth-card{position:relative;min-height:0;overflow:visible}
+.mail-card{transition:height .25s ease;border-color:#ffffff30;box-shadow:0 27px 100px #0009,inset 0 1px #ffffff24;background:linear-gradient(145deg,#ffffff17,#ffffff04 32%,#00000021),#16151beb}
 .mail-steps{display:grid;gap:11px;margin-bottom:18px}
 .mail-auth label{display:block;margin:14px 0;color:var(--ink-sub);font-size:13px}
 .mail-auth label>input,.mail-pw input{width:100%;display:block;margin-top:7px;border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:rgba(99,125,148,.09);color:var(--ink);font-size:15px}
-.mail-hint{font-size:12px;margin-top:7px;color:var(--ink-sub)}.mail-hint.good{color:#8bddc1}.mail-hint.bad{color:#ff8b9d}
-.mail-notice{display:flex;gap:10px;align-items:flex-start;padding:14px 15px;line-height:1.6;background:rgba(255,175,101,.09);border:1px solid rgba(255,190,111,.3);border-radius:15px;font-size:13px;color:var(--ink-sub)}
-.mail-code{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin:23px 0}
-.mail-code input{min-width:0;width:100%;height:58px;text-align:center;font-size:29px;font-weight:750;border-radius:14px;background:rgba(120,147,168,.11);color:var(--ink);border:1px solid var(--line)}
-.mail-code input:focus{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 76%)}
-.mail-pw{display:flex;align-items:center;position:relative}.mail-pw input{padding-right:52px}.mail-pw button{position:absolute;right:11px;top:14px;display:grid;place-items:center;width:33px;height:33px}
-.mail-welcome{text-align:center;display:grid;place-items:center;gap:12px;padding:65px 10px;animation:mail-enter .55s cubic-bezier(.15,.85,.22,1.2)}.mail-welcome svg{color:#86ecc4}
-.mail-modal{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:rgba(0,0,0,.75);padding:16px}
-.mail-countries,.mail-crop{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:18px;max-width:520px;width:100%;max-height:85dvh;overflow-y:auto}
-.mail-countries header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.mail-country-list{display:grid;overflow-y:auto;max-height:52dvh}
-.mail-country-list button{display:flex;align-items:center;gap:10px;text-align:left;border-bottom:1px solid var(--line);padding:12px}.mail-country-list span{flex:1}.mail-country-list small{color:var(--ink-sub)}
-.mail-crop{position:relative}.mail-close{position:absolute;right:15px;top:15px}.mail-crop-preview{height:245px;border-radius:17px;overflow:hidden;display:grid;place-items:center;background:#0d111b}
-.mail-crop-preview img{height:100%;max-width:100%;object-fit:contain;clip-path:circle(44% at center)}.mail-crop label input{width:100%;margin-top:8px;accent-color:var(--accent)}
-@keyframes mail-enter{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(max-width:500px){.mail-code{gap:5px}.mail-code input{height:50px;font-size:25px;border-radius:10px}}
-@media(prefers-reduced-motion:reduce){.mail-welcome,.mail-card{animation:none;transition:none}}
-/* Shared Cloux wallpapers in the onboarding flow — identical presets to chat settings. */
-.mail-auth{background:radial-gradient(ellipse at 20% 0%,#a41b3838 0%,transparent 55%),radial-gradient(ellipse at 92% 94%,#56132155 0%,transparent 48%),#07070a}
-.mail-card{border-color:#ffffff30;box-shadow:0 27px 100px #0009,inset 0 1px #ffffff24;background:linear-gradient(145deg,#ffffff17,#ffffff04 32%,#00000021),#16151beb}
-.mail-card .primary{background:linear-gradient(137deg,#e11d2e,#a41028);color:#fff;box-shadow:0 8px 25px #ce173b45}
-.mail-wall-demo{min-height:276px;display:flex;flex-direction:column;justify-content:space-between;color:#f7f5f7;background-color:#151017;background-size:cover;background-position:center;overflow:hidden;border:1px solid #ffffff29;border-radius:24px;box-shadow:inset 0 1px #ffffff3b,0 15px 35px #0004;position:relative;margin:12px 0 22px;isolation:isolate}
-.mail-wall-demo:before{content:"";position:absolute;inset:-16%;z-index:-1;background:radial-gradient(circle at 20% 40%,#ffffff33 1px,transparent 2px),radial-gradient(circle at 70% 80%,#ffffff22 1px,transparent 2px);background-size:54px 65px,79px 71px;animation:mail-wall-move 26s ease-in-out infinite alternate;opacity:.33}
-.mail-wall-demo.light{color:#26212c}.mail-wall-demo.amoled{box-shadow:inset 0 1px #ffffff29;background-color:#020203}
-.mail-demo-header{display:flex;align-items:center;gap:11px;padding:11px 14px;background:#ffffff20;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-bottom:1px solid #ffffff2c}
-.mail-demo-header:not(.glass){background:#1b1a20e5}
-.mail-demo-header img{width:39px;height:39px;object-fit:cover;border-radius:50%;border:1px solid #ffffff52}
-.mail-demo-header strong{font-size:13px;display:block}.mail-demo-header small{opacity:.7;font-size:11px}
-.mail-demo-conversation{display:flex;flex-direction:column;gap:9px;padding:24px 17px 15px}
-.mail-demo-bubble{align-self:flex-start;background:#1c2028dd;color:#f5f5f5;border:1px solid #ffffff20;border-radius:19px 19px 19px 6px;padding:11px 13px;font-size:13px;max-width:86%;box-shadow:0 7px 17px #0002}
-.mail-demo-bubble.own{align-self:flex-end;background:color-mix(in srgb,var(--mail-accent),#34131a 14%);border-radius:19px 19px 6px 19px}
-.mail-demo-bubble span{font-size:10px;opacity:.78;display:block;text-align:right;margin-top:4px}
-.mail-demo-composer{padding:12px 15px;background:#ffffff17;display:flex;align-items:center;gap:11px;backdrop-filter:blur(20px);border-top:1px solid #ffffff29}
-.mail-demo-composer span{flex:1;opacity:.7;font-size:12px}
-.mail-appearance-themes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 17px}
-.mail-appearance-themes button{padding:13px 6px;border-radius:14px;background:#ffffff12;border:1px solid #ffffff20;font-size:12px}
-.mail-appearance-themes .selected{background:#e11d2d38;border-color:#f06478}
-.mail-appearance-colors{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 22px}
-.mail-appearance-colors button{width:39px;height:39px;border-radius:50%;display:grid;place-items:center;border:2px solid #ffffff24;color:#fff}
-.mail-appearance-colors button.selected{outline:2px solid #fff;outline-offset:3px}
-.mail-appearance-walls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;max-height:260px;overflow-y:auto;margin:12px 0 20px}
-.mail-appearance-walls button{min-height:83px;border-radius:15px;border:2px solid #ffffff25;background-position:center;background-size:cover;box-shadow:inset 0 1px #ffffff24;display:grid;place-items:center;color:#fff;transition:transform .2s,border .2s}
-.mail-appearance-walls button:hover{transform:translateY(-3px)}.mail-appearance-walls button.selected{border:3px solid #fff}
-.mail-preference-toggle{display:flex!important;align-items:center;justify-content:space-between;background:#ffffff0c;border:1px solid #ffffff16;border-radius:13px;margin:8px 0!important;padding:12px 14px}
-.mail-preference-toggle input{width:20px;height:20px;accent-color:#e11d2e}
-@keyframes mail-wall-move{from{transform:translate3d(-2%,0,0)}to{transform:translate3d(2%,-4%,0)}}
-@media(max-width:450px){.mail-appearance-walls{grid-template-columns:repeat(4,minmax(0,1fr))}.mail-appearance-walls button{min-height:71px}}
-@media(prefers-reduced-motion:reduce){.mail-wall-demo:before{animation:none}.mail-appearance-walls button{transition:none}}
-
-/* Visible progress while the mail API is sending a verification code. */
-.mail-spinner{animation:mail-spin .8s linear infinite;flex:none}
-@keyframes mail-spin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.mail-spinner{animation:none}}
-
-/* Telegram-like six-digit confirmation, styled for Cloux. */
-.mail-code.shake{animation:mail-code-shake .38s ease-in-out}
-.mail-code input[aria-invalid="true"]{border-color:#ff526d;box-shadow:0 0 0 1px #ff526d55}
-.mail-code-error{margin:-14px 0 17px;color:#ff667c;font-size:13px;font-weight:600;line-height:1.45}
-@keyframes mail-code-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
-@media(prefers-reduced-motion:reduce){.mail-code.shake{animation:none}}
+.mail-pw{display:flex;align-items:center;position:relative}.mail-pw input{padding-right:52px}.mail-pw button{position:absolute;right:9px;top:13px;display:grid;place-items:center;width:34px;height:34px}
+.mail-auth .primary{background:linear-gradient(137deg,#e11d2e,#a41028);color:#fff;box-shadow:0 8px 25px #ce173b45}
+.password-note{display:flex;align-items:flex-start;gap:8px;color:var(--ink-sub);font-size:12px;line-height:1.55;margin:8px 0 16px}.password-note svg{flex:none;margin-top:2px;color:#f1788a}
+.auth-error{margin:10px 0;color:#ff8b9d;font-size:13px;line-height:1.5}
+.auth-foot{margin:14px 0 0;color:var(--ink-sub);font-size:12px;line-height:1.6;text-align:center}
+.mail-auth input:focus{outline:2px solid color-mix(in srgb,var(--accent),transparent 45%);outline-offset:1px}
+.mail-card .primary:disabled{opacity:.64;cursor:wait}
+@media(prefers-reduced-motion:reduce){.mail-card{transition:none}}
