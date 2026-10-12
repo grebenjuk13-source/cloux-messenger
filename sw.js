@@ -1,15 +1,50 @@
-const VERSION="cloux-4-shell-v1";
-const SHELL=["/assets/cloux-default-avatar.jpg","/ui/styles.css","/ui/core.js","/ui/emoji.js","/ui/avatar.js","/ui/calls.js","/ui/app.js"];
-self.addEventListener("install",e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});
-self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
-self.addEventListener("fetch",e=>{
- const u=new URL(e.request.url);
- if(e.request.method!=="GET"||u.origin!==self.location.origin||u.pathname.startsWith("/api/")||u.pathname.startsWith("/ws/"))return;
- if(e.request.mode==="navigate"){
-  e.respondWith(fetch(e.request).catch(()=>new Response("<!doctype html><html lang='uk'><meta name='viewport' content='width=device-width,initial-scale=1'><body style='background:#080808;color:#fff;font:17px system-ui;padding:48px;text-align:center'><h2>Cloux зараз офлайн</h2><p>Перевір інтернет і спробуй ще раз.</p></body></html>",{headers:{"Content-Type":"text/html;charset=utf-8"}})));
-  return;
- }
- if(SHELL.includes(u.pathname)){
-  e.respondWith(fetch(e.request).then(r=>{if(r.ok){const copy=r.clone();caches.open(VERSION).then(c=>c.put(e.request,copy));}return r;}).catch(()=>caches.match(e.request)));
- }
+/* Cloux service worker — network-first shell, never cache user/API messages. */
+const CACHE='cloux-shell-v6.1.0';
+const STATIC=['/v5/','/studio/','/download','/version.json','/manifest.json',
+  '/studio/index.html','/studio/styles.css','/studio/app.js','/studio/media.js','/studio/calls.js',
+  '/cloux-updates.js','/assets/cloux-default-avatar.jpg'];
+self.addEventListener('install',event=>{
+  event.waitUntil(caches.open(CACHE).then(async cache=>{
+    await Promise.all(STATIC.map(async url=>{
+      try{const response=await fetch(new Request(url,{cache:'no-store'}));if(response.ok&&response.type==='basic')await cache.put(url,response)}
+      catch{/* not all routes are reachable during first install; network-first retries later */}
+    }));
+  }));
+});
+self.addEventListener('message',event=>{
+  if(event.data?.type==='SKIP_WAITING')self.skipWaiting();
+  if(event.data?.type==='GET_VERSION')event.source?.postMessage({type:'VERSION',version:'6.1.0'});
+});
+self.addEventListener('activate',event=>{
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(k=>k.startsWith('cloux-')&&k!==CACHE).map(k=>caches.delete(k)));
+    await self.clients.claim();
+  })());
+});
+function cacheable(request,url){
+ if(request.method!=='GET'||url.origin!==self.location.origin)return false;
+ if(/^(\/api\/|\/ws\/|\/apk\/?$|\/dmg\/?$|\/exe\/?$)/.test(url.pathname))return false;
+ const dest=request.destination;
+ return request.mode==='navigate'||['script','style','image','manifest'].includes(dest)||
+  url.pathname==='/version.json'||url.pathname.endsWith('/app.js')||url.pathname.endsWith('/styles.css')||
+  url.pathname.endsWith('/index.html');
+}
+self.addEventListener('fetch',event=>{
+ const request=event.request,url=new URL(request.url);
+ if(!cacheable(request,url))return;
+ event.respondWith((async()=>{
+  const cache=await caches.open(CACHE);
+  try{
+   const result=await fetch(request,{cache:'no-store'});
+   if(result.ok&&result.type==='basic')event.waitUntil(cache.put(request,result.clone()));
+   return result;
+  }catch{
+   const match=await cache.match(request,{ignoreSearch:true});
+   if(match)return match;
+   if(request.mode==='navigate')
+    return new Response('<!doctype html><html lang="uk"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#000"><body style="background:#000;color:#fff;font:17px system-ui;padding:36px;text-align:center"><h1>Cloux офлайн</h1><p>Підключися до інтернету, щоб відкрити свій акаунт і синхронізувати повідомлення.</p></body></html>',{headers:{'Content-Type':'text/html;charset=utf-8'}});
+   return Response.error();
+  }
+ })());
 });
