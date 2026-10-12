@@ -132,6 +132,11 @@ function App(){const [me,setMe]=useState<User|null|undefined>(undefined),[chats,
  useEffect(()=>{document.documentElement.dataset.theme=theme;document.documentElement.dataset.bubble=prefs.bubble_style;document.documentElement.dataset.wallMotion=prefs.animated_wallpaper?'on':'off';document.documentElement.style.setProperty('--accent',prefs.accent);document.documentElement.style.setProperty('--font-size',prefs.font_size+'px')},[theme,prefs]);
  const bootstrap=async()=>{try{const r=await api<User>('/api/me');setMe(r)}catch{setMe(null)}};
  useEffect(()=>{bootstrap()},[]);
+ useEffect(()=>{
+  const update=(event:Event)=>{const detail=(event as CustomEvent<{display:string;username:string}>).detail;if(detail?.display&&detail?.username)setMe(old=>old?{...old,display:detail.display,username:detail.username}:old)};
+  document.addEventListener('cloux:profile-updated',update);
+  return()=>document.removeEventListener('cloux:profile-updated',update);
+ },[]);
  useEffect(()=>{if(!me){setPrefsReady(false);return}
    let cancelled=false;
    api<{preferences:Partial<Prefs>}>('/api/v5/ui-prefs').then(r=>{if(!cancelled&&Object.keys(r.preferences).length)change({...r.preferences,theme:(['dark','light','amoled','auto'].includes(String(r.preferences.theme))?r.preferences.theme:'dark')})})
