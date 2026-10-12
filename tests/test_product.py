@@ -46,7 +46,10 @@ def test_scoped_wallpaper_backup_and_restore():
     requests_by_ip.clear()
     with TestClient(app,base_url="https://testserver") as client:
         uid=account(client,"Гамма")
-        chat=client.get("/api/chats").json()["chats"][0]["id"]
+        chats=client.get("/api/chats").json()["chats"]
+        chat=next(x["id"] for x in chats if x["kind"]=="saved")
+        sent=client.post("/api/chats/"+chat+"/messages",json={"text":"Тестове відновлене повідомлення"})
+        assert sent.status_code==200,sent.text
         wall={"kind":"gradient","preset":"w0","colors":["#AA0011","#000000"],"angle":220,
               "pattern":"stars","intensity":38,"blur":4,"dim":18,"animate":True,"parallax":True}
         response=client.put("/api/cloux/wallpaper?scope="+chat+"&mode=dark",json=wall)
