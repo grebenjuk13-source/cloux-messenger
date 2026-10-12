@@ -131,3 +131,53 @@ def test_owner_public_chat_role_and_privacy(app_client, monkeypatch):
         assert rows and "Private conversation" not in rows[0]["reason"]
         assert owner.put(f"/api/admin/reports/{rows[0]['id']}",
                          json={"status":"resolved"}).status_code==200
+
+
+def test_v6_login_preserves_existing_accounts_using_both_hash_formats(app_client):
+    """The same login UI must accept historical PBKDF2 accounts and new Argon2."""
+    client = app_client
+    created = register(client, "legacy@example.test", "existing_person", "+380670090001")
+    assert created.status_code == 200, created.text
+    uid = client.get("/api/me").json()["id"]
+    assert client.post("/api/logout").status_code == 200
+
+    # Accounts created in the new app must keep working via email and nickname.
+    for identifier in ("legacy@example.test", "@existing_person"):
+        response = client.post("/api/v6/login", json={
+            "identifier": identifier, "password": "SafeTestPass#12345"})
+        assert response.status_code == 200, response.text
+        assert client.get("/api/me").json()["id"] == uid
+        assert client.post("/api/logout").status_code == 200
+
+    # Simulate the existing on-disk account migrated from the earlier Cloux.
+    legacy_hash = main.hash_password("OldAccountPass#42")
+    with main.db() as conn:
+        conn.execute("UPDATE users SET password_hash=? WHERE id=?", (legacy_hash, uid))
+    for identifier in ("legacy@example.test", "+380670090001", "existing_person"):
+        response = client.post("/api/v6/login", json={
+            "identifier": identifier, "password": "OldAccountPass#42"})
+        assert response.status_code == 200, response.text
+        assert client.get("/api/me").json()["id"] == uid
+        assert client.post("/api/logout").status_code == 200
+
+    wrong = client.post("/api/v6/login", json={
+        "identifier": "legacy@example.test", "password": "IncorrectPassword"})
+    assert wrong.status_code == 401
+    with main.db() as conn:
+        stored = conn.execute("SELECT password_hash FROM users WHERE id=?", (uid,)).fetchone()
+    assert stored["password_hash"] == legacy_hash
+
+    # Some truly old accounts were created before email addresses were stored.
+    import time
+    with main.db() as conn:
+        conn.execute("""INSERT INTO users
+            (id,phone,username,display,password_hash,created,email)
+            VALUES(?,?,?,?,?,?,?)""",
+            ("legacy_without_mail", "+380670090002", "older_cloux", "Older",
+             main.hash_password("OldWithoutEmail#43"), int(time.time()), None))
+    for identifier in ("+380670090002", "@older_cloux"):
+        response = client.post("/api/v6/login", json={
+            "identifier": identifier, "password": "OldWithoutEmail#43"})
+        assert response.status_code == 200, response.text
+        assert client.get("/api/me").json()["id"] == "legacy_without_mail"
+        assert client.post("/api/logout").status_code == 200
