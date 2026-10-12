@@ -394,6 +394,34 @@ def stage1_frontend(asset:str):
     mime=guess_type(str(file))[0] or "application/octet-stream"
     return FileResponse(file,media_type=mime,headers={"Cache-Control":"no-cache" if file.name=="index.html" else "public,max-age=3600"})
 
+# CLOUX Studio and public version manifest (no authentication needed for static assets).
+@app.get("/version.json")
+def cloux_version():
+    return FileResponse(BASE/"version.json",media_type="application/json",headers={"Cache-Control":"no-store"})
+
+@app.get("/manifest.json")
+def cloux_pwa_manifest():
+    return FileResponse(BASE/"manifest.json",media_type="application/manifest+json",headers={"Cache-Control":"no-cache"})
+
+@app.get("/cloux-updates.js")
+def cloux_updates():
+    return FileResponse(BASE/"cloux-updates.js",media_type="application/javascript",headers={"Cache-Control":"no-cache"})
+
+@app.get("/studio")
+@app.get("/studio/")
+def cloux_studio_home():
+    return FileResponse(BASE/"studio"/"index.html",media_type="text/html",headers={"Cache-Control":"no-store"})
+
+@app.get("/studio/{asset:path}")
+def cloux_studio_assets(asset:str):
+    from mimetypes import guess_type
+    root=(BASE/"studio").resolve()
+    file=(root/asset).resolve()
+    if not file.is_relative_to(root) or not file.is_file() or file.suffix.lower() not in (".js",".css",".html",".json"):
+        fail("Файл не знайдено.",404)
+    mime=guess_type(str(file))[0] or "application/octet-stream"
+    return FileResponse(file,media_type=mime,headers={"Cache-Control":"no-cache"})
+
 # Single-instance real-time message and typing hub.
 import cloux_realtime
 cloux_realtime.install(app,db)
