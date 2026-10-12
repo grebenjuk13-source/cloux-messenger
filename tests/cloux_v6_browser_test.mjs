@@ -60,7 +60,7 @@ async function run(browserType,label){
  await page.getByText('Адмін-панель').click();
  await page.getByRole('heading',{name:'Адмін-панель'}).waitFor();
  await page.getByRole('button',{name:'Користувачі'}).last().click();
- await page.getByText('Друг Cloux').first().waitFor();
+ await page.locator('.admin-user-list').getByText('Друг Cloux').waitFor();
  await page.getByRole('button',{name:'Канали'}).last().click();
  await page.getByRole('heading',{name:'Публічні групи й канали'}).waitFor();
  await page.setViewportSize({width:1280,height:800});
