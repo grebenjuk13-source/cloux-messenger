@@ -1,5 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {ArrowLeft,Archive,Check,ChevronRight,Cloud,Download,Globe,ImagePlus,Lock,Monitor,Moon,Palette,RefreshCw,Settings,Shield,Smile,Upload,Users,Volume2,X,MessageCircle} from 'lucide-react';
+import {ArrowLeft,Archive,Check,ChevronRight,Cloud,Download,Globe,ImagePlus,Lock,Monitor,Moon,Palette,RefreshCw,Settings,Shield,Smile,Upload,Users,Volume2,X,MessageCircle,Search} from 'lucide-react';
 import {ProfileScreen,WallpaperStudio,type ClientUser} from './ClouxProduct';
 
 type SettingsValue={friends_visibility:'all'|'friends'|'none';show_online:boolean;allow_requests:boolean;allow_calls:boolean;show_message_preview:boolean;notifications_messages:boolean;notifications_calls:boolean;notifications_sound:boolean;language:'uk';backup_interval:'off'|'daily'|'weekly';profile_accent:string;banner_gradient:string;status_icon:string;banner_video:boolean};
