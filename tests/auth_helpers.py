@@ -16,4 +16,6 @@ def create_account(client, *, phone, username, display, password, email=None):
         )
     result = client.post("/api/login", json={"phone": phone, "password": password})
     assert result.status_code == 200, result.text
+    seeded = client.get("/api/chats")
+    assert seeded.status_code == 200, seeded.text
     return user_id
