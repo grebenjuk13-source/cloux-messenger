@@ -67,5 +67,11 @@ def test_scoped_wallpaper_backup_and_restore():
         imported=client.post("/api/cloux/backups/restore",json={"data":original})
         assert imported.status_code==200,imported.text
         assert imported.json()["wallpapers_restored"]>=1
+        assert imported.json()["messages_restored"]>=1
+        archive=client.get("/api/cloux/backups/archive/list")
+        assert archive.status_code==200,archive.text
+        assert any(x["id"]==chat for x in archive.json()["chats"])
+        items=client.get("/api/cloux/backups/archive/chat/"+chat).json()["messages"]
+        assert any("Тестове відновлене" in x["text"] for x in items)
         assert client.get("/api/cloux/wallpaper?scope="+chat+"&mode=dark").json()["wallpaper"]["pattern"]=="stars"
         assert client.delete("/api/cloux/backups/"+str(entry["id"])).status_code==200
