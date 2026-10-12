@@ -1,7 +1,7 @@
 /* Shared PWA update observer. No account storage or message cache. */
 (() => {
  'use strict';
- const LOCAL_VERSION='6.4.0';
+ const LOCAL_VERSION='6.5.0';
  const key='cloux:installed:version';
  let triggeredReload=false;
  let registration=null;

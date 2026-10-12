@@ -1,17 +1,15 @@
 {
-  "version": "6.4.0",
+  "version": "6.5.0",
   "date": "2026-10-12",
   "channel": "stable",
   "web": "/v5/",
   "preview": "/studio/",
   "changelog": [
-    "Футер власника на сайті та в інтерфейсі, з потрібним текстом і поштою",
-    "Робочий редактор профільних фото: crop, масштаб, камера, фільтри, серверне збереження",
-    "9 дизайнерських тем із власним акцентом та налаштуваннями вигляду",
-    "Командна палітра Ctrl+K, швидкі відповіді, локальні власні стікери",
-    "Реальна статистика повідомлень, керування сесіями, експорт даних",
-    "Локальний PIN та режим «Не турбувати» — не замінюють серверну 2FA",
-    "Сайт завантаження: Android APK, Windows EXE, Mac DMG, PWA та HTML-ярлик на справжній CLOUX"
+    "Оновлені інсталятори CLOUX 6.5.0: Android APK, Windows EXE та macOS DMG",
+    "На сторінці завантаження перевіряються реальні файли GitHub Releases, їхній розмір та дата публікації",
+    "Android відкриває справжній месенджер безпосередньо за адресою /v5/",
+    "Доступні PWA для iPhone/iPad та вебверсія для всіх пристроїв",
+    "Збережені чорний і червоний стиль CLOUX, профіль, анімації, чати та налаштування"
   ],
   "packages": {
     "android": "/apk",
@@ -19,5 +17,34 @@
     "macos": "/dmg",
     "ios": "/v5/",
     "web": "/v5/"
+  },
+  "platforms": {
+    "android": {
+      "version": "6.5.0",
+      "type": "APK (тестовий debug-підпис)",
+      "file": "Cloux-Android.apk",
+      "release": "cloux-android",
+      "minimum": "Android 8+"
+    },
+    "windows": {
+      "version": "6.5.0",
+      "type": "EXE",
+      "file": "Cloux.exe",
+      "release": "cloux-windows",
+      "minimum": "Windows 10/11 x64"
+    },
+    "macos": {
+      "version": "6.5.0",
+      "type": "DMG (не нотаризований)",
+      "file": "Cloux-macOS.dmg",
+      "release": "cloux-macos",
+      "minimum": "macOS 13+"
+    },
+    "ios": {
+      "version": "6.5.0",
+      "type": "PWA через Safari",
+      "minimum": "iPhone / iPad",
+      "release": null
+    }
   }
 }

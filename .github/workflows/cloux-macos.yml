@@ -52,8 +52,8 @@ jobs:
             <key>CFBundleName</key><string>Cloux</string>
             <key>CFBundleDisplayName</key><string>Cloux Messenger</string>
             <key>CFBundlePackageType</key><string>APPL</string>
-            <key>CFBundleShortVersionString</key><string>6.2.0</string>
-            <key>CFBundleVersion</key><string>620</string>
+            <key>CFBundleShortVersionString</key><string>6.5.0</string>
+            <key>CFBundleVersion</key><string>650</string>
             <key>CFBundleIconFile</key><string>AppIcon</string>
             <key>LSMinimumSystemVersion</key><string>13.0</string>
             <key>NSHighResolutionCapable</key><true/>
@@ -80,12 +80,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          NOTES="Універсальний DMG для Mac з Apple silicon та Intel.
+          NOTES="CLOUX 6.5.0. Універсальний DMG для Mac з Apple silicon та Intel.
 
           Ця збірка не підписана Apple Developer ID і не нотаризована. Після завантаження macOS може попросити відкрити застосунок через контекстне меню."
           if gh release view cloux-macos >/dev/null 2>&1; then
             gh release upload cloux-macos Cloux-macOS.dmg --clobber
-            gh release edit cloux-macos --title "Cloux для Mac" --notes "$NOTES"
+            gh release edit cloux-macos --title "Cloux для Mac · 6.5.0" --notes "$NOTES"
           else
-            gh release create cloux-macos Cloux-macOS.dmg --title "Cloux для Mac" --notes "$NOTES"
+            gh release create cloux-macos Cloux-macOS.dmg --title "Cloux для Mac · 6.5.0" --notes "$NOTES"
           fi

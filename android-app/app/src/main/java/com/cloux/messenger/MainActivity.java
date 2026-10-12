@@ -87,7 +87,7 @@ public class MainActivity extends Activity {
             }
         });
         if(state!=null)web.restoreState(state);
-        else web.loadUrl("https://"+HOST+"/");
+        else web.loadUrl("https://"+HOST+"/v5/");
     }
 
     private void checkMediaPermission(PermissionRequest req) {
