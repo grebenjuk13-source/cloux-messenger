@@ -267,12 +267,11 @@ async function renderProfile(){S.tab='profile';try{S.profile=(await api('/api/pr
  $('#my-notes').onclick=()=>openKind('saved');$('#cloux-news').onclick=()=>openKind('news');
 }
 function openKind(kind){const c=S.chats.find(x=>x.kind===kind);if(c)openChat(c.id);else toast('Чат ще не готовий')}
-async function loginUI(register=false){const root=$('#app');root.innerHTML=`<main class="auth"><section class="auth-card"><div class="auth-brand"><img src="${BASE_AVATAR}" alt="Cloux"><div><h1>Cloux.</h1><small class="muted">Твій месенджер</small></div></div><p class="muted">${register?'Створи акаунт один раз — потім Cloux запамʼятає пристрій.':'Увійди в Cloux і продовжуй спілкування.'}</p>
- <form id="auth-form"><label>Номер телефону з кодом країни<input type="tel" name="phone" placeholder="+380…" autocomplete="tel" required></label>${register?'<label>Ім’я<input name="display" maxlength="60" required></label><label>Позивний (латиниця)<input name="username" minlength="4" maxlength="24" required></label>':''}<label>Пароль<input type="password" name="password" minlength="8" autocomplete="${register?'new-password':'current-password'}" required></label><button class="primary" type="submit">${register?'Зареєструватися':'Увійти'}</button></form>
- <div class="auth-footer"><button id="auth-switch">${register?'У мене вже є акаунт':'Створити акаунт'}</button><a href="/download">Завантажити Cloux ↗</a></div>
- <div class="notice">Увага: наразі номер не підтверджується SMS, а безплатний сервер не гарантує збереження акаунтів після перезапуску. Не використовуй конфіденційні дані.</div></section></main>`;
- $('#auth-switch').onclick=()=>loginUI(!register);
- $('#auth-form').onsubmit=withError(async e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(e.target));await post(register?'/api/register':'/api/login',fd);await boot()});
+async function loginUI(){const root=$('#app');root.innerHTML=`<main class="auth"><section class="auth-card"><div class="auth-brand"><img src="${BASE_AVATAR}" alt="Cloux"><div><h1>Cloux.</h1><small class="muted">Твій месенджер</small></div></div><p class="muted">Увійди до свого наявного акаунта Cloux.</p>
+ <form id="auth-form"><label>Номер телефону з кодом країни<input type="tel" name="phone" placeholder="+380…" autocomplete="tel" required></label><label>Пароль Cloux<input type="password" name="password" autocomplete="current-password" required></label><button class="primary" type="submit">Увійти</button></form>
+ <div class="auth-footer"><a href="/download">Завантажити Cloux ↗</a></div>
+ <div class="notice">Створення нових акаунтів вимкнено. Використовуй пароль Cloux, а не пароль від електронної пошти.</div></section></main>`;
+ $('#auth-form').onsubmit=withError(async e=>{e.preventDefault();const fd=Object.fromEntries(new FormData(e.target));await post('/api/login',fd);await boot()});
 }
 async function boot(){clearInterval(timer);clearInterval(heartbeat);
  try{S.me=await api('/api/me')}catch{S.me=null;await loginUI();return}

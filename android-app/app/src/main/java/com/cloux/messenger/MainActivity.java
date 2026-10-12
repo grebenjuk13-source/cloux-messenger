@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.webkit.CookieManager;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
+import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.content.ActivityNotFoundException;
 import android.webkit.WebSettings;
@@ -26,6 +27,9 @@ public class MainActivity extends Activity {
     private static final String HOST = "cloux-messenger.onrender.com";
     private static final int REQUEST_CALL_PERMISSIONS = 401;
     private static final int REQUEST_FILE_PICKER = 402;
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 403;
+    private String notificationUserId="";
+    private boolean notificationPermissionPending=false;
     private WebView web;
     private PermissionRequest pendingCall;
     private ValueCallback<Uri[]> pendingFiles;
@@ -34,7 +38,6 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         getWindow().setStatusBarColor(0xFF09090B);
         getWindow().setNavigationBarColor(0xFF09090B);
-
         web = new WebView(this);
         web.setBackgroundColor(0xFF09090B);
         web.setLayoutParams(new FrameLayout.LayoutParams(
@@ -47,6 +50,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        web.addJavascriptInterface(new ClouxBridge(), "ClouxAndroid");
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(web,false);
 
@@ -108,6 +112,40 @@ public class MainActivity extends Activity {
         }
     }
 
+    private boolean isTrustedClouxPage() {
+        if(web==null || web.getUrl()==null)return false;
+        Uri uri=Uri.parse(web.getUrl());
+        return "https".equalsIgnoreCase(uri.getScheme()) && HOST.equalsIgnoreCase(uri.getHost());
+    }
+
+    private final class ClouxBridge {
+        @JavascriptInterface public void enableNotifications(String userId) {
+            runOnUiThread(() -> {
+                if(!isTrustedClouxPage() || userId==null || !userId.matches("[A-Za-z0-9_-]{1,80}"))return;
+                notificationUserId=userId;
+                if(Build.VERSION.SDK_INT>=33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED) {
+                    if(!notificationPermissionPending) {
+                        notificationPermissionPending=true;
+                        requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},REQUEST_NOTIFICATION_PERMISSION);
+                    }
+                } else startInboxService(userId);
+            });
+        }
+        @JavascriptInterface public void stopNotifications() {
+            runOnUiThread(() -> {
+                notificationUserId="";
+                getSharedPreferences("cloux_inbox",MODE_PRIVATE).edit().remove("active_user").apply();
+                stopService(new Intent(MainActivity.this,ClouxInboxService.class));
+            });
+        }
+    }
+
+    private void startInboxService(String userId) {
+        if(userId==null || userId.isEmpty() || !isTrustedClouxPage())return;
+        Intent service=ClouxInboxService.startIntent(this,userId);
+        if(Build.VERSION.SDK_INT>=26)startForegroundService(service);else startService(service);
+    }
+
     private void grantAllowed(PermissionRequest req) {
         List<String> resources=new ArrayList<>();
         for(String resource:req.getResources()){
@@ -124,6 +162,12 @@ public class MainActivity extends Activity {
 
     @Override public void onRequestPermissionsResult(int code,String[] permissions,int[] results){
         super.onRequestPermissionsResult(code,permissions,results);
+        if(code==REQUEST_NOTIFICATION_PERMISSION) {
+            notificationPermissionPending=false;
+            if(results.length>0 && results[0]==PackageManager.PERMISSION_GRANTED && !notificationUserId.isEmpty())
+                startInboxService(notificationUserId);
+            return;
+        }
         if(code==REQUEST_CALL_PERMISSIONS && pendingCall!=null){
             PermissionRequest req=pendingCall;pendingCall=null;
             grantAllowed(req);
