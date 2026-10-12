@@ -171,3 +171,12 @@
 .cx-profile-menu{position:absolute;right:0;top:54px;z-index:20;width:min(255px,70vw);padding:7px;border:1px solid #ffffff45;border-radius:20px;background:rgba(27,17,26,.94);backdrop-filter:blur(26px) saturate(180%);box-shadow:0 18px 46px #000b;display:flex;flex-direction:column;gap:2px}
 .cx-profile-menu button{width:100%;min-height:39px;display:flex;justify-content:flex-start;gap:10px;align-items:center;padding:9px 12px;background:transparent;border:none;text-align:left;border-radius:12px;font-size:13px}
 .cx-profile-menu button:hover{background:#ffffff17}
+
+.cx-archive-list{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0}
+.cx-archive-list button{background:#251722;border:1px solid #ffffff29;border-radius:13px;padding:10px 13px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;font-weight:700}
+.cx-archive-list small{font-weight:400;opacity:.7}
+.cx-archive-content{margin-top:14px;background:#110e15;border-radius:18px;border:1px solid #ffffff1f;padding:15px}
+.cx-archive-message{margin:10px 0;border-left:2px solid #e33259;border-radius:0 12px 12px 0;padding:10px 12px;background:#ffffff0c;overflow-wrap:anywhere}
+.cx-archive-message small{color:#ada1ae;font-size:11px}
+.cx-archive-message p{margin:6px 0 0;white-space:pre-wrap;font-size:14px}
+.cx-archive-content .cx-wall-tabs{align-items:center}
