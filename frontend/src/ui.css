@@ -405,3 +405,8 @@ html,body,#root {background:#0A0A0C;color:#fff}
 .cloux-admin select{background:#17171d;color:#fff;border:1px solid #ffffff45;border-radius:12px;padding:9px;min-height:41px;max-width:100%;font:inherit}
 .cloux-admin select:focus-visible{outline:2px solid #ff6b7a;outline-offset:2px}
 .cloux-admin .admin-badge{flex-wrap:wrap}
+
+.cloux-date-divider{display:table;max-width:80%;margin:18px auto 12px;padding:5px 13px;border-radius:25px;background:#15151bce;border:1px solid #ffffff20;box-shadow:0 3px 18px #0005;backdrop-filter:blur(13px);color:#e2d7de;font-size:11px;text-align:center;font-weight:650}
+.msg-line.grouped{margin-top:-3px}
+.msg-line.grouped .bubble{border-top-left-radius:7px}
+.msg-line.grouped.own .bubble{border-top-left-radius:var(--global-radius);border-top-right-radius:7px}
