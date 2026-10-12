@@ -80,6 +80,42 @@ def init(db):
 def install(app,db,auth,member,fail,limit,data_dir,base_dir):
     media_dir=Path(data_dir)/'profile-media'
     media_dir.mkdir(parents=True,exist_ok=True)
+    with db() as c:
+        c.execute('''CREATE TABLE IF NOT EXISTS cloux_follows(
+            follower_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            followed_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            created INTEGER NOT NULL,
+            PRIMARY KEY(follower_id,followed_id),
+            CHECK(follower_id<>followed_id))''')
+
+    @app.get('/api/friends/leaderboard')
+    def friends_leaderboard(request:Request):
+        me=auth(request)
+        with db() as c:
+            rows=c.execute('''SELECT u.id,u.username,u.display,
+                (SELECT COUNT(*) FROM cloux_follows f JOIN cloux_follows back
+                  ON back.follower_id=f.followed_id AND back.followed_id=f.follower_id
+                  WHERE f.follower_id=u.id) AS friends,
+                EXISTS(SELECT 1 FROM cloux_follows WHERE follower_id=? AND followed_id=u.id) AS following
+                FROM users u WHERE u.id!='cloux-system'
+                ORDER BY friends DESC, u.created ASC, u.username COLLATE NOCASE ASC LIMIT 100''',(me['id'],)).fetchall()
+        return {'users':[dict(x) for x in rows]}
+
+    @app.post('/api/users/{uid}/follow')
+    def follow_user(uid:str,request:Request):
+        me=auth(request)
+        if uid==me['id'] or uid=='cloux-system': fail('Обери інший профіль.')
+        limit(request,30,60)
+        with db() as c:
+            if not c.execute('SELECT 1 FROM users WHERE id=?',(uid,)).fetchone(): fail('Профіль не знайдено.',404)
+            c.execute('INSERT OR IGNORE INTO cloux_follows(follower_id,followed_id,created) VALUES(?,?,?)',(me['id'],uid,int(time.time())))
+        return {'ok':True}
+
+    @app.delete('/api/users/{uid}/follow')
+    def unfollow_user(uid:str,request:Request):
+        me=auth(request)
+        with db() as c:c.execute('DELETE FROM cloux_follows WHERE follower_id=? AND followed_id=?',(me['id'],uid))
+        return {'ok':True}
 
     def server_role(c,sid,uid):
         row=c.execute('SELECT role FROM cloux_server_members WHERE server_id=? AND uid=?',(sid,uid)).fetchone()

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 import sqlite3
+import time
 
 from argon2 import PasswordHasher
 from fastapi import Request
@@ -24,8 +25,16 @@ def normalize_email(raw: str) -> str | None:
 
 
 class PasswordLogin(BaseModel):
-    email: str = Field(min_length=6, max_length=254)
+    email: str = Field(default='', max_length=254)
+    identifier: str = Field(default='', max_length=254)
     password: str = Field(min_length=1, max_length=128)
+
+class Registration(BaseModel):
+    email: str = Field(min_length=6, max_length=254)
+    phone: str = Field(min_length=7, max_length=24)
+    username: str = Field(min_length=3, max_length=32)
+    display: str = Field(min_length=1, max_length=48)
+    password: str = Field(min_length=8, max_length=128)
 
 
 def install(app, db, fail, limit, set_cookie):
@@ -49,12 +58,15 @@ def install(app, db, fail, limit, set_cookie):
     @app.post('/api/v6/login')
     def login(body: PasswordLogin, request: Request):
         limit(request, 10, 900)
-        email = normalize_email(body.email)
-        if not email:
-            fail('Введіть коректну адресу електронної пошти.')
+        identifier = (body.identifier or body.email).strip()
+        email = normalize_email(identifier)
+        phone = re.sub(r'[^+0-9]', '', identifier)
+        if not email and (len(re.sub(r'\D', '', phone)) < 7 or len(phone) > 16):
+            fail('Введіть коректну пошту або номер телефону.')
         with db() as conn:
             user = conn.execute('''SELECT id,password_hash FROM users
-                WHERE email=? COLLATE NOCASE''', (email,)).fetchone()
+                WHERE (email=? COLLATE NOCASE AND ? IS NOT NULL) OR (phone=? AND ? IS NULL)''',
+                (email, email, phone if not email else '', email)).fetchone()
         if not user:
             fail('Електронна адреса або пароль Cloux неправильні.', 401)
         try:
@@ -62,3 +74,28 @@ def install(app, db, fail, limit, set_cookie):
         except Exception:
             fail('Електронна адреса або пароль Cloux неправильні.', 401)
         return set_cookie(JSONResponse({'ok': True}), user['id'])
+
+    @app.post('/api/v6/register')
+    def register(body: Registration, request: Request):
+        limit(request, 5, 3600)
+        email = normalize_email(body.email)
+        phone = re.sub(r'[^+0-9]', '', body.phone)
+        username = body.username.strip().lstrip('@').lower()
+        display = ' '.join(body.display.split())
+        if not email:
+            fail('Перевір адресу електронної пошти.')
+        if len(re.sub(r'\D', '', phone)) < 7 or len(re.sub(r'\D', '', phone)) > 15:
+            fail('Перевір номер телефону.')
+        if not re.fullmatch(r'[a-z0-9_]{3,32}', username):
+            fail('Нікнейм: латиниця, цифри й _ (від 3 символів).')
+        if not display or len(display) > 48:
+            fail('Вкажи ім’я (до 48 символів).')
+        try:
+            from uuid import uuid4
+            uid = str(uuid4())
+            with db() as conn:
+                conn.execute('INSERT INTO users(id,phone,username,display,password_hash,created,email) VALUES(?,?,?,?,?,?,?)',
+                             (uid, phone, username, display, HASHER.hash(body.password), int(time.time()), email))
+        except sqlite3.IntegrityError:
+            fail('Ця пошта, телефон або нікнейм уже використовуються.')
+        return set_cookie(JSONResponse({'ok': True}), uid)
