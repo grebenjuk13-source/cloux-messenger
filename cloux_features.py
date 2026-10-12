@@ -54,7 +54,11 @@ def initialize(db, hash_password):
                   (NEWS,"Новини Cloux","news",int(time.time())))
         if not c.execute("SELECT 1 FROM messages WHERE chat_id=?",(NEWS,)).fetchone():
             c.execute("INSERT INTO messages(chat_id,sender,text,created) VALUES(?,?,?,?)",
-                      (NEWS,SYSTEM,"❤️ Вітаємо в Cloux!\nТут будуть офіційні новини, нові можливості та важливі оголошення. Бережіть приватність: поточний сервер працює без постійного сховища.",int(time.time())))
+                      (NEWS,SYSTEM,"❤️ Вітаємо в Cloux!\nТут будуть офіційні новини, нові можливості та важливі оголошення. Дякуємо, що ви з нами!",int(time.time())))
+
+        c.execute("""UPDATE messages SET text=replace(text,
+            'Бережіть приватність: поточний сервер працює без постійного сховища.',
+            'Дякуємо, що ви з нами!') WHERE chat_id=?""", (NEWS,))
 
 def seed_user(db, uid):
     """Idempotent: create personal notes and subscribe user to the official news."""
