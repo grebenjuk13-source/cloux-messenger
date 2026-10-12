@@ -4,6 +4,7 @@ Per-account storage is access-checked. Render's default /tmp database remains ep
 """
 from __future__ import annotations
 import hashlib
+import asyncio
 import io
 import json
 import re
@@ -29,6 +30,7 @@ class ProductSettings(BaseModel):
     profile_accent: str='#E11D2E'
     banner_gradient: str='linear-gradient(120deg,#390c1b,#08090e)'
     status_icon: str='✨'
+    banner_video: bool=False
 
 class Wallpaper(BaseModel):
     kind: Literal['preset','gradient','image']='preset'
@@ -148,7 +150,97 @@ def install(app,db,auth,member,fail,limit,data_dir):
               'friends_count':len(member_list),'friendship':relation(c,u['id'],uid),
               'mutual':mutual[:12], 'friends_visible':listing_allowed(c,uid,u['id']),
               'accent':st['profile_accent'],'banner_gradient':st['banner_gradient'],
-              'status_icon':st['status_icon']}}
+              'status_icon':st['status_icon'],'banner_video':st['banner_video']}}
+
+    @app.patch('/api/cloux/profile/style')
+    def set_style(value:StyleUpdate,request:Request):
+        u=auth(request)
+        change=value.model_dump()
+        try:checked_style(change)
+        except ValueError as e:fail(str(e))
+        with db() as c:
+            current=settings(c,u['id'])
+            current.update(change)
+            c.execute("""INSERT INTO cloux_product_settings(uid,value,updated) VALUES(?,?,?)
+              ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated""",
+              (u['id'],json.dumps(current,ensure_ascii=False),int(time.time())))
+        return {'ok':True}
+
+    @app.post('/api/cloux/avatar/animated')
+    async def animated_avatar(request:Request):
+        u=auth(request);limit(request,10,60)
+        data=bytearray()
+        async for part in request.stream():
+            data.extend(part)
+            if len(data)>4_000_000:fail('Аватар має бути до 4 МБ.',413)
+        try:
+            with Image.open(io.BytesIO(data)) as image:
+                if image.format not in ('GIF','WEBP') or getattr(image,'n_frames',1)<2:fail('Потрібен анімований GIF або WebP.',415)
+                if image.width*image.height>1_000_000 or image.n_frames>60:fail('Анімація завелика.',413)
+                frames=[];delays=[]
+                for i in range(image.n_frames):
+                    image.seek(i)
+                    frame=image.convert('RGBA');frame.thumbnail((512,512),Image.Resampling.LANCZOS)
+                    frames.append(frame);delays.append(max(40,min(500,int(image.info.get('duration',100)))))
+                buffer=io.BytesIO()
+                frames[0].save(buffer,format='WEBP',save_all=True,append_images=frames[1:],
+                 duration=delays,loop=0,quality=73,method=4)
+                if buffer.tell()>4_000_000:fail('Анімація не вміщується у 4 МБ.',413)
+        except (UnidentifiedImageError,OSError,ValueError):fail('Анімацію не вдалося обробити.',415)
+        destination=Path(data_dir)/'profile-media'
+        destination.mkdir(exist_ok=True,parents=True)
+        target=destination/(u['id']+'-avatar.webp')
+        temp=target.with_suffix('.tmp');temp.write_bytes(buffer.getvalue());temp.replace(target)
+        with db() as c:
+            c.execute('UPDATE cloux_preferences SET photo_version=photo_version+1 WHERE uid=?',(u['id'],))
+            row=c.execute('SELECT photo_version FROM cloux_preferences WHERE uid=?',(u['id'],)).fetchone()
+        return {'ok':True,'version':row['photo_version']}
+
+    def video_path(uid,ext):
+        return Path(data_dir)/'profile-media'/(uid+'-banner.'+ext)
+
+    @app.post('/api/cloux/banner/video')
+    async def upload_banner_video(request:Request):
+        u=auth(request);limit(request,6,60)
+        mime=request.headers.get('content-type','').split(';')[0].lower()
+        if mime not in ('video/mp4','video/webm'):fail('Відео: лише MP4 або WebM.',415)
+        data=bytearray()
+        async for part in request.stream():
+            data.extend(part)
+            if len(data)>14_000_000:fail('Відео має бути до 14 МБ.',413)
+        ext='mp4' if mime=='video/mp4' else 'webm'
+        if len(data)<32 or (ext=='mp4' and bytes(data[4:8])!=b'ftyp') or (ext=='webm' and bytes(data[:4])!=bytes.fromhex('1a45dfa3')):
+            fail('Це не підтримуваний відеофайл.',415)
+        dest=video_path(u['id'],ext);dest.parent.mkdir(exist_ok=True,parents=True)
+        temp=dest.with_suffix('.tmp');temp.write_bytes(data);temp.replace(dest)
+        video_path(u['id'],'webm' if ext=='mp4' else 'mp4').unlink(missing_ok=True)
+        with db() as c:
+            st=settings(c,u['id']);st['banner_video']=True
+            c.execute("""INSERT INTO cloux_product_settings(uid,value,updated) VALUES(?,?,?)
+              ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated""",
+              (u['id'],json.dumps(st,ensure_ascii=False),int(time.time())))
+        return {'ok':True}
+
+    @app.get('/api/cloux/banner/video/{uid}')
+    def banner_video(uid:str,request:Request):
+        auth(request)
+        with db() as c:
+            if not c.execute('SELECT 1 FROM users WHERE id=?',(uid,)).fetchone():fail('Профіль не знайдено.',404)
+        for ext,mime in [('mp4','video/mp4'),('webm','video/webm')]:
+            path=video_path(uid,ext)
+            if path.is_file():return FileResponse(path,media_type=mime,headers={'Cache-Control':'private,max-age=120'})
+        fail('Банер не знайдено.',404)
+
+    @app.delete('/api/cloux/banner/video')
+    def delete_banner_video(request:Request):
+        u=auth(request)
+        for ext in ('webm','mp4'):video_path(u['id'],ext).unlink(missing_ok=True)
+        with db() as c:
+            st=settings(c,u['id']);st['banner_video']=False
+            c.execute("""INSERT INTO cloux_product_settings(uid,value,updated) VALUES(?,?,?)
+              ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated""",
+              (u['id'],json.dumps(st,ensure_ascii=False),int(time.time())))
+        return {'ok':True}
 
     @app.get('/api/cloux/friends/{uid}')
     def get_friends(uid:str,request:Request,q:str='',sort:Literal['name','online']='name'):
