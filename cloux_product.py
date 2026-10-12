@@ -85,6 +85,9 @@ def install(app,db,auth,member,fail,limit,data_dir):
           created INTEGER NOT NULL,
           value TEXT NOT NULL);
         CREATE INDEX IF NOT EXISTS cloux_product_backups_user ON cloux_product_backups(uid,created DESC);
+        CREATE TABLE IF NOT EXISTS cloux_imported_archive(
+          uid TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          created INTEGER NOT NULL, content TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS cloux_wallpaper_settings(
           uid TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
           scope TEXT NOT NULL, mode TEXT NOT NULL,
@@ -395,6 +398,26 @@ def install(app,db,auth,member,fail,limit,data_dir):
             mode=item.get('mode')
             if not isinstance(scope,str) or mode not in ('dark','light'):continue
             styles.append((scope,mode,verify_wall(Wallpaper.model_validate(item.get('wallpaper',{})))))
+        # A restored archive remains private and read-only: old chat messages
+        # cannot be forged or replayed as if they were newly sent by other people.
+        raw_messages=data.get('messages',[])
+        raw_chats=data.get('chats',[])
+        if not isinstance(raw_messages,list) or not isinstance(raw_chats,list) or len(raw_messages)>100000 or len(raw_chats)>5000:
+            fail('Копія повідомлень пошкоджена або завелика.',413)
+        saved_chats={}
+        for item in raw_chats:
+            if isinstance(item,dict) and isinstance(item.get('id'),str) and isinstance(item.get('title'),str):
+                saved_chats[item['id'][:90]]={'id':item['id'][:90],'title':item['title'][:140]}
+        restored_messages=[]
+        for item in raw_messages:
+            if not isinstance(item,dict) or item.get('chat_id') not in saved_chats:continue
+            text_value=item.get('text')
+            if not isinstance(text_value,str):continue
+            restored_messages.append({'chat_id':item['chat_id'][:90],'text':text_value[:10000],
+                'sender':str(item.get('sender',''))[:90],
+                'created':int(item.get('created',0)) if str(item.get('created',0)).isdigit() else 0})
+        archive=json.dumps({'chats':list(saved_chats.values()),'messages':restored_messages},ensure_ascii=False,separators=(',',':'))
+        if len(archive.encode('utf-8'))>14_000_000:fail('Архів повідомлень не вміщується у 14 МБ.',413)
         with db() as c:
             c.execute("""INSERT INTO cloux_product_settings(uid,value,updated) VALUES(?,?,?)
               ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated""",
@@ -413,8 +436,41 @@ def install(app,db,auth,member,fail,limit,data_dir):
                 c.execute('''INSERT INTO cloux_v5_ui_prefs(uid,value,updated) VALUES(?,?,?)
                     ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated''',
                     (u['id'],json.dumps(ui,ensure_ascii=False),int(time.time())))
+            c.execute('''INSERT INTO cloux_imported_archive(uid,created,content) VALUES(?,?,?)
+               ON CONFLICT(uid) DO UPDATE SET created=excluded.created,content=excluded.content''',
+               (u['id'],int(time.time()),archive))
         return {'ok':True,'settings_restored':True,'wallpapers_restored':restored,
-          'messages_restored':0,'notice':'Налаштування й оформлення відновлено. Історія повідомлень у копії доступна для експорту, але серверні повідомлення не перезаписуються.'}
+          'messages_restored':len(restored_messages),
+          'notice':'Відновлено налаштування та '+str(len(restored_messages))+' повідомлень у приватний архів. Живі чати інших учасників не змінено.'}
+
+    @app.get('/api/cloux/backups/archive/list')
+    def imported_archive_list(request:Request):
+        u=auth(request)
+        with db() as c:
+            item=c.execute('SELECT created,content FROM cloux_imported_archive WHERE uid=?',(u['id'],)).fetchone()
+        if not item:return {'chats':[],'created':None}
+        data=json.loads(item['content'])
+        counts={}
+        for message in data['messages']:counts[message['chat_id']]=counts.get(message['chat_id'],0)+1
+        return {'created':item['created'],'chats':[{**c,'messages':counts.get(c['id'],0)} for c in data['chats']]}
+
+    @app.get('/api/cloux/backups/archive/chat/{chat_id}')
+    def imported_archive_chat(chat_id:str,request:Request,q:str='',offset:int=0):
+        u=auth(request)
+        if offset<0 or offset>100000:fail('Неправильна сторінка.')
+        with db() as c:
+            row=c.execute('SELECT content FROM cloux_imported_archive WHERE uid=?',(u['id'],)).fetchone()
+        if not row:fail('Архів не знайдено.',404)
+        content=json.loads(row['content'])
+        if not any(c['id']==chat_id for c in content['chats']):fail('Чату немає у твоєму архіві.',404)
+        matches=[m for m in content['messages'] if m['chat_id']==chat_id and q.casefold() in m['text'].casefold()]
+        return {'messages':matches[offset:offset+100],'total':len(matches),'offset':offset}
+
+    @app.delete('/api/cloux/backups/archive')
+    def remove_imported_archive(request:Request):
+        u=auth(request)
+        with db() as c:c.execute('DELETE FROM cloux_imported_archive WHERE uid=?',(u['id'],))
+        return {'ok':True}
 
     @app.delete('/api/cloux/backups/{bid}')
     def delete_backup(bid:int,request:Request):
