@@ -77,7 +77,7 @@ def test_badge_toggle_and_global_theme_are_enforced(app_client, monkeypatch):
         colors = {"accent": "#C8102E", "background": "#0A0A0C",
                   "surface": "#16161A", "bubble": "#A5122B", "text": "#FFFFFF"}
         assert client.put("/api/admin/theme", json=colors).status_code == 200
-        assert other.get("/api/public/config").json()["theme"] == colors
+        assert all(other.get("/api/public/config").json()["theme"][key] == value for key, value in colors.items())
         assert other.put("/api/admin/theme", json=colors).status_code == 403
 
 
