@@ -6,15 +6,18 @@ type CallMode='audio'|'video';
 type Props={chatId:string;title:string;mode:CallMode;onClose:()=>void};
 
 export default function CallOverlay({chatId,title,mode,onClose}:Props){
- const [status,setStatus]=useState('Підключаємося…');
- const [muted,setMuted]=useState(false),[cameraOff,setCameraOff]=useState(mode!=='video');
+ const [status,setStatus]=useState('Підключаємося…'),[talking,setTalking]=useState(false);
+ const [muted,setMuted]=useState(false),[deafened,setDeafened]=useState(false),[seconds,setSeconds]=useState(0),[cameraOff,setCameraOff]=useState(mode!=='video');
  const [sharing,setSharing]=useState(false),[peerOnline,setPeerOnline]=useState(false);
  const [full,setFull]=useState(false);
  const localRef=useRef<HTMLVideoElement>(null),remoteRef=useRef<HTMLVideoElement>(null);
  const socketRef=useRef<WebSocket|null>(null),pcRef=useRef<RTCPeerConnection|null>(null);
  const streamRef=useRef<MediaStream|null>(null),shareRef=useRef<MediaStream|null>(null);
  const queued=useRef<RTCIceCandidateInit[]>([]);
- const stopping=useRef(false);
+ const stopping=useRef(false),startedAt=useRef(Date.now()),audioCtxRef=useRef<AudioContext|null>(null),rafRef=useRef(0);
+ useEffect(()=>{const id=window.setInterval(()=>setSeconds(Math.floor((Date.now()-startedAt.current)/1000)),1000);return()=>clearInterval(id)},[]);
+ function finish(){window.dispatchEvent(new CustomEvent('cloux:call-log',{detail:{chatId,title,mode,at:Date.now(),duration:seconds,result:peerOnline?'Дзвінок завершено':'Без з’єднання'}}));onClose()}
+ const clock=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
 
  useEffect(()=>{
   stopping.current=false;
@@ -29,7 +32,7 @@ export default function CallOverlay({chatId,title,mode,onClose}:Props){
     pc=new RTCPeerConnection({iceServers:Array.isArray(ice?.iceServers)?ice.iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
     pcRef.current=pc;
     local.getTracks().forEach(track=>pc!.addTrack(track,local!));
-    pc.ontrack=e=>{if(remoteRef.current){remoteRef.current.srcObject=e.streams[0];void remoteRef.current.play().catch(()=>{})}};
+    pc.ontrack=e=>{if(remoteRef.current){remoteRef.current.srcObject=e.streams[0];void remoteRef.current.play().catch(()=>{})}if(e.track.kind==='audio'&&e.streams[0]){try{const ctx=new AudioContext();audioCtxRef.current=ctx;const analyser=ctx.createAnalyser();analyser.fftSize=256;ctx.createMediaStreamSource(e.streams[0]).connect(analyser);const values=new Uint8Array(analyser.frequencyBinCount);const listen=()=>{analyser.getByteFrequencyData(values);let level=0;for(const n of values)level+=n;setTalking(level/values.length>18);rafRef.current=requestAnimationFrame(listen)};listen()}catch{}}};
     pc.onicecandidate=e=>{if(e.candidate&&ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'ice',candidate:e.candidate.toJSON()}))};
     pc.onconnectionstatechange=()=>{
      if(stopping.current)return;
@@ -83,6 +86,7 @@ export default function CallOverlay({chatId,title,mode,onClose}:Props){
    ws?.close();pc?.close();
    streamRef.current?.getTracks().forEach(t=>t.stop());
    shareRef.current?.getTracks().forEach(t=>t.stop());
+   cancelAnimationFrame(rafRef.current);void audioCtxRef.current?.close();
   };
  },[chatId,mode]);
 
@@ -109,7 +113,8 @@ export default function CallOverlay({chatId,title,mode,onClose}:Props){
  }
  async function toggleScreen(){
   if(sharing){
-   shareRef.current?.getTracks().forEach(t=>t.stop());shareRef.current=null;
+   shareRef.current?.getTracks().forEach(t=>t.stop());
+   shareRef.current=null;
    const cam=streamRef.current?.getVideoTracks()[0];
    const sender=pcRef.current?.getSenders().find(x=>x.track?.kind==='video');
    if(cam&&sender)await sender.replaceTrack(cam).catch(()=>{});
@@ -130,17 +135,18 @@ export default function CallOverlay({chatId,title,mode,onClose}:Props){
  }
  return <div className="cloux-call-overlay" role="dialog" aria-modal="true" aria-label={'Дзвінок із '+title}>
   <div className="cloux-call-panel">
-   <div className="cloux-call-heading"><div className="cloux-call-badge">CLOUX · CALL</div><button aria-label="На весь екран" onClick={()=>{setFull(!full);void document.querySelector('.cloux-call-panel')?.requestFullscreen?.().catch(()=>{})}}><Maximize2 size={18}/></button></div>
-   <h2>{title}</h2><p className="cloux-call-status"><span className={peerOnline?'connected':''}/>{status}</p>
-   <div className="cloux-call-stage"><video ref={remoteRef} playsInline autoPlay className="cloux-remote" />
+   <div className="cloux-call-heading"><div className="cloux-call-badge">CLOUX · CALL</div><button aria-label={full?"Згорнути дзвінок":"На весь екран"} onClick={()=>{if(document.fullscreenElement){void document.exitFullscreen().catch(()=>{});setFull(false)}else{void document.querySelector('.cloux-call-panel')?.requestFullscreen?.().then(()=>setFull(true)).catch(()=>{})}}}><Maximize2 size={18}/></button></div>
+   <h2>{title}</h2><div className="cloux-call-clock">{clock}</div><p className="cloux-call-status"><span className={peerOnline?'connected':''}/>{status}</p>
+   <div className={'cloux-call-stage '+(talking?'speaking':'')}><video ref={remoteRef} playsInline autoPlay muted={deafened} className="cloux-remote" />
     <div className="cloux-call-placeholder"><Users size={54}/><span>{peerOnline?'Учасник дзвінка':'Очікування співрозмовника'}</span></div>
     <video ref={localRef} playsInline autoPlay muted className="cloux-local"/>
    </div>
    <div className="cloux-call-controls">
     <button className={muted?'off':''} onClick={toggleMic} aria-label={muted?'Увімкнути мікрофон':'Вимкнути мікрофон'}>{muted?<MicOff/>:<Mic/>}<span>Мікрофон</span></button>
+    <button className={deafened?'off':''} onClick={()=>setDeafened(v=>!v)} aria-label={deafened?'Увімкнути звук співрозмовника':'Вимкнути звук співрозмовника'}><Volume2/><span>{deafened?'Звук вимкнено':'Звук'}</span></button>
     <button className={cameraOff?'off':''} onClick={()=>void toggleCamera()} aria-label={cameraOff?'Увімкнути камеру':'Вимкнути камеру'}>{cameraOff?<VideoOff/>:<Video/>}<span>Камера</span></button>
     <button className={sharing?'sharing':''} onClick={()=>void toggleScreen()} aria-label={sharing?'Зупинити демонстрацію':'Демонстрація екрана'}><MonitorUp/><span>Екран</span></button>
-    <button className="cloux-hangup" onClick={onClose} aria-label="Завершити дзвінок"><PhoneOff/><span>Завершити</span></button>
+    <button className="cloux-hangup" onClick={finish} aria-label="Завершити дзвінок"><PhoneOff/><span>Завершити</span></button>
    </div>
    <p className="cloux-call-note"><Volume2 size={15}/> Звук відтворюється через динамік або навушники пристрою. На деяких мережах може знадобитися TURN-сервер.</p>
   </div>

@@ -22,3 +22,8 @@
 .cloux-call-note{font-size:11px;color:#adaeb7;display:flex;align-items:center;gap:8px;line-height:1.5;margin:16px 0 0}
 @media(max-width:600px){.cloux-call-panel{padding:17px;border-radius:26px}.cloux-call-controls{gap:5px}.cloux-call-controls button{padding:12px 3px;font-size:10px;border-radius:13px}.cloux-call-stage{height:38dvh}.cloux-call-note{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.cloux-call-controls button{transition:none}}
+.cloux-call-clock{font-size:18px;font-variant-numeric:tabular-nums;color:#fff;font-weight:750;letter-spacing:.08em;margin:6px 0 8px}
+.cloux-call-controls{grid-template-columns:repeat(5,minmax(0,1fr))}
+.cloux-call-controls button{min-width:0}
+.cloux-call-panel{padding-top:calc(20px + env(safe-area-inset-top,0px));max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+@media(max-width:600px){.cloux-call-controls{grid-template-columns:repeat(3,minmax(0,1fr))}}
