@@ -449,10 +449,13 @@ def install(app, db, auth, fail, limit, check_password, emit=None):
     def announcement(body: Announcement, request: Request):
         me = require_owner(request, True)
         with db() as c:
-            c.execute("INSERT INTO messages(chat_id,sender,text,created) VALUES(?,?,?,?)",
+            cursor=c.execute("INSERT INTO messages(chat_id,sender,text,created) VALUES(?,?,?,?)",
                       (NEWS, SYSTEM, body.text.strip(), int(time.time())))
+            mid=cursor.lastrowid
             audit(c, me["id"], "announcement.publish", NEWS, {"length": len(body.text)})
-        return {"ok": True}
+        if emit:
+            emit(NEWS,"new_message",message_id=mid)
+        return {"ok": True,"message_id":mid}
 
     @app.put("/api/admin/users/{uid}/role")
     def set_role(uid: str, body: RoleUpdate, request: Request):
