@@ -105,7 +105,7 @@ public final class ClouxInboxService extends Service {
     }
 
     private void connectInbox(){
-        if(stopped || isDestroyed() || socket!=null)return;
+        if(stopped || socket!=null)return;
         String cookie=CookieManager.getInstance().getCookie(BASE);
         if(cookie==null || !cookie.contains("cloux_session=")){scheduleReconnect();return;}
         Request request=new Request.Builder().url("wss://"+HOST+"/ws/inbox").header("Cookie",cookie).build();
