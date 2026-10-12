@@ -10,7 +10,7 @@ sh run.sh
 
 Open http://127.0.0.1:10000/ after the first build.
 
-New account registration is currently disabled. Existing users can sign in at `/download` → `/v5/` with their account email and separate Cloux password. Cloux never asks for a Gmail or other mailbox password. Passwords are stored with Argon2.
+Create an account at `/download` → `/v5/` with your name, nickname, phone number, email, and a separate Cloux password. You can sign in later with your email or phone and that Cloux password. Cloux never asks for a Gmail or other mailbox password. Passwords are stored with Argon2.
 
 ## Calls
 
