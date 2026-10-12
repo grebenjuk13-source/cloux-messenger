@@ -1,0 +1,199 @@
+/* Cloux UI refresh — chat legibility, ruby settings, emoji keyboard, fluid motion. */
+/* Only presentation rules: account and message data are not changed. */
+.chat-room .bubble,.chat-room .bubble-text,.chat-room .bubble-text *,.chat-room .msg-reply,
+.chat-room .msg-foot,.chat-room .msg-foot time {
+  color:#fff !important;
+}
+.chat-room .msg-line.other .bubble {
+  background:linear-gradient(145deg,#2b2930,#201e26) !important;
+  border:1px solid #ffffff24;
+}
+.chat-room .msg-line.own .bubble {
+  background:linear-gradient(130deg,#d21a31,#8d0f20) !important;
+  border:1px solid #f4708552;
+}
+.chat-room .bubble-text{color:#fff!important;opacity:1;filter:none}
+.chat-room .msg-foot{opacity:.76}
+.chat-room .msg-reply{background:#ffffff16!important;border-left-color:#ff8d99!important}
+.chat-room .empty-chat,.chat-room .read-only{color:#fff!important}
+.chat-room .messages-area{color:#fff}
+.chat-room .message-reactions button{color:#fff}
+
+/* All four settings sections share the same dark red palette and contrast. */
+.settings-view{color:#fff!important}
+.settings-view .section-header h2,.settings-view .section-header svg,
+.settings-view .settings-group>small,.settings-view .setting-content h3,
+.settings-view .settings-profile b,.settings-view .settings-profile small,
+.settings-view .setting-row,.settings-view .setting-row>span,
+.settings-view .setting-row>svg,.settings-view .setting-content,
+.settings-view .setting-content p,.settings-view .setting-content small,
+.settings-view .toggle-row,.settings-view .toggle-row small,
+.settings-view .settings-search,.settings-view .settings-search svg,
+.settings-view .logout{color:#fff!important}
+.settings-view .settings-profile {
+  background:linear-gradient(128deg,#b61d36 0%,#821425 56%,#600e1d 100%)!important;
+  border:1px solid #ff9bab48!important;
+  box-shadow:inset 0 1px #ffffff35,0 14px 28px #0004;
+  border-radius:25px!important;
+}
+.settings-view .settings-box {
+  background:linear-gradient(132deg,#9b1930 0%,#701223 100%)!important;
+  border:1px solid #ff9dab43!important;
+  box-shadow:inset 0 1px #ffffff28,0 10px 30px #0003;
+  border-radius:24px!important;
+  overflow:hidden;
+}
+.settings-view .settings-group{background:transparent!important;border:0!important;border-radius:0!important}
+.settings-view .setting-row{min-height:65px;border-color:#ffffff24!important;border-radius:0}
+.settings-view .setting-row:hover,.settings-view .setting-row:focus-visible{background:#ffffff14!important}
+.settings-view .setting-row:active{background:#ffffff24!important}
+.settings-view .setting-row>svg:last-child{color:#ffe3e7!important}
+.settings-view .setting-icon,.settings-view [class*="ic-"] {
+  color:white!important;background:#ffffff20!important;border:1px solid #ffffff24!important;
+}
+.settings-view .settings-search,
+.settings-view .setting-content .pill-grid button,
+.settings-view .setting-content .upload-wall,
+.settings-view .setting-content .toggle-row,
+.settings-view .setting-content .setting-row,
+.settings-view .setting-content .inline-form input,
+.settings-view .setting-content input:not([type="checkbox"]):not([type="range"]):not([type="color"]) {
+  background:linear-gradient(128deg,#a61a32,#701122)!important;
+  border:1px solid #ff9cab40!important;
+  border-radius:17px!important;color:#fff!important;
+}
+.settings-view .settings-search{border-radius:17px!important}
+.settings-view input,.settings-view button,.settings-view label,
+.settings-view .pill-grid button{color:#fff!important}
+.settings-view input::placeholder{color:#ffe3e7c7!important;opacity:1}
+.settings-view .settings-search input{background:transparent!important;border:0!important;color:#fff!important}
+.settings-view .setting-content .toggle-row{padding:13px 15px;margin:7px 0;min-height:55px}
+.settings-view .setting-content .pill-grid button.selected{
+  background:linear-gradient(120deg,#db2d49,#8d162d)!important;
+  border-color:#ffd0d8b8!important;box-shadow:inset 0 1px #ffffff4d;
+}
+.settings-view .setting-content .pill-grid button:active{transform:scale(.975)}
+.settings-view .setting-content .toggle-row input[type="checkbox"]{background:#3c131d!important;border:1px solid #ffc1c76b}
+.settings-view .setting-content .toggle-row input[type="checkbox"]:checked{background:#ef3652!important}
+.settings-view .setting-content .upload-wall{display:flex;align-items:center;gap:12px;padding:14px}
+.settings-view .setting-content input[type="range"],
+.settings-view .setting-content input[type="checkbox"]{accent-color:#ff596d}
+.settings-view .setting-content .settings-chat-preview .preview-bubble{color:#fff!important}
+.settings-view .logout{border-radius:17px;padding:13px 14px}
+.settings-view .logout:active{background:#a6192e45}
+.settings-view .settings-profile .avatar{border:2px solid #ffffffb0;box-shadow:0 4px 14px #0005}
+
+/* Bottom keyboard: search, grid, recents and categories in the bottom bar. */
+.cloux-emoji-overlay{
+  position:fixed;inset:0;z-index:240;
+  background:#020105a8;display:flex;align-items:flex-end;justify-content:center;
+  animation:cloux-emoji-fade-in .26s ease-out both;
+  overscroll-behavior:contain;
+}
+.cloux-emoji-overlay.is-closing{animation:cloux-emoji-fade-out .24s ease-in both;pointer-events:none}
+.cloux-emoji-overlay .emoji-panel {
+  position:relative!important;bottom:auto!important;left:auto!important;right:auto!important;
+  width:min(100%,560px)!important;max-width:560px!important;max-height:min(76dvh,650px)!important;
+  min-height:min(440px,62dvh);
+  display:flex!important;flex-direction:column;overflow:hidden;
+  border:1px solid #ffffff32!important;border-bottom:0!important;
+  border-radius:27px 27px 0 0!important;
+  background:linear-gradient(150deg,#272329,#151419 73%)!important;
+  color:#fff!important;
+  padding:12px 14px calc(10px + env(safe-area-inset-bottom,0px))!important;
+  box-shadow:0 -18px 65px #0009,inset 0 1px #ffffff30!important;
+  transform:translate3d(0,0,0);will-change:transform,opacity;
+  animation:cloux-emoji-spring-in .48s both;
+}
+.cloux-emoji-overlay.is-closing .emoji-panel{animation:cloux-emoji-slide-out .24s ease-in both}
+.cloux-emoji-overlay .emoji-panel:before{
+  content:"";display:block;flex:none;width:38px;height:4px;border-radius:9px;
+  background:#ffffff6b;margin:0 auto 13px;
+}
+.emoji-panel-top{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:0 4px 10px}
+.emoji-panel-top strong{font-size:17px;color:#fff}
+.emoji-panel-top button{display:grid;place-items:center;width:33px;height:33px;border-radius:50%;background:#ffffff16;color:#fff}
+.emoji-search-row{display:flex;align-items:center;gap:9px;background:#ffffff12;border:1px solid #ffffff29;border-radius:15px;padding:0 12px;color:#d4d2d8}
+.cloux-emoji-overlay .emoji-search-row input{margin:0!important;flex:1;min-width:0;padding:11px 0!important;background:transparent!important;border:0!important;outline:0;color:#fff!important}
+.emoji-search-row input::placeholder{color:#bab7bf}
+.emoji-section-name{color:#e4dfe5;font-size:12px;font-weight:700;letter-spacing:.02em;margin:12px 6px 8px}
+.cloux-emoji-overlay .emoji-grid{
+  display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows:43px;
+  gap:4px!important;max-height:none!important;min-height:0;flex:1;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  padding:0 2px 8px;scrollbar-width:thin;
+}
+.cloux-emoji-overlay .emoji-grid button{
+  width:100%;height:42px!important;border:0;border-radius:11px;
+  display:grid;place-items:center;line-height:1;
+  font-size:28px!important;background:transparent;color:#fff;
+  transition:transform .13s ease,background-color .13s ease;
+}
+.cloux-emoji-overlay .emoji-grid button:active{transform:scale(.83);background:#ffffff18}
+.native-emoji{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-variant-emoji:emoji;font-size:27px;line-height:1.15}
+.cloux-emoji-overlay .emoji-cats{
+  order:3;display:flex!important;gap:3px;justify-content:space-between;
+  margin:9px -5px 0;padding:9px 4px 0;border-top:1px solid #ffffff28;
+  overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+}
+.cloux-emoji-overlay .emoji-cats button{
+  display:grid;place-items:center;flex:1 0 38px;min-width:38px;height:44px;
+  padding:7px!important;border-radius:12px;font-size:23px!important;color:#fff;
+  transition:background-color .16s,transform .16s;
+}
+.cloux-emoji-overlay .emoji-cats button.chosen{background:#d11d3b45!important;outline:1px solid #f25c7777}
+.cloux-emoji-overlay .emoji-cats button:active{transform:scale(.89)}
+.emoji-no-results{grid-column:1/-1;text-align:center;padding:35px 10px;color:#eee;font-size:13px}
+
+/* Cross-page and menu motion, kept to compositor-friendly opacity / transform. */
+@keyframes cloux-emoji-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes cloux-emoji-fade-out{from{opacity:1}to{opacity:0}}
+@keyframes cloux-emoji-spring-in{
+  0%{opacity:0;transform:translate3d(0,100%,0)}
+  62%{opacity:1;transform:translate3d(0,-12px,0)}
+  82%{transform:translate3d(0,4px,0)}
+  100%{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes cloux-emoji-slide-out{from{opacity:1;transform:translate3d(0,0,0)}to{opacity:0;transform:translate3d(0,100%,0)}}
+@keyframes cloux-route-enter{from{opacity:0;transform:translate3d(0,11px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes cloux-sheet-open{from{opacity:0;transform:translate3d(0,25px,0) scale(.985)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+.app-content .chat-room,.app-content .settings-view,.app-content .content-screen,
+.app-content .call-hub,.app-content .leaderboard,.app-content .server-space{
+  animation:cloux-route-enter .26s cubic-bezier(.2,.75,.3,1) both;
+}
+.settings-view .settings-group,.settings-view .settings-profile,.settings-view .settings-search{
+  animation:cloux-route-enter .3s ease both;
+}
+.settings-view .settings-group:nth-of-type(2){animation-delay:35ms}
+.settings-view .settings-group:nth-of-type(3){animation-delay:70ms}
+.settings-view .settings-group:nth-of-type(4){animation-delay:100ms}
+.modal-shade{animation:cloux-emoji-fade-in .22s ease both}
+.modal-shade .create-sheet,.modal-shade .notes-card,
+.modal-shade .new-chat-modal,.modal-shade .country-modal,
+.call-invite,.msg-actions{animation:cloux-sheet-open .24s cubic-bezier(.2,.8,.2,1) both}
+.app-shell button,.app-shell .settings-profile{transition:transform .14s ease,background-color .18s ease,border-color .18s ease}
+.app-shell button:active:not(:disabled){transform:scale(.975)}
+.app-shell button:focus-visible{outline:2px solid #ffb2c0;outline-offset:2px}
+.chat-entries .chat-entry{animation:cloux-route-enter .23s ease both}
+.quick-reactions{display:flex;align-items:center;justify-content:center}
+.emoji-reaction-trigger{
+  display:flex;align-items:center;justify-content:center;gap:11px;width:100%;min-height:44px;
+  background:#b71d3742;border-radius:12px;color:#fff;font-size:14px;font-weight:650;
+}
+.emoji-reaction-trigger svg{color:#ff8da0}
+@media(max-width:385px){
+ .cloux-emoji-overlay .emoji-grid{grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:41px}
+ .cloux-emoji-overlay .emoji-cats button{flex-basis:36px;min-width:36px}
+ .cloux-emoji-overlay .emoji-panel{padding-left:9px!important;padding-right:9px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .cloux-emoji-overlay,.cloux-emoji-overlay.is-closing,.cloux-emoji-overlay .emoji-panel,
+ .cloux-emoji-overlay.is-closing .emoji-panel,
+ .app-content .chat-room,.app-content .settings-view,.app-content .content-screen,
+ .app-content .call-hub,.app-content .leaderboard,.app-content .server-space,
+ .settings-view .settings-group,.settings-view .settings-profile,.settings-view .settings-search,
+ .modal-shade,.modal-shade .create-sheet,.modal-shade .notes-card,
+ .modal-shade .new-chat-modal,.modal-shade .country-modal,.call-invite,.msg-actions,
+ .chat-entries .chat-entry{animation:none!important;transition:none!important}
+ .app-shell button,.app-shell .settings-profile,.emoji-grid button{transition:none!important}
+}
