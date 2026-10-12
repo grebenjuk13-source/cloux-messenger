@@ -51,3 +51,8 @@
 @keyframes mail-wall-move{from{transform:translate3d(-2%,0,0)}to{transform:translate3d(2%,-4%,0)}}
 @media(max-width:450px){.mail-appearance-walls{grid-template-columns:repeat(4,minmax(0,1fr))}.mail-appearance-walls button{min-height:71px}}
 @media(prefers-reduced-motion:reduce){.mail-wall-demo:before{animation:none}.mail-appearance-walls button{transition:none}}
+
+/* Visible progress while the mail API is sending a verification code. */
+.mail-spinner{animation:mail-spin .8s linear infinite;flex:none}
+@keyframes mail-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.mail-spinner{animation:none}}
