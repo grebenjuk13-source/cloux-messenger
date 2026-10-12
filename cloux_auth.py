@@ -112,7 +112,7 @@ def install(app, db, fail, limit, set_cookie, verify_password, failed_login_atte
 
     @app.get('/api/v6/username-available')
     def username_available(username: str, request: Request):
-        limit(request, 40, 60)
+        limit(request, 240, 60)
         name = username.strip().lstrip('@').lower()
         if not re.fullmatch(r'[a-z0-9_]{3,32}', name):
             return {'available': False, 'reason': 'Нікнейм: 3–32 символи, латиниця, цифри й _'}
