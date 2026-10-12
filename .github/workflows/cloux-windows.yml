@@ -1,0 +1,50 @@
+name: Build Cloux for Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "windows-app/**"
+      - "download.html"
+      - "main.py"
+      - ".github/workflows/cloux-windows.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build self-contained Windows app
+        run: dotnet publish windows-app/Cloux.csproj --configuration Release --runtime win-x64 --output publish
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cloux-Windows-x64
+          path: publish/Cloux.exe
+          retention-days: 90
+
+      - name: Publish stable Windows download
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view cloux-windows *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload cloux-windows publish/Cloux.exe --clobber
+            gh release edit cloux-windows --title "Cloux для Windows" --notes "Окрема програма Cloux для Windows 10/11 x64. Для відображення чату потрібен Microsoft Edge WebView2 Runtime; якщо його немає, програма покаже посилання на офіційний інсталятор Microsoft."
+          } else {
+            gh release create cloux-windows publish/Cloux.exe --title "Cloux для Windows" --notes "Окрема програма Cloux для Windows 10/11 x64. Для відображення чату потрібен Microsoft Edge WebView2 Runtime; якщо його немає, програма покаже посилання на офіційний інсталятор Microsoft."
+          }
