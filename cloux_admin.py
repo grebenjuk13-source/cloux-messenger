@@ -340,7 +340,7 @@ def install(app, db, auth, fail, limit, check_password, emit=None):
     def toggle_badge(uid: str, badge_id: str, body: BadgeToggle, request: Request):
         me = require_owner(request, True)
         with db() as c:
-            if is_owner(c, uid):
+            if is_owner(c, uid) and uid!=me["id"]:
                 fail("Значки власника захищені.", 403)
             if not c.execute("SELECT 1 FROM users WHERE id=?", (uid,)).fetchone():
                 fail("Користувача не знайдено.", 404)
@@ -405,6 +405,16 @@ def install(app, db, auth, fail, limit, check_password, emit=None):
     @app.put("/api/admin/theme")
     def update_theme(body: ThemeUpdate, request: Request):
         me = require_owner(request, True)
+        def luminance(color):
+            components=[int(color[i:i+2],16)/255 for i in (1,3,5)]
+            components=[v/12.92 if v<=0.04045 else ((v+0.055)/1.055)**2.4 for v in components]
+            return 0.2126*components[0]+0.7152*components[1]+0.0722*components[2]
+        text_light=luminance(body.text)
+        for layer in (body.background,body.surface,body.bubble):
+            back_light=luminance(layer)
+            contrast=(max(text_light,back_light)+0.05)/(min(text_light,back_light)+0.05)
+            if contrast<4.5:
+                fail("Замалий контраст тексту: потрібно не менше 4.5:1.",422)
         with db() as c:
             c.execute("UPDATE theme SET config=?,updated_at=? WHERE id=1",
                       (body.model_dump_json(), int(time.time())))
