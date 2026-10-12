@@ -33,6 +33,8 @@ await page.getByRole('textbox',{name:'Електронна пошта'}).fill('f
 await page.getByRole('button',{name:'Надіслати код'}).click();
 await page.getByRole('heading',{name:'Підтверди пошту'}).waitFor();
 assert.equal(await page.locator('.mail-code input').count(),6);
+for(let i=0;i<6;i++)await page.locator('.mail-code input').nth(i).fill(String(i+1));
+await page.getByRole('heading',{name:'Номер телефону'}).waitFor();
 await page.reload({waitUntil:'networkidle'});
 await page.getByRole('button',{name:/Увійти/}).first().click();
 await page.getByPlaceholder('example@gmail.com').fill('frontend.test@gmail.com');
