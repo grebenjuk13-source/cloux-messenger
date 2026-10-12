@@ -1,0 +1,28 @@
+
+.cloux-admin{color:#f2f2f4;background:#16161a;border:1px solid #ffffff1c;border-radius:20px;padding:clamp(14px,3vw,22px);margin:10px 0 40px;min-width:0}
+.cloux-admin h3{margin:0 0 5px;font-size:21px;color:#fff}.cloux-admin h4{margin:21px 0 11px;font-size:16px;color:#fff}
+.cloux-admin p,.cloux-admin small{color:#bdbdc5}.cloux-admin p{line-height:1.55}
+.admin-intro{display:flex;align-items:center;gap:12px}.admin-intro>div{min-width:0;flex:1}
+.admin-intro p{margin:0;font-size:12px}.admin-tabs{display:flex;overflow-x:auto;gap:8px;padding:15px 0;scrollbar-width:thin}
+.admin-tabs button,.admin-actions button,.admin-quiet,.cloux-admin button:not(.admin-primary):not(.admin-tabs button){background:#222229;color:#f2f2f5;border:1px solid #ffffff24;border-radius:12px;padding:10px 13px;cursor:pointer}
+.admin-tabs button{display:flex;align-items:center;gap:7px;flex:0 0 auto;white-space:nowrap;font-size:12px}
+.admin-tabs button.selected,.admin-user-list button.selected{background:#721424;color:#fff;border-color:#ff6b7a70}
+.cloux-admin button:active{transform:scale(.97)}.cloux-admin button:focus-visible,.cloux-admin input:focus-visible,.cloux-admin textarea:focus-visible{outline:2px solid #ff6b7a;outline-offset:2px}
+.cloux-admin button:disabled{opacity:.55;cursor:not-allowed}.cloux-admin input,.cloux-admin textarea{background:#0e0e12!important;color:#fff!important;border:1px solid #ffffff35!important;border-radius:11px;min-height:41px;padding:9px 11px;width:100%;font:inherit;box-sizing:border-box}
+.cloux-admin input::placeholder,.cloux-admin textarea::placeholder{color:#adadb8}
+.cloux-admin textarea{resize:vertical;min-height:110px}.admin-primary{background:linear-gradient(120deg,#c8102e,#7a0b1e)!important;color:#fff!important;border:1px solid #ff6b7a45!important;border-radius:12px;padding:11px 16px;font-weight:700;cursor:pointer}
+.admin-inline{display:flex;gap:9px;align-items:center}.admin-inline input{max-width:210px}
+.admin-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.admin-stats article{background:#222229;border:1px solid #ffffff1a;border-radius:15px;padding:16px 10px;display:grid;gap:4px;text-align:center}.admin-stats b{font-size:25px;color:#ff6b7a}.admin-stats small{font-size:11px}
+.admin-two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:17px}.admin-label{display:grid;gap:7px;color:#e5e5ea;font-size:13px;font-weight:600}
+.admin-user-list{display:grid;gap:5px;max-height:400px;overflow-y:auto;margin-top:12px}.admin-user-list button{text-align:left;display:grid;gap:4px}.admin-user-list small{display:block;font-size:11px}
+.admin-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.admin-actions button{font-size:12px}.admin-badge-list{display:grid;gap:7px;margin:10px 0}
+.admin-badge{display:flex;align-items:center;gap:10px;background:#222229;border:1px solid #ffffff1a;border-radius:12px;padding:10px 12px}.admin-badge span:nth-child(2),.admin-badge b{flex:1}.admin-badge small{flex:1;font-size:11px}
+.admin-badge input[type=checkbox]{appearance:auto!important;width:21px!important;height:21px!important;min-height:0!important;accent-color:#c8102e;margin:0 0 0 auto}
+.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:15px 0}
+.admin-color{display:flex;align-items:center;gap:8px}.admin-color input[type=color]{width:55px;height:44px;min-height:0;padding:3px}.admin-color code{color:#fff}
+.admin-theme-preview{display:grid;gap:14px;justify-items:start;border:1px solid;border-radius:17px;padding:22px;margin:14px 0}
+.admin-theme-preview span{padding:13px;border-radius:15px}
+.admin-log{max-height:440px;overflow-y:auto}.admin-log article{display:flex;justify-content:space-between;gap:10px;padding:11px;border-bottom:1px solid #ffffff16}.admin-log small{font-size:11px;text-align:right}
+.admin-error{color:#ff9ea7!important;background:#6a172145;border-radius:10px;padding:11px}.admin-notice{color:#d6f4de!important;background:#1d5a3340;border-radius:10px;padding:11px}
+@media(max-width:650px){.admin-two-col,.admin-grid{grid-template-columns:1fr}.admin-stats{gap:5px}.admin-stats b{font-size:21px}.admin-stats article{padding:12px 5px}.admin-log article{display:grid}.admin-log small{text-align:left}}
+@media(prefers-reduced-motion:reduce){.cloux-admin button{transition:none!important;animation:none!important}}
