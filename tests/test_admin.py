@@ -207,3 +207,20 @@ def test_repeated_logins_do_not_consume_login_attempt_budget(app_client):
         response = client.post("/api/login", json={"phone": "+380670016666", "password": "SafeTestPass#12345"})
         assert response.status_code == 200, response.text
         client.post("/api/logout")
+
+def test_wrong_password_limit_does_not_block_correct_password(app_client):
+    client = app_client
+    assert register(client, "failguard@example.test", "failguard_user", "+380670014444").status_code == 200
+    uid = client.get("/api/me").json()["id"]
+    client.post("/api/logout")
+    for i in range(26):
+        if i % 2:
+            res = client.post("/api/login", json={"phone": "+380670014444", "password": "WrongPassword"})
+        else:
+            res = client.post("/api/v6/login", json={"identifier": "failguard@example.test", "password": "WrongPassword"})
+        assert res.status_code == (429 if i == 25 else 401), res.text
+    # The correct password always permits a valid login, even after mistakes.
+    res = client.post("/api/v6/login", json={
+        "identifier": "@failguard_user", "password": "SafeTestPass#12345"})
+    assert res.status_code == 200, res.text
+    assert client.get("/api/me").json()["id"] == uid
