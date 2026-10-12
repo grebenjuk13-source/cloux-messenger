@@ -61,14 +61,16 @@ def install(app, db, fail, limit, set_cookie):
         identifier = (body.identifier or body.email).strip()
         email = normalize_email(identifier)
         phone = re.sub(r'[^+0-9]', '', identifier)
-        if not email and not re.fullmatch(r'[a-zA-Z0-9_]{3,32}', identifier) and (len(re.sub(r'\D', '', phone)) < 7 or len(phone) > 16):
-            fail('Введіть коректну пошту або номер телефону.')
+        if email:
+            where, args = 'email=? COLLATE NOCASE', (email,)
+        elif re.fullmatch(r'@?[a-zA-Z0-9_]{3,32}', identifier):
+            where, args = 'username=? COLLATE NOCASE', (identifier.lstrip('@').lower(),)
+        elif 7 <= len(re.sub(r'\D', '', phone)) <= 15 and len(phone) <= 16:
+            where, args = 'phone=?', (phone,)
+        else:
+            fail('Введіть коректну пошту, нікнейм або номер телефону.')
         with db() as conn:
-            user = conn.execute('''SELECT id,password_hash FROM users
-                WHERE (email=? COLLATE NOCASE AND ? IS NOT NULL) OR (phone=? AND ? IS NULL)
-                OR (username=? COLLATE NOCASE AND ? IS NULL)''',
-                (email, email, phone if not email else '', email,
-                 identifier.lstrip('@') if not email else '', email)).fetchone()
+            user = conn.execute('SELECT id,password_hash FROM users WHERE ' + where, args).fetchone()
         if not user:
             fail('Електронна адреса або пароль Cloux неправильні.', 401)
         try:
