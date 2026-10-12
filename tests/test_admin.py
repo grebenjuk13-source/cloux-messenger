@@ -181,3 +181,92 @@ def test_v6_login_preserves_existing_accounts_using_both_hash_formats(app_client
         assert response.status_code == 200, response.text
         assert client.get("/api/me").json()["id"] == "legacy_without_mail"
         assert client.post("/api/logout").status_code == 200
+
+
+def test_many_accounts_share_one_phone_but_keep_unique_identity_and_separate_sessions(app_client):
+    client = app_client
+    first = register(client, "one@example.test", "cloux_one", "+380670019999")
+    assert first.status_code == 200, first.text
+    first_id = client.get("/api/me").json()["id"]
+    assert client.post("/api/logout").status_code == 200
+
+    # Different email, username, and password; same real phone.
+    second = client.post("/api/v6/register", json={
+        "email": "two@example.test", "phone": "+380670019999",
+        "username": "cloux_two", "display": "Другий",
+        "password": "DifferentSafeTestPass#12345",
+    })
+    assert second.status_code == 200, second.text
+    second_id = client.get("/api/me").json()["id"]
+    assert second_id != first_id
+    assert client.post("/api/logout").status_code == 200
+
+    # Login by phone chooses only the account whose password actually matches.
+    for pwd, uid in (("SafeTestPass#12345", first_id),
+                     ("DifferentSafeTestPass#12345", second_id)):
+        res = client.post("/api/v6/login", json={
+            "identifier": "+380670019999", "password": pwd})
+        assert res.status_code == 200, res.text
+        assert client.get("/api/me").json()["id"] == uid
+        assert client.post("/api/logout").status_code == 200
+
+    # The legacy phone login must also choose the correct account.
+    old_login = client.post("/api/login", json={
+        "phone": "+380670019999", "password": "SafeTestPass#12345"})
+    assert old_login.status_code == 200, old_login.text
+    assert client.get("/api/me").json()["id"] == first_id
+    client.post("/api/logout")
+
+    # The phone may repeat, but username/email must not collide.
+    dup_email = client.post("/api/v6/register", json={
+        "email": "one@example.test", "phone": "+380670019999",
+        "username": "cloux_three", "display": "Третій",
+        "password": "ThirdSafeTestPass#12345"})
+    assert dup_email.status_code == 400
+    dup_name = client.post("/api/v6/register", json={
+        "email": "three@example.test", "phone": "+380670019999",
+        "username": "cloux_one", "display": "Третій",
+        "password": "ThirdSafeTestPass#12345"})
+    assert dup_name.status_code == 400
+
+    # Equal passwords are ambiguous: require a unique login identifier.
+    with main.db() as conn:
+        conn.execute("UPDATE users SET password_hash=? WHERE id=?",
+                     (main.hash_password("SafeTestPass#12345"), second_id))
+    ambiguous = client.post("/api/v6/login", json={
+        "identifier": "+380670019999", "password": "SafeTestPass#12345"})
+    assert ambiguous.status_code == 409
+    by_name = client.post("/api/v6/login", json={
+        "identifier": "@cloux_two", "password": "SafeTestPass#12345"})
+    assert by_name.status_code == 200
+    assert client.get("/api/me").json()["id"] == second_id
+
+
+def test_migrate_old_phone_unique_index_without_losing_chats(tmp_path):
+    import sqlite3
+    from cloux_multiaccounts import migrate_sqlite
+    path = tmp_path / "old_cloux.sqlite"
+    with sqlite3.connect(path) as conn:
+        conn.execute("PRAGMA foreign_keys=ON")
+        conn.executescript("""
+        CREATE TABLE users(id TEXT PRIMARY KEY,phone TEXT NOT NULL UNIQUE,
+            username TEXT NOT NULL UNIQUE COLLATE NOCASE,display TEXT NOT NULL,
+            password_hash TEXT NOT NULL,created INTEGER NOT NULL,email TEXT);
+        CREATE UNIQUE INDEX users_email_unique_idx ON users(email COLLATE NOCASE)
+            WHERE email IS NOT NULL AND email<>'';
+        CREATE TABLE chats(id TEXT PRIMARY KEY,title TEXT);
+        CREATE TABLE messages(id INTEGER PRIMARY KEY, sender TEXT NOT NULL REFERENCES users(id),
+            chat_id TEXT NOT NULL REFERENCES chats(id));
+        INSERT INTO users VALUES('old','+380670019999','old_user','Original','old-hash',111,'old@example.test');
+        INSERT INTO chats VALUES('lobby','Before migration');
+        INSERT INTO messages VALUES(1,'old','lobby');
+        """)
+    migrate_sqlite(path)
+    migrate_sqlite(path)  # Idempotent on subsequent server starts.
+    with sqlite3.connect(path) as conn:
+        conn.execute("PRAGMA foreign_keys=ON")
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+        assert conn.execute("SELECT sender FROM messages WHERE id=1").fetchone()[0] == "old"
+        conn.execute("""INSERT INTO users VALUES(
+            'new','+380670019999','new_user','New','other-hash',222,'new@example.test')""")
+        assert conn.execute("SELECT COUNT(*) FROM users WHERE phone='+380670019999'").fetchone()[0] == 2
