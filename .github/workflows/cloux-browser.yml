@@ -7,6 +7,10 @@ on:
       - "ui/**"
       - "tests/modern_ui_test.mjs"
       - "cloux_social.py"
+      - "main.py"
+      - "cloux_auth.py"
+      - "cloux_preferences.py"
+      - "cloux_realtime.py"
       - ".github/workflows/cloux-browser.yml"
   workflow_dispatch:
 jobs:
