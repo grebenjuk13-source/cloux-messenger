@@ -79,9 +79,9 @@ function SettingsPanel({prefs,change,me,onLogout}:{prefs:Prefs,change:(v:Partial
    ]).then(([friends,communities,chats])=>{
      if(!mounted)return;
      setProfileStats({
-       friends:friends.status==='fulfilled'?friends.value.users.find(u=>u.id===me.id)?.friends||0:0,
-       communities:communities.status==='fulfilled'?communities.value.servers.length:0,
-       chats:chats.status==='fulfilled'?chats.value.chats.length:0
+       friends:friends.status==='fulfilled'&&Array.isArray(friends.value.users)?friends.value.users.find(u=>u.id===me.id)?.friends||0:0,
+       communities:communities.status==='fulfilled'&&Array.isArray(communities.value.servers)?communities.value.servers.length:0,
+       chats:chats.status==='fulfilled'&&Array.isArray(chats.value.chats)?chats.value.chats.length:0
      });
    });
    return()=>{mounted=false};
