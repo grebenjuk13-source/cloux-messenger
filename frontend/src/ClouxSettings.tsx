@@ -50,7 +50,7 @@ export function ProductSettings({me,theme,onTheme,onProfile,onBack,onLogout}:{me
    return()=>{alive=false};
  },[me.id]);
  const save=(change:Partial<SettingsValue>)=>{
-   const updated={...latest.current,...change};latest.current=updated;setValues(updated);
+   const updated={...latest.current,...change};latest.current=updated;setValues(updated);document.dispatchEvent(new CustomEvent('cloux:product-settings',{detail:updated}));
    try{localStorage.setItem(cacheKey,JSON.stringify(updated))}catch{}
    queued.current=queued.current.catch(()=>{}).then(async()=>{await api('/api/cloux/settings','PUT',updated);setNotice('')}).catch(e=>setNotice('Збережено на пристрої, але сервер не підтвердив: '+e.message));
  };
