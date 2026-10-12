@@ -48,6 +48,8 @@ assert.ok(path,'Downloaded file path');
 const offline=await context.newPage();
 offline.on('pageerror',e=>problems.push('Exported HTML error: '+e.message));
 await offline.goto('file://'+path,{waitUntil:'domcontentloaded'});
+const debug=await offline.evaluate(()=>({rows:document.querySelectorAll('.chat-row').length,scripts:[...document.scripts].map(s=>({src:s.src,length:s.textContent.length})),body:document.body?.innerText.slice(0,300)}));
+console.log('Export diagnostics:',JSON.stringify(debug),'errors:',JSON.stringify(problems));
 assert.ok(await offline.locator('.chat-row').count()>=12,'Downloaded HTML opens with 12+ chats');
 await offline.locator('.chat-row').first().click();
 await offline.locator('#draft').fill('Автономний Cloux');
