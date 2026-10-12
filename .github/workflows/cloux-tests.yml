@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt httpx pytest
-      - run: CLOUX_ALLOW_LEGACY_REGISTER=1 PYTHONPATH=. pytest -q tests/
+      - run: PYTHONPATH=. pytest -q tests/
       - name: Check browser JavaScript syntax
         run: |
           node --check cloux-plus.js

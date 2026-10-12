@@ -24,9 +24,9 @@ def test_default_avatar_is_exact_original_bytes():
 def test_profile_media_reactions_reads_roles():
     requests_by_ip.clear()  # Independent test client rate-limit state.
     with TestClient(app,base_url='https://testserver') as a,TestClient(app,base_url='https://testserver') as b:
-        assert a.post('/api/register',json={'phone':'+380670090011','display':'Олена','username':'person_aa','password':'HelloAA123'}).status_code==200
-        assert b.post('/api/register',json={'phone':'+380670090012','display':'Макс','username':'person_bb','password':'HelloBB123'}).status_code==200
-        aa=a.get('/api/me').json()['id'];bb=b.get('/api/me').json()['id']
+        from tests.auth_helpers import create_account
+        aa=create_account(a,phone='+380670090011',display='Олена',username='person_aa',password='HelloAA123')
+        bb=create_account(b,phone='+380670090012',display='Макс',username='person_bb',password='HelloBB123')
         assert a.patch('/api/profile/status',json={'status':'На звʼязку'}).status_code==200
         assert a.patch('/api/profile/theme',json={'theme':'light','accent':'#8B5CF6','wallpaper_blur':7,'wallpaper_dim':33}).status_code==200
         pref=a.get('/api/preferences').json()['preferences']
