@@ -14,7 +14,7 @@ export function LinkCards({text}:{text:string}){
  if(!links.length)return null;
  return <div className="cx-link-cards">{links.map(href=>{
   const u=new URL(href);
-  return <a className="cx-link-card" href={href} target="_blank" rel="noopener noreferrer" key={href} aria-label={'Відкрити посилання '+u.hostname}>
+  return <a className="cx-link-card" href={href} target="_blank" rel="noopener noreferrer" key={href} onClick={e=>e.stopPropagation()} onPointerDown={e=>e.stopPropagation()} aria-label={'Відкрити посилання '+u.hostname}>
    <span className="cx-link-icon"><Link2 size={18}/></span><span className="cx-link-info"><b>{u.hostname.replace(/^www\./,'')}</b><small>{u.pathname==='/'?u.origin:(u.pathname+u.search).slice(0,85)}</small></span><ExternalLink size={15}/>
   </a>})}</div>;
 }
@@ -52,7 +52,7 @@ export function AudioBubble({src}:{src:string}){
   void process();
   return()=>{cancelled=true};
  },[src]);
- return <div className="cx-voice-message"><div className="cx-voice-top"><Headphones size={16}/> Голосове повідомлення</div>
+ return <div className="cx-voice-message" onClick={e=>e.stopPropagation()} onPointerDown={e=>e.stopPropagation()}><div className="cx-voice-top"><Headphones size={16}/> Голосове повідомлення</div>
  {peaks.length>0&&<div className="cx-voice-wave" aria-label="Хвиля звукового повідомлення">{peaks.map((height,i)=><span key={i} style={{height:height+'%'}}/>)}</div>}
  {busy&&!peaks.length&&<div className="cx-voice-skeleton" aria-hidden="true"/>}
  <audio ref={ref} preload="metadata" controls className="msg-audio" src={src}/>
