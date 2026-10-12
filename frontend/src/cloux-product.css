@@ -139,3 +139,10 @@
  #root .app-shell:has(.cx-settings) .chat-sidebar,
  #root .app-shell:has(.cx-wallpaper-studio) .chat-sidebar{display:none!important}
 }
+
+/* A full-width profile entry is both a row and a decorated card. */
+#root .cx-settings button.cx-setting-row.cx-setting-card{
+ background:linear-gradient(135deg,rgba(86,33,51,.93),rgba(26,13,23,.95))!important;
+ border:1px solid rgba(255,255,255,.23)!important;
+ margin-bottom:10px
+}
