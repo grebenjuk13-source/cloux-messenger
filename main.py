@@ -77,7 +77,7 @@ def fail(msg, status=400):
 def limit(request, max_calls=24, period=60):
     ip = (request.client.host if request.client else "unknown")
     now = time.monotonic()
-    q = requests_by_ip[ip]
+    q = requests_by_ip[(ip, request.url.path)]
     while q and now - q[0] > period: q.popleft()
     if len(q) >= max_calls: fail("Забагато спроб. Спробуйте пізніше.", 429)
     q.append(now)
