@@ -301,6 +301,21 @@ def chats(request: Request):
     result.sort(key=lambda x:(x["pinned"],x["last_time"] or 0),reverse=True)
     return {"chats":result}
 
+@app.delete("/api/chats/{chat_id}")
+def hide_chat(chat_id: str, request: Request):
+    user=auth(request)
+    with db() as c:
+        if not member(c,user["id"],chat_id):fail("Цей чат недоступний.",403)
+        chat=c.execute("SELECT kind FROM chats WHERE id=?",(chat_id,)).fetchone()
+        if not chat or chat["kind"] in ("news","saved"):
+            fail("Системний чат не можна прибрати.",403)
+        owner=c.execute("SELECT owner_id FROM cloux_owners WHERE chat_id=?",(chat_id,)).fetchone()
+        if owner and owner["owner_id"]==user["id"]:
+            fail("Спочатку передайте керування каналом або групою.",403)
+        c.execute("DELETE FROM cloux_chat_prefs WHERE uid=? AND chat_id=?",(user["id"],chat_id))
+        c.execute("DELETE FROM chat_members WHERE user_id=? AND chat_id=?",(user["id"],chat_id))
+    return {"ok":True}
+
 @app.get("/api/chats/{chat_id}/messages")
 def messages(chat_id: str, request: Request, after: int = 0):
     user=auth(request)
