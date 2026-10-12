@@ -4,7 +4,7 @@ import {createEmojiPicker} from './emoji.js';
 import {cropAndUpload,getPhotoUrl} from './avatar.js';
 import {startCall} from './calls.js';
 
-const NAV=[['chats','💬','Чати'],['contacts','👥','Контакти'],['servers','▦','Сервери'],['settings','⚙️','Налашт.'],['profile','◉','Профіль']];
+const NAV=[['chats','💬','Чати'],['contacts','👥','Контакти'],['servers','▦','Сервери'],['settings','⚙️','Налашт.'],['profile','◉','Профіль'],['codes','◇','Коди']];
 let timer=null,heartbeat=null,rendered='',emojiPicker=null,recording=null,profileAvatar=BASE_AVATAR,profileBanner=null;
 const icon=()=>BASE_AVATAR;
 const openImg=(url,size='')=>`<img class="avatar ${size}" src="${esc(url||BASE_AVATAR)}" alt="Аватар" loading="lazy" onerror="this.onerror=null;this.src='${BASE_AVATAR}'">`;
@@ -22,14 +22,14 @@ function syncTheme(){
  document.documentElement.style.setProperty('--wallpaper-brightness',(1-(p.wallpaper_dim||0)/100).toString());
  document.documentElement.style.setProperty('--wallpaper-image',S.local.wallpaper==='custom'&&S.local.customWallpaperUrl?`url("${S.local.customWallpaperUrl}")`:'none');
 }
-function navigate(tab){S.tab=tab;S.current=null;S.reply=null;rendered='';emojiPicker?.close();emojiPicker=null;
+function navigate(tab){if(tab==='codes'){window.location.assign('/codes');return;}S.tab=tab;S.current=null;S.reply=null;rendered='';emojiPicker?.close();emojiPicker=null;
  const shell=$('.shell');shell?.classList.remove('mobile-chat','mobile-page');if(tab!=='chats')shell?.classList.add('mobile-page');
  renderSidebar();if(tab==='chats')renderWelcome();else if(tab==='contacts')renderContacts();else if(tab==='servers')renderServers();else if(tab==='settings')renderSettings();else if(tab==='profile')renderProfile();
 }
 function navHTML(){return `<nav class="bottom-nav" aria-label="Головна навігація">${NAV.map(([id,ic,title])=>`<button data-nav="${id}" aria-label="${id==='settings'?'Налаштування':title}" class="${S.tab===id?'active':''}"><span class="navicon">${ic}</span>${title}</button>`).join('')}</nav>`}
 function renderSidebar(){
  const side=$('#sidebar');if(!side)return;
- side.innerHTML=`<header class="side-head"><img src="${BASE_AVATAR}" style="height:39px;width:39px;border-radius:12px" alt="Cloux"><strong class="wordmark">Cloux.</strong><button class="icon-btn" data-create title="Створити чат">＋</button></header>
+ side.innerHTML=`<header class="side-head"><img src="${BASE_AVATAR}" style="height:39px;width:39px;border-radius:12px" alt="Cloux"><strong class="wordmark">Cloux.</strong><a class="icon-btn" href="/codes" aria-label="Коди Cloux" title="Коди Cloux">◇</a><button class="icon-btn" data-create title="Створити чат">＋</button></header>
  <div class="side-search"><input data-search placeholder="Пошук чатів та людей" aria-label="Пошук"></div>
  <div class="tabs-filter">${[['all','Усі'],['direct','Особисті'],['group','Групи'],['channel','Канали'],['archived','Архів']].map(([key,label])=>`<button data-filter="${key}" class="${S.filter===key?'active':''}">${label}</button>`).join('')}</div>
  <section class="chat-list" id="chat-list" aria-label="Список чатів"></section>`;

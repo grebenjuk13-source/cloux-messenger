@@ -349,6 +349,10 @@ from fastapi.responses import RedirectResponse
 def cloux_download_page():
     return FileResponse(_ClouxPath(__file__).parent/"download.html",media_type="text/html")
 
+@app.get("/codes")
+def cloux_codes_page():
+    return FileResponse(_ClouxPath(__file__).parent/"codes.html", media_type="text/html", headers={"Cache-Control":"no-store"})
+
 @app.get("/apk")
 def cloux_apk_download():
     return RedirectResponse("https://raw.githubusercontent.com/grebenjuk13-source/cloux-messenger/main/downloads/Cloux-Android-debug.apk",status_code=302)
