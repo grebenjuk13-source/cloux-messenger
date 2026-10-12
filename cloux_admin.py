@@ -122,6 +122,20 @@ def flag(c, key):
     return bool(row["enabled"]) if row else FEATURES.get(key, False)
 
 
+def totp_cipher():
+    from cryptography.fernet import Fernet
+    key=os.getenv("CLOUX_TOTP_FERNET_KEY","").strip()
+    if not key:
+        raise RuntimeError("CLOUX_TOTP_FERNET_KEY must be set for TOTP")
+    return Fernet(key.encode("ascii"))
+
+def encrypted_totp(secret):
+    return totp_cipher().encrypt(secret.encode("ascii")).decode("ascii")
+
+def decrypted_totp(secret):
+    # Migrates any initial development-only plaintext values.
+    return totp_cipher().decrypt(secret.encode("ascii")).decode("ascii") if secret.startswith("gAAAA") else secret
+
 def send_code(address, code):
     host = os.getenv("SMTP_HOST", "").strip()
     username = os.getenv("SMTP_USER", "").strip()
@@ -576,9 +590,11 @@ def install(app, db, auth, fail, limit, check_password, emit=None):
                          (me["id"],)).fetchone():
                 fail("Двофакторний захист вже увімкнено.")
             secret = pyotp.random_base32()
+            try: stored_secret=encrypted_totp(secret)
+            except Exception: fail("Не налаштовано захищене сховище TOTP.",503)
             c.execute("""INSERT INTO owner_totp(uid,secret,enabled) VALUES(?,?,0)
                 ON CONFLICT(uid) DO UPDATE SET secret=excluded.secret,enabled=0""",
-                (me["id"], secret))
+                (me["id"], stored_secret))
         return {"secret": secret, "uri": pyotp.totp.TOTP(secret).provisioning_uri(
             name=row["email"], issuer_name="Cloux")}
 
@@ -589,7 +605,7 @@ def install(app, db, auth, fail, limit, check_password, emit=None):
         with db() as c:
             row = c.execute("SELECT secret FROM owner_totp WHERE uid=? AND enabled=0",
                             (me["id"],)).fetchone()
-            if not row or not pyotp.TOTP(row["secret"]).verify(body.code, valid_window=1):
+            if not row or not pyotp.TOTP(decrypted_totp(row["secret"])).verify(body.code, valid_window=1):
                 fail("Неправильний код.", 400)
             c.execute("UPDATE owner_totp SET enabled=1 WHERE uid=?", (me["id"],))
             audit(c, me["id"], "totp.enabled")
