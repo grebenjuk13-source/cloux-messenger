@@ -54,6 +54,7 @@ async function run(browserType,label){
  await page.locator('.chat-room').waitFor();
  assert.equal(await page.getByLabel('Голосовий дзвінок').count(),0,label+' read-only news allows call');
  assert.equal(await page.getByLabel('Відеодзвінок').count(),0,label+' read-only news allows video');
+ await page.locator('.back-chat').click();
  await page.getByRole('button',{name:'Профіль'}).click();
  await page.locator('.settings-profile').waitFor();
  await page.getByText('Адмін-панель').click();
