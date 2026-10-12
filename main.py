@@ -116,6 +116,7 @@ def auth(request):
             fail("Цей акаунт заблоковано.", 403)
         result["is_admin"] = cloux_admin.is_owner(c, result["id"])
         result["can_verify_owner"] = cloux_admin.candidate(c, result["id"]) and not result["is_admin"]
+        result["badges"] = [r["badge_id"] for r in c.execute("SELECT badge_id FROM user_badges WHERE user_id=?", (result["id"],))]
     return result
 
 def set_cookie(response, user_id):
@@ -211,7 +212,14 @@ def users(request: Request, q: str = ""):
            AND (username LIKE ? OR display LIKE ?)
            AND NOT EXISTS (SELECT 1 FROM cloux_preferences p WHERE p.uid=users.id AND p.searchable=0)
            LIMIT 20""", (me["id"],"%"+needle+"%","%"+needle+"%")).fetchall()
-    return {"users":[dict(x) for x in rows]}
+    with db() as c:
+        result = []
+        for x in rows:
+            item = dict(x)
+            item["badges"] = [b["badge_id"] for b in c.execute(
+                "SELECT badge_id FROM user_badges WHERE user_id=?", (item["id"],))]
+            result.append(item)
+    return {"users":result}
 
 @app.post("/api/direct/{other_id}")
 def direct(other_id: str, request: Request):
@@ -267,6 +275,11 @@ def chats(request: Request):
                 if other:
                     d["title"]=other["display"]
                     d["other_id"]=other["id"]
+                    d["badges"]=[b["badge_id"] for b in c.execute(
+                        "SELECT badge_id FROM user_badges WHERE user_id=?", (other["id"],))]
+            if d["kind"] in ("channel", "news", "group"):
+                d["subscribers"]=c.execute("SELECT count(*) n FROM chat_members WHERE chat_id=?",
+                                           (d["id"],)).fetchone()["n"]
             pr=c.execute("SELECT pinned,archived,muted FROM cloux_chat_prefs WHERE uid=? AND chat_id=?", (user["id"],d["id"])).fetchone()
             d.update(dict(pr) if pr else {"pinned":0,"archived":0,"muted":0})
             owner=c.execute("SELECT owner_id FROM cloux_owners WHERE chat_id=?",(d["id"],)).fetchone()
@@ -289,7 +302,14 @@ def messages(chat_id: str, request: Request, after: int = 0):
               FROM messages m
             JOIN users u ON u.id=m.sender WHERE m.chat_id=? AND m.id>? ORDER BY m.id ASC LIMIT 200""",
             (chat_id,max(after,0))).fetchall()
-    return {"messages":[dict(x) for x in rows]}
+    with db() as c:
+        result = []
+        for x in rows:
+            item=dict(x)
+            item["badges"]=[b["badge_id"] for b in c.execute(
+                "SELECT badge_id FROM user_badges WHERE user_id=?", (item["sender"],))]
+            result.append(item)
+    return {"messages":result}
 
 @app.post("/api/chats/{chat_id}/messages")
 def send(chat_id: str, payload: Message, request: Request):
