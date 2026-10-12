@@ -1,12 +1,9 @@
-"""Cloux account registration and login with a Cloux-only password."""
+"""Cloux account login with a Cloux-only password."""
 from __future__ import annotations
 
 import re
 import sqlite3
-import time
-import uuid
 
-import phonenumbers
 from argon2 import PasswordHasher
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -26,44 +23,12 @@ def normalize_email(raw: str) -> str | None:
     return value
 
 
-def clean_phone(raw: str) -> str | None:
-    try:
-        number = phonenumbers.parse(raw, None)
-        if phonenumbers.is_valid_number(number):
-            return phonenumbers.format_number(number, phonenumbers.PhoneNumberFormat.E164)
-    except (phonenumbers.NumberParseException, ValueError):
-        pass
-    return None
-
-
-class PasswordRegistration(BaseModel):
-    email: str = Field(min_length=6, max_length=254)
-    phone: str = Field(min_length=8, max_length=30)
-    password: str = Field(min_length=8, max_length=128)
-
-
 class PasswordLogin(BaseModel):
     email: str = Field(min_length=6, max_length=254)
     password: str = Field(min_length=1, max_length=128)
 
 
-def generated_profile(conn: sqlite3.Connection, email: str) -> tuple[str, str]:
-    local = email.split('@', 1)[0]
-    display = re.sub(r'[._+-]+', ' ', local).strip()[:60] or 'Cloux'
-    base = re.sub(r'[^a-z0-9_]', '_', local.lower()).strip('_')
-    if len(base) < 4:
-        base = ('user_' + base).strip('_')
-    base = base[:24] or 'user'
-    for index in range(1000):
-        suffix = '' if index == 0 else str(index + 1)
-        candidate = base[:24 - len(suffix)] + suffix
-        taken = conn.execute('SELECT 1 FROM users WHERE username=? COLLATE NOCASE', (candidate,)).fetchone()
-        if not taken:
-            return candidate, display
-    raise RuntimeError('Не вдалося створити позивний Cloux.')
-
-
-def install(app, db, fail, limit, set_cookie, seed_user):
+def install(app, db, fail, limit, set_cookie):
     with db() as conn:
         columns = {row['name'] for row in conn.execute('PRAGMA table_info(users)')}
         if 'email' not in columns:
@@ -80,36 +45,6 @@ def install(app, db, fail, limit, set_cookie, seed_user):
             conn.execute(f'DROP TABLE IF EXISTS {table}')
         conn.execute('''CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique_idx
             ON users(email COLLATE NOCASE) WHERE email IS NOT NULL AND email<>'' ''')
-
-    @app.post('/api/v6/register')
-    def register(body: PasswordRegistration, request: Request):
-        limit(request, 8, 3600)
-        email = normalize_email(body.email)
-        if not email:
-            fail('Введіть коректну адресу електронної пошти.')
-        phone = clean_phone(body.phone)
-        if not phone:
-            fail('Введіть номер телефону у міжнародному форматі, наприклад +380501234567.')
-        if not 8 <= len(body.password) <= 128:
-            fail('Пароль Cloux має містити від 8 до 128 символів.')
-
-        user_id = str(uuid.uuid4())
-        try:
-            with db() as conn:
-                conn.execute('BEGIN IMMEDIATE')
-                if conn.execute('SELECT 1 FROM users WHERE email=? COLLATE NOCASE', (email,)).fetchone():
-                    fail('Ця електронна адреса вже має акаунт. Увійдіть у Cloux.')
-                if conn.execute('SELECT 1 FROM users WHERE phone=?', (phone,)).fetchone():
-                    fail('Цей номер телефону вже прив’язаний до акаунта Cloux.')
-                username, display = generated_profile(conn, email)
-                conn.execute('''INSERT INTO users(id,email,phone,username,display,password_hash,created)
-                    VALUES(?,?,?,?,?,?,?)''',
-                    (user_id, email, phone, username, display, HASHER.hash(body.password), int(time.time())))
-        except sqlite3.IntegrityError:
-            fail('Ця електронна адреса або номер телефону вже використовується.', 409)
-
-        seed_user(db, user_id)
-        return set_cookie(JSONResponse({'ok': True}), user_id)
 
     @app.post('/api/v6/login')
     def login(body: PasswordLogin, request: Request):

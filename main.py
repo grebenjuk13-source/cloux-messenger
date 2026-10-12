@@ -392,9 +392,9 @@ def stage1_frontend(asset:str):
 import cloux_realtime
 cloux_realtime.install(app,db)
 
-# Email address and separate Cloux password registration/login; no mailbox verification.
+# Existing account login by email and Cloux password. Self-service signup is disabled.
 import cloux_auth
-cloux_auth.install(app,db,fail,limit,set_cookie,cloux_features.seed_user)
+cloux_auth.install(app,db,fail,limit,set_cookie)
 
 
 # Isolated, network-blocked, single-HTML local demo; existing online Cloux is unchanged.
