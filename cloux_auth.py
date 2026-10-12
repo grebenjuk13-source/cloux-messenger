@@ -61,12 +61,14 @@ def install(app, db, fail, limit, set_cookie):
         identifier = (body.identifier or body.email).strip()
         email = normalize_email(identifier)
         phone = re.sub(r'[^+0-9]', '', identifier)
-        if not email and (len(re.sub(r'\D', '', phone)) < 7 or len(phone) > 16):
+        if not email and not re.fullmatch(r'[a-zA-Z0-9_]{3,32}', identifier) and (len(re.sub(r'\D', '', phone)) < 7 or len(phone) > 16):
             fail('Введіть коректну пошту або номер телефону.')
         with db() as conn:
             user = conn.execute('''SELECT id,password_hash FROM users
-                WHERE (email=? COLLATE NOCASE AND ? IS NOT NULL) OR (phone=? AND ? IS NULL)''',
-                (email, email, phone if not email else '', email)).fetchone()
+                WHERE (email=? COLLATE NOCASE AND ? IS NOT NULL) OR (phone=? AND ? IS NULL)
+                OR (username=? COLLATE NOCASE AND ? IS NULL)''',
+                (email, email, phone if not email else '', email,
+                 identifier.lstrip('@') if not email else '', email)).fetchone()
         if not user:
             fail('Електронна адреса або пароль Cloux неправильні.', 401)
         try:
@@ -77,6 +79,10 @@ def install(app, db, fail, limit, set_cookie):
 
     @app.post('/api/v6/register')
     def register(body: Registration, request: Request):
+        import cloux_admin
+        with db() as conn:
+            if not cloux_admin.flag(conn, 'registration') or cloux_admin.flag(conn, 'maintenance'):
+                fail('Реєстрацію тимчасово призупинено.', 503)
         limit(request, 5, 3600)
         email = normalize_email(body.email)
         phone = re.sub(r'[^+0-9]', '', body.phone)
@@ -99,3 +105,13 @@ def install(app, db, fail, limit, set_cookie):
         except sqlite3.IntegrityError:
             fail('Ця пошта, телефон або нікнейм уже використовуються.')
         return set_cookie(JSONResponse({'ok': True}), uid)
+
+    @app.get('/api/v6/username-available')
+    def username_available(username: str, request: Request):
+        limit(request, 40, 60)
+        name = username.strip().lstrip('@').lower()
+        if not re.fullmatch(r'[a-z0-9_]{3,32}', name):
+            return {'available': False, 'reason': 'Нікнейм: 3–32 символи, латиниця, цифри й _'}
+        with db() as conn:
+            taken = conn.execute('SELECT 1 FROM users WHERE username=? COLLATE NOCASE', (name,)).fetchone()
+        return {'available': not bool(taken)}
