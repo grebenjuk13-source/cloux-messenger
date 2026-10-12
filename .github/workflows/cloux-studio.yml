@@ -11,6 +11,7 @@ on:
       - 'manifest.json'
       - 'sw.js'
       - 'cloux-updates.js'
+      - 'cloux-extras.js'
       - 'cloux-customize.js'
       - 'cloux-customize.css'
       - '.github/workflows/cloux-studio.yml'
@@ -27,6 +28,7 @@ jobs:
           node --check studio/calls.js
           node --check cloux-updates.js
           node --check cloux-customize.js
+          node --check cloux-extras.js
           node --check sw.js
       - name: Static HTML and JSON validation
         run: |
@@ -36,7 +38,7 @@ jobs:
           for name in ('version.json','manifest.json'):
               d=json.loads(pathlib.Path(name).read_text())
               assert isinstance(d,dict) and d
-          assert json.loads(pathlib.Path('version.json').read_text())['version']=='6.3.0'
+          assert json.loads(pathlib.Path('version.json').read_text())['version']=='6.4.0'
           class Scripts(HTMLParser):
               def __init__(self):
                   super().__init__();self.active=False;self.parts=[];self.scripts=[]

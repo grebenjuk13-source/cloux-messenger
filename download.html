@@ -3,7 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="author" content="Ільяс"><meta name="copyright" content="© 2026 CLOUX"><meta name="theme-color" content="#000000"><meta name="description" content="Офіційне завантаження Cloux — Android, Windows, macOS, iPhone, PWA та веб">
 <link rel="icon" href="/assets/cloux-default-avatar.jpg" type="image/jpeg"><link rel="apple-touch-icon" href="/assets/cloux-default-avatar.jpg">
-<link rel="manifest" href="/manifest.json?v=6.3.0"><link rel="stylesheet" href="/cloux-customize.css?v=6.3.0"><title>Завантажити CLOUX — офіційний сайт</title>
+<link rel="manifest" href="/manifest.json?v=6.4.0"><link rel="stylesheet" href="/cloux-customize.css?v=6.4.0"><title>Завантажити CLOUX — офіційний сайт</title>
 <style>
 :root{color-scheme:dark;--bg:#0a0a0a;--panel:#16161a;--red:#e10600;--hot:#ff1a1a;--dark:#2a0006;--text:#fff;--text-dim:rgba(255,255,255,.65);--border:#ffffff24}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 25% 6%,#a3001237,transparent 48%),radial-gradient(ellipse at 95% 75%,#a0000824,transparent 50%),var(--bg);color:var(--text);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}a{color:inherit;text-decoration:none}button{font:inherit;color:#fff;cursor:pointer}button:disabled{opacity:.55;cursor:wait}
@@ -23,9 +23,9 @@
 <p>Твій Cloux доступний у браузері та як застосунок на різних пристроях. Оновлення, анімації й нові можливості в єдиному чорно-червоному стилі.</p>
 <div class="actions">
 <button class="btn red" id="install-pwa">＋ Встановити (PWA)</button>
-<button class="btn outline" id="download-html">↓ Скачати index.html</button>
+<button class="btn outline" id="download-html" title="HTML-ярлик для входу у справжній Cloux. Для повідомлень потрібен інтернет.">↓ Скачати index.html</button>
 <a class="btn outline" href="/v5/">↗ Відкрити веб-версію</a>
-</div><div class="live"><a href="/studio/">Переглянути інтерактивне демо Cloux Studio</a></div>
+</div><div class="live"><a href="/v5/">Справжній Cloux — чати, канали та дзвінки ↗</a></div>
 </section>
 <div class="banner"><div><strong id="version-label">Cloux — завантажуємо дані версії</strong><p id="version-date">Актуальні зміни перевіряються без кешу</p></div><a class="btn red" href="/v5/">Відкрити зараз ↗</a></div>
 <h2 class="section-title">Застосунок для всіх пристроїв</h2><p class="subtle">Обери свою платформу або встанови PWA без окремого файлу.</p>
@@ -39,7 +39,7 @@
 <div class="help" id="install-instructions" hidden><b>Встановлення PWA:</b> у меню браузера вибери «Встановити застосунок» або «Додати на головний екран». Для iPhone користуйся Safari.</div>
 <h2 class="section-title">Що нового</h2><p class="subtle">Автоматично завантажується з version.json.</p>
 <section class="changelog" aria-label="Історія змін"><h3 id="changelog-header">Останні зміни</h3><ul id="changelog-list"><li>Зачекай…</li></ul></section>
-<div class="info"><b>Два режими:</b> «Веб-версія» — справжні Cloux акаунти й серверні чати. «Cloux Studio» та завантажений HTML — окреме локальне демо інтерфейсу, яке <b>не надсилає повідомлення іншим користувачам</b>. Задля приватності браузер не записує паролі в демо. На поточному безкоштовному сервері база даних тимчасова; до підключення постійного сховища повідомлення та сесії можуть втратитися після рестарту.</div>
+<div class="info"><b>Два режими:</b> «Веб-версія» — справжні Cloux акаунти й серверні чати. Завантажений index.html — лише HTML-ярлик, який відкриває <b>реальний CLOUX онлайн</b>. Для повного застосунку з повідомленнями потрібен сервер та інтернет. Задля приватності браузер не записує паролі в демо. На поточному безкоштовному сервері база даних тимчасова; до підключення постійного сховища повідомлення та сесії можуть втратитися після рестарту.</div>
 <div class="footer"><a href="https://github.com/grebenjuk13-source/cloux-messenger" target="_blank" rel="noopener noreferrer">Вихідний код ↗</a></div>
 </div>
 <script>
@@ -75,35 +75,13 @@ async function loadVersion(){
  }
 }
 void loadVersion();
-$('download-html').onclick=async()=>{
- const b=$('download-html');b.textContent='Збираємо автономний HTML…';b.disabled=true;
- try{
-  const list=['/studio/index.html','/studio/styles.css','/studio/media.js','/studio/calls.js','/studio/app.js','/assets/cloux-default-avatar.jpg'];
-  const responses=await Promise.all(list.map(x=>fetch(x+'?v='+Date.now(),{cache:'no-store'})));
-  if(responses.some(r=>!r.ok))throw Error('Не вдалося отримати актуальні файли');
-  let [index,styles,media,calls,app]=await Promise.all(responses.slice(0,5).map(r=>r.text()));
-  const image=await responses[5].blob();
-  const avatar=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(image)});
-  index=index.replace(/<link[^>]+href="\.\/styles\.css[^"]*"[^>]*>/,'<style>'+styles+'</style>');
-  index=index.replace(/<script defer src="\.\/(?:app|media|calls)\.js[^"]*"><\/script>\s*/g,'');
-  index=index.replace(/<script defer src="\/cloux-updates\.js[^"]*"><\/script>\s*/g,'');
-  index=index.replace(/<link rel="manifest"[^>]*>/g,'');
-  index=index.replaceAll('/assets/cloux-default-avatar.jpg',avatar);
-  media=media.replaceAll('/assets/cloux-default-avatar.jpg',avatar);
-  calls=calls.replaceAll('/assets/cloux-default-avatar.jpg',avatar);
-  app=app.replaceAll('/assets/cloux-default-avatar.jpg',avatar);
-  index=index.replaceAll('href="/v5/"','href="https://cloux-messenger.onrender.com/v5/"');
-  app=app.replaceAll("window.location.href='/v5/'","window.location.href='https://cloux-messenger.onrender.com/v5/'");
-  // Keep each embedded module in its own lexical scope for file:// browsers.
-  const embed = value=>'<script>(function(){\n'+value+'\n})();<\/script>';
-  index=index.replace('</body>',embed(media)+embed(calls)+embed(app)+'</body>');
-  const url=URL.createObjectURL(new Blob([index],{type:'text/html;charset=utf-8'}));
-  const a=document.createElement('a');a.href=url;a.download='Cloux-Studio-v6.3.0-index.html';document.body.append(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),15000);
- }catch(e){fail(e?.message||'Помилка завантаження')}
- finally{b.textContent='↓ Скачати index.html';b.disabled=false}
+$('download-html').onclick=()=>{
+ const root='https://cloux-messenger.onrender.com/v5/';
+ const html=['<!doctype html>','<html lang="uk"><head><meta charset="utf-8">','<meta name="viewport" content="width=device-width,initial-scale=1">','<meta name="author" content="Ільяс">','<meta name="copyright" content="© 2026 CLOUX">','<title>CLOUX — відкрити месенджер</title>','<meta http-equiv="refresh" content="0;url='+root+'">','<style>body{background:#09090a;color:#fff;font:16px system-ui;padding:32px}a{color:#fff;text-decoration-color:#e10600}</style>','</head><body><h1>CLOUX</h1><p>Відкрий свій реальний акаунт Cloux. Для синхронізації повідомлень потрібен інтернет.</p><a href="'+root+'">Відкрити CLOUX →</a></body></html>'].join('');
+ const file=new Blob([html],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(file);
+ const a=document.createElement('a');a.href=url;a.download='CLOUX-6.4.0-index.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);
 };
 })();
 </script>
-<script defer src="/cloux-customize.js?v=6.3.0"></script><script defer src="/cloux-updates.js?v=6.3.0"></script>
+<script defer src="/cloux-customize.js?v=6.4.0"></script><script defer src="/cloux-updates.js?v=6.4.0"></script>
 </body></html>

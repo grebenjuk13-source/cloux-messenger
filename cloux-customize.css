@@ -78,3 +78,7 @@ html[data-cloux-blur="1"]:not(:focus-within) #root{filter:blur(11px)}
 @keyframes cloux-reveal{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
 @media(max-width:550px){:root{--cloux-footer-height:105px}.cloux-modal{padding:13px;border-radius:19px}.cloux-global-layer{padding:6px}.cloux-modal .cloux-preview.avatar{height:245px}}
 @media(prefers-reduced-motion:reduce){.cloux-global-layer,.cloux-global-layer *{animation:none!important;transition:none!important}}
+
+.cloux-modal input[type=password],.cloux-modal input[type=time]{background:#ffffff10;border:1px solid #ffffff3b;border-radius:12px;color:#fff;padding:11px;min-height:44px;width:100%}
+html[data-cloux-reduced='1'] *,html[data-cloux-reduced='1'] *:before,html[data-cloux-reduced='1'] *:after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+.settings-view .cloux-settings-legal,.settings-view .cloux-settings-legal *{font-size:12px!important;line-height:1.4!important}
