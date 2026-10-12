@@ -6,6 +6,7 @@ on:
       - 'studio/**'
       - 'download.html'
       - 'tests/studio_ui_test.mjs'
+      - 'tests/studio_call_test.mjs'
       - '.github/workflows/cloux-studio-browser.yml'
   workflow_dispatch:
 jobs:
@@ -25,6 +26,8 @@ jobs:
           for i in $(seq 1 30); do if curl -fsS http://127.0.0.1:4173/studio/ >/dev/null; then break; fi; sleep 1; done
       - name: Browser smoke
         run: node tests/studio_ui_test.mjs
+      - name: Actual WebRTC peer test
+        run: node tests/studio_call_test.mjs
       - name: Screenshots
         if: always()
         uses: actions/upload-artifact@v4
