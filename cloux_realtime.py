@@ -148,6 +148,15 @@ def install(app, db):
                     if now - last_invite < 10 or message.get("mode") not in ("audio","video"):
                         continue
                     last_invite = now
+                    with db() as c:
+                        other=c.execute("SELECT cm.user_id FROM chat_members cm JOIN chats ch ON cm.chat_id=ch.id WHERE cm.chat_id=? AND cm.user_id!=? AND ch.kind='direct' LIMIT 1",(chat_id,uid)).fetchone()
+                        prefs=c.execute("SELECT value FROM cloux_product_settings WHERE uid=?",(other["user_id"],)).fetchone() if other else None
+                    rules=json.loads(prefs["value"]) if prefs else {}
+                    if not rules.get("allow_calls",True):
+                        await ws.send_json({"type":"call_unavailable","reason":"Людина не приймає вхідні дзвінки"})
+                        continue
+                    if not rules.get("notifications_calls",True):
+                        continue
                     event={"type":"call_invite","chat_id":chat_id,"user_id":uid,"mode":message["mode"]}
                     for cid,other in list(hub.rooms[chat_id].items()):
                         if cid != conn_id and not other.full():
