@@ -207,7 +207,10 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
                         FROM users u LEFT JOIN cloux_preferences p ON p.uid=u.id
                         LEFT JOIN cloux_presence pr ON pr.uid=u.id WHERE u.id=?''',(uid,)).fetchone()
         if not row:fail('Користувача не знайдено.',404)
-        return {'user':{**dict(row),'online':row['last_seen']>int(time.time())-90}}
+        with db() as c:
+            badge_rows=c.execute('SELECT badge_id FROM user_badges WHERE user_id=?',(uid,)).fetchall()
+        return {'user':{**dict(row),'online':row['last_seen']>int(time.time())-90,
+                        'badges':[b['badge_id'] for b in badge_rows]}}
 
     @app.post('/api/presence/ping')
     def ping(request:Request):
@@ -298,9 +301,15 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
                                 COALESCE(p.seen,0) last_seen
                                 FROM cloux_server_members sm JOIN users u ON sm.uid=u.id
                                 LEFT JOIN cloux_presence p ON p.uid=u.id WHERE sm.server_id=? ORDER BY sm.role,u.display LIMIT 100''',(sid,)).fetchall()
+        with db() as c:
+            members=[]
+            for x in users:
+                badges=c.execute('SELECT badge_id FROM user_badges WHERE user_id=?',(x['id'],)).fetchall()
+                members.append({**dict(x),'online':x['last_seen']>int(time.time())-90,
+                                'badges':[b['badge_id'] for b in badges]})
         return {'server':{**dict(s),'role':role,'invite_code':s['invite_code'] if role in ('owner','admin') else None},
                 'channels':[dict(x) for x in channels],
-                'members':[{**dict(x),'online':x['last_seen']>int(time.time())-90} for x in users]}
+                'members':members}
 
     @app.post('/api/servers/join/{code}')
     def join_server(code:str,request:Request):
