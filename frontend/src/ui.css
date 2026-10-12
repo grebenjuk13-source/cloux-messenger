@@ -290,6 +290,21 @@ body{background:var(--bg);color:var(--ink);transition:background .28s,color .28s
 @keyframes screen-enter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:560px){.leaderboard{padding:22px 15px}.leaderboard-row{gap:9px;padding:10px}.leaderboard-row>button{font-size:12px;padding:9px 10px}.leaderboard-rank{width:24px}}
 
+/* Final v5 app-only overrides: keep every mobile surface in the requested dark palette. */
+:root{--bg:#0a0a0d;--ink:#fff;--ink-sub:#b9b8be;--surface:rgba(22,22,27,.94);--panel:rgba(29,27,32,.92);--line:#ffffff1c;--in:#222228;--out:#9f182d;--float:#141418}
+.inline-form{display:flex;gap:8px;align-items:center}.inline-form input{flex:1;min-width:0}.inline-form .primary{margin:0;white-space:nowrap}
+.setting-content .upload-wall{margin:8px 0;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:15px;padding:13px 15px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.setting-content .upload-wall:hover{border-color:color-mix(in srgb,var(--accent),transparent 25%)}
+.setting-content .toggle-row small{display:block;color:var(--ink-sub);font-size:12px;margin-top:3px}
+.setting-content .setting-row{background:var(--surface);color:var(--ink);padding:13px 15px;border:1px solid var(--line);border-radius:14px}
+.call-log .online-dot{height:9px;width:9px;border-radius:50%;background:#35d28a;box-shadow:0 0 12px #35d28a}
+.leaderboard-row{background:var(--surface);color:var(--ink)}
+.leaderboard-avatar{background:linear-gradient(145deg,#591821,#e11d2e);color:#fff}
+.leaderboard-row>button.following{background:#2b2024;color:#fff}
+.leaderboard>p{color:var(--ink-sub)}
+.server-list{display:grid;gap:8px;margin:12px 0 18px}.server-row,.server-member{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);text-align:left}.server-row{width:100%;cursor:pointer}.server-row>span{display:grid;gap:3px;flex:1}.server-row small,.server-member small{display:block;color:var(--ink-sub);font-size:12px;margin-top:3px}.server-row:hover{border-color:color-mix(in srgb,var(--accent),transparent 25%)}.server-back{display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--ink-sub)}.server-member>span{flex:1;min-width:0}.server-member i{width:10px;height:10px;border-radius:50%;background:#777}.server-member i.online{background:#35d28a;box-shadow:0 0 12px #35d28a}.server-space h3{margin:22px 0 8px}.server-space .upload-wall{width:max-content;max-width:100%}
+@media(max-width:760px){.chat-sidebar{background:linear-gradient(160deg,#1d1117,#0b0b0e 42%);color:var(--ink)}.content-screen{padding:calc(22px + env(safe-area-inset-top,0px)) 15px calc(110px + env(safe-area-inset-bottom,0px))}}
+
 /* App-only red Cloux skin and phone-safe scrolling. */
 :root,:root[data-theme='light']{--bg:#0b0b0d;--ink:#fff;--ink-sub:#c4c4ca;--accent:#ff2d3d;--surface:#151518;--panel:#1d1d22;--line:#ffffff20;--in:#222227;--out:#a31222;--float:#17171b;color-scheme:dark}
 :root[data-theme='dark'],:root[data-theme='amoled']{--bg:#0a0a0c;--ink:#fff;--ink-sub:#c4c4ca;--accent:#ff2d3d;--surface:#151518;--panel:#1d1d22;--line:#ffffff20;--in:#222227;--out:#a31222;--float:#17171b;color-scheme:dark}
