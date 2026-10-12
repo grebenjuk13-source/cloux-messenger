@@ -29,8 +29,10 @@ def test_profile_media_reactions_reads_roles():
         bb=create_account(b,phone='+380670090012',display='Макс',username='person_bb',password='HelloBB123')
         assert a.patch('/api/profile/status',json={'status':'На звʼязку'}).status_code==200
         assert a.patch('/api/profile/theme',json={'theme':'light','accent':'#8B5CF6','wallpaper_blur':7,'wallpaper_dim':33}).status_code==200
-        pref=a.get('/api/preferences').json()['preferences']
-        assert pref['theme']=='light' and pref['accent']=='#8B5CF6' and pref['wallpaper_blur']==7
+        save=a.put('/api/v5/ui-prefs',json={'theme':'light','accent':'#8B5CF6','wall_blur':7,'wall_dim':33})
+        assert save.status_code==200,save.text
+        pref=a.get('/api/v5/ui-prefs').json()['preferences']
+        assert pref['theme']=='light' and pref['accent']=='#8B5CF6' and pref['wall_blur']==7
         img=Image.new('RGB',(80,80),(150,200,220))
         buffer=io.BytesIO();img.save(buffer,'JPEG')
         upload=a.post('/api/profile/media/avatar',content=buffer.getvalue(),headers={'content-type':'image/jpeg'})
