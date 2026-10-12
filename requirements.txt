@@ -6,3 +6,4 @@ phonenumbers==8.13.55
 argon2-cffi==25.1.0
 cryptography==45.0.7
 pyotp==2.9.0
+psycopg[binary]==3.2.10
