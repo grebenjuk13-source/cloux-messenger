@@ -1,4 +1,4 @@
-"""Cloux early-access web messenger. Warning: Render Free storage is ephemeral."""
+"""Cloux web messenger. Persistent storage must be configured for production."""
 import hashlib
 import hmac
 import os
@@ -29,6 +29,10 @@ def db():
     c.execute("PRAGMA foreign_keys=ON")
     try:
         yield c
+    except BaseException:
+        c.rollback()
+        raise
+    else:
         c.commit()
     finally:
         c.close()
@@ -101,7 +105,13 @@ def auth(request):
             JOIN users ON users.id=sessions.uid WHERE sessions.token=? AND sessions.expires>?""",
             (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
     if not x: fail("Сесія недійсна. Увійдіть повторно.", 401)
-    return dict(x)
+    result = dict(x)
+    with db() as c:
+        if cloux_admin.moderation(c, result["id"])["blocked"]:
+            fail("Цей акаунт заблоковано.", 403)
+        result["is_admin"] = cloux_admin.is_owner(c, result["id"])
+        result["can_verify_owner"] = cloux_admin.candidate(c, result["id"]) and not result["is_admin"]
+    return result
 
 def set_cookie(response, user_id):
     secret = secrets.token_urlsafe(42)
@@ -119,6 +129,12 @@ def member(c, uid, chat_id):
 @app.middleware("http")
 async def security_headers(request, call_next):
     response = await call_next(request)
+    # Cookie authentication needs server-side same-origin validation on writes.
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        origin = request.headers.get("origin", "")
+        host = request.headers.get("host", "")
+        if origin and origin not in ("https://" + host, "http://" + host):
+            return JSONResponse({"detail": "Недозволений запит з іншого сайту."}, status_code=403)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "no-referrer"
     response.headers["X-Frame-Options"] = "DENY"
@@ -146,7 +162,7 @@ def classic():
 
 @app.get("/api/health")
 def health():
-    return {"status":"ok","app":"cloux","stage":"early-access","persistent_storage": False}
+    return {"status":"ok","app":"cloux","stage":"early-access","persistent_storage": os.getenv("CLOUX_PERSISTENT_STORAGE") == "1"}
 
 @app.get("/api/me")
 def me(request: Request):
@@ -276,6 +292,8 @@ def send(chat_id: str, payload: Message, request: Request):
     limit(request,120)
     with db() as c:
         if not member(c,user["id"],chat_id): fail("Немає доступу.",403)
+        if cloux_admin.moderation(c, user["id"])["muted_until"] > int(time.time()):
+            fail("Надсилання повідомлень тимчасово обмежене.", 403)
         kind=c.execute("SELECT kind FROM chats WHERE id=?",(chat_id,)).fetchone()
         if kind and kind["kind"]=="news": fail("Офіційний канал тільки для читання.",403)
         if kind and kind["kind"]=="channel":
@@ -291,6 +309,8 @@ def send(chat_id: str, payload: Message, request: Request):
 
 
 # Optional Cloux features initialized after the base routes are registered.
+import cloux_admin
+cloux_admin.init(db)
 import cloux_features
 cloux_features.initialize(db,hash_password)
 cloux_features.install(app,db,auth,fail,hash_password,check_password,member,limit)
@@ -401,6 +421,7 @@ cloux_realtime.install(app,db)
 # Existing account login by email and Cloux password. Self-service signup is disabled.
 import cloux_auth
 cloux_auth.install(app,db,fail,limit,set_cookie)
+cloux_admin.install(app,db,auth,fail,limit,check_password)
 
 
 # Isolated, network-blocked, single-HTML local demo; existing online Cloux is unchanged.
