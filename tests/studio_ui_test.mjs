@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
-import { copyFile } from 'node:fs/promises';
+import { copyFile, readFile, stat } from 'node:fs/promises';
 
 const browser=await chromium.launch({headless:true,args:['--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']});
 const context=await browser.newContext({viewport:{width:390,height:844},permissions:['camera','microphone'],acceptDownloads:true,serviceWorkers:'block'});
@@ -51,6 +51,9 @@ offline.on('pageerror',e=>problems.push('Exported HTML error: '+e.message));
 const htmlFile=path+'.html';
 await copyFile(path,htmlFile);
 await offline.goto('file://'+htmlFile,{waitUntil:'domcontentloaded'});
+const diagnostic=await offline.evaluate(()=>({url:location.href,body:document.body?.innerText.slice(0,130),scripts:[...document.scripts].map(s=>({src:s.src,length:s.textContent.length}))}));
+const htmlBytes=await readFile(htmlFile);
+console.log('Offline HTML diagnostic',JSON.stringify({diagnostic,errors:problems,firstBytes:htmlBytes.subarray(0,180).toString(),size:(await stat(htmlFile)).size}));
 assert.ok(await offline.locator('.chat-row').count()>=12,'Downloaded HTML opens with 12+ chats');
 await offline.locator('.chat-row').first().click();
 await offline.locator('#draft').fill('Автономний Cloux');
