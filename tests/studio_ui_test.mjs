@@ -39,7 +39,7 @@ await desktop.screenshot({path:'cloux-studio-desktop.png'});
 const download=await context.newPage();
 download.on('pageerror',e=>problems.push('Download error: '+e.message));
 await download.goto('http://127.0.0.1:4173/download.html',{waitUntil:'domcontentloaded'});
-await download.locator('#nav-version').getByText('v6.1.0').waitFor();
+await download.locator('#nav-version').getByText('v6.2.0').waitFor();
 assert.ok((await download.locator('#changelog-list li').count())>=4,'Changelog loads');
 const [received]=await Promise.all([download.waitForEvent('download'),download.locator('#download-html').click()]);
 assert.ok(received.suggestedFilename().endsWith('.html'),'Offline HTML export');

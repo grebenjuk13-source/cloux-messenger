@@ -17,7 +17,7 @@ function signal(data){
 }
 function manualPayload(type,sdp){
  if(!current)return;
- const text=JSON.stringify({cloux:'6.1.0',room:current.room,type,sdp},null,2);
+ const text=JSON.stringify({cloux:'6.2.0',room:current.room,type,sdp},null,2);
  const textarea=$('studio-call-out');if(textarea)textarea.value=text;
 }
 async function setupPeer(){
@@ -114,7 +114,7 @@ async function start({target,room,title,mode='audio',toast=()=>{}}){
  listen('studio-call-offer',()=>void makeOffer());
  listen('studio-call-copy',async()=>{try{await navigator.clipboard.writeText($('studio-call-out').value);toast('SDP скопійовано')}catch{const t=$('studio-call-out');t?.select();toast('Скопіюй виділений текст вручну')}});
  listen('studio-call-accept',async()=>{
-  const obj=safeJson($('studio-call-in').value);if(!obj||obj.cloux!=='6.1.0'||!['offer','answer'].includes(obj.type)||!obj.sdp||!['offer','answer'].includes(obj.sdp.type)){toast('Встав коректний Cloux SDP JSON');return}
+  const obj=safeJson($('studio-call-in').value);if(!obj||obj.cloux!=='6.2.0'||!['offer','answer'].includes(obj.type)||!obj.sdp||!['offer','answer'].includes(obj.sdp.type)){toast('Встав коректний Cloux SDP JSON');return}
   if(obj.room!==state.room){toast('SDP від іншого чату');return}
   if(obj.type==='offer')await acceptOffer(obj.sdp);else await acceptAnswer(obj.sdp);
  });
