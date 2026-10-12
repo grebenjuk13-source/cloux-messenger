@@ -167,3 +167,7 @@
 #root .chat-room .cx-grouped.other .bubble{border-top-left-radius:9px!important}
 #root .cx-preview-messages .cx-preview-own{align-self:flex-end;background:#b71a37dd}
 #root .cx-preview-messages div:not(.cx-preview-own){align-self:flex-start}
+
+.cx-profile-menu{position:absolute;right:0;top:54px;z-index:20;width:min(255px,70vw);padding:7px;border:1px solid #ffffff45;border-radius:20px;background:rgba(27,17,26,.94);backdrop-filter:blur(26px) saturate(180%);box-shadow:0 18px 46px #000b;display:flex;flex-direction:column;gap:2px}
+.cx-profile-menu button{width:100%;min-height:39px;display:flex;justify-content:flex-start;gap:10px;align-items:center;padding:9px 12px;background:transparent;border:none;text-align:left;border-radius:12px;font-size:13px}
+.cx-profile-menu button:hover{background:#ffffff17}
