@@ -53,7 +53,8 @@ export function ProfileScreen({me,uid,onSettings,onMessage,onOpenUser,onBack}:{m
  useEffect(()=>{if(!friendSearch){setPeople([]);return}const timer=window.setTimeout(()=>{request<{users:Person[]}>('/api/users?q='+encodeURIComponent(friendQuery.trim())).then(r=>setPeople(r.users.filter(x=>x.id!==me.id))).catch(e=>setError(e.message))},250);return()=>clearTimeout(timer)},[friendSearch,friendQuery,me.id]);
  const friendAction=async(method:'POST'|'DELETE',route:string)=>{setBusy(true);try{await request('/api/cloux/friends/'+encodeURIComponent(route)+(method==='POST'?(profile?.friendship==='incoming'?'/accept':'/request'):''),method);setVersion(n=>n+1);await reload()}catch(e){setError(e instanceof Error?e.message:'Не вдалося змінити дружбу')}finally{setBusy(false)}};
  const save=async()=>{setBusy(true);try{
-  await request('/api/profile','PATCH',{display:name.trim(),username:username.trim().toLowerCase(),bio:bio.trim()});
+  const updated=await request<{profile:{display:string;username:string}}>('/api/profile','PATCH',{display:name.trim(),username:username.trim().toLowerCase(),bio:bio.trim()});
+  document.dispatchEvent(new CustomEvent('cloux:profile-updated',{detail:updated.profile}));
   await request('/api/profile/status','PATCH',{status:status.trim()});
   await request('/api/cloux/profile/style','PATCH',{profile_accent:accent,banner_gradient:'linear-gradient(120deg,'+bannerColor+',#08090e)',status_icon:icon||'✨'});
   setEdit(false);await reload();
