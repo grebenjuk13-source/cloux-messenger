@@ -138,6 +138,19 @@ function App(){const [me,setMe]=useState<User|null|undefined>(undefined),[chats,
    .catch(()=>{}).finally(()=>{if(!cancelled)setPrefsReady(true)});
    return()=>{cancelled=true};
  },[me?.id]);
+ useEffect(()=>{
+  if(!me)return;
+  const username=new URLSearchParams(location.search).get('user')?.replace(/^@/,'').toLowerCase();
+  if(!username||!/^[a-z0-9_]{2,32}$/.test(username))return;
+  if(username===me.username.toLowerCase()){setViewUser(null);setTab('profile');return}
+  let active=true;
+  api<{users:User[]}>('/api/users?q='+encodeURIComponent(username)).then(result=>{
+   if(!active)return;
+   const match=result.users.find(row=>row.username.toLowerCase()===username);
+   if(match){setViewUser(match.id);setTab('profile')}else setError('Профіль за посиланням не знайдено або прихований');
+  }).catch(()=>{if(active)setError('Не вдалося відкрити профіль за посиланням')});
+  return()=>{active=false};
+ },[me?.id]);
  useEffect(()=>{if(!me||!prefsReady)return;
    const id=setTimeout(()=>api('/api/v5/ui-prefs',{method:'PUT',body:JSON.stringify(prefs)}).catch(e=>console.warn('Theme sync failed',e)),700);
    return()=>clearTimeout(id);
