@@ -430,6 +430,113 @@ def install(app, db, auth, fail, limit, check_password, emit=None):
             audit(c, me["id"], "announcement.publish", NEWS, {"length": len(body.text)})
         return {"ok": True}
 
+    @app.put("/api/admin/users/{uid}/role")
+    def set_role(uid: str, body: RoleUpdate, request: Request):
+        me=require_owner(request, True)
+        with db() as c:
+            if is_owner(c,uid) or uid==SYSTEM:
+                fail("Роль власника й системний акаунт захищено.", 403)
+            if not c.execute("SELECT 1 FROM users WHERE id=?", (uid,)).fetchone():
+                fail("Користувача не знайдено.", 404)
+            c.execute("""INSERT INTO roles(user_id,role,granted_at) VALUES(?,?,?)
+                ON CONFLICT(user_id) DO UPDATE SET role=excluded.role,granted_at=excluded.granted_at""",
+                (uid, body.role, int(time.time())))
+            audit(c, me["id"], "role.update", uid, {"role":body.role})
+        return {"ok":True}
+
+    @app.post("/api/admin/chats")
+    def create_public_chat(body: ChatCreate, request: Request):
+        me=require_owner(request, True)
+        import uuid
+        chat_id=str(uuid.uuid4())
+        with db() as c:
+            now=int(time.time())
+            c.execute("INSERT INTO chats(id,title,kind,created) VALUES(?,?,?,?)",
+                      (chat_id,body.title.strip(),body.kind,now))
+            c.execute("INSERT INTO cloux_owners(chat_id,owner_id) VALUES(?,?)",(chat_id,me["id"]))
+            c.execute("INSERT INTO chat_members(chat_id,user_id) VALUES(?,?)",(chat_id,me["id"]))
+            c.execute("INSERT INTO cloux_admin_chat_meta(chat_id,description) VALUES(?,?)",
+                      (chat_id,body.description))
+            audit(c,me["id"],"chat.create",chat_id,{"kind":body.kind})
+        return {"ok":True,"chat_id":chat_id}
+
+    @app.patch("/api/admin/chats/{cid}")
+    def edit_public_chat(cid: str, body: ChatUpdate, request: Request):
+        me=require_owner(request, True)
+        with db() as c:
+            row=c.execute("SELECT kind FROM chats WHERE id=?",(cid,)).fetchone()
+            if not row or row["kind"] in ("direct","saved"):
+                fail("Особисті чати недоступні для адміністрування.",403)
+            c.execute("UPDATE chats SET title=? WHERE id=?",(body.title.strip(),cid))
+            c.execute("""INSERT INTO cloux_admin_chat_meta(chat_id,description) VALUES(?,?)
+                ON CONFLICT(chat_id) DO UPDATE SET description=excluded.description""",
+                (cid,body.description))
+            audit(c,me["id"],"chat.edit",cid)
+        return {"ok":True}
+
+    @app.delete("/api/admin/chats/{cid}/messages/{mid}")
+    def delete_public_message(cid: str, mid: int, request: Request):
+        me=require_owner(request, True)
+        with db() as c:
+            row=c.execute("SELECT kind FROM chats WHERE id=?",(cid,)).fetchone()
+            if not row or row["kind"] in ("direct","saved"):
+                fail("Приватні повідомлення заборонено переглядати або змінювати.",403)
+            exists=c.execute("SELECT 1 FROM messages WHERE id=? AND chat_id=?",(mid,cid)).fetchone()
+            if not exists:fail("Повідомлення не знайдено.",404)
+            c.execute("UPDATE messages SET text='[Видалено адміністрацією]' WHERE id=? AND chat_id=?",(mid,cid))
+            audit(c,me["id"],"message.moderate",str(mid),{"chat":cid})
+        return {"ok":True}
+
+    @app.put("/api/admin/chats/{cid}/pin/{mid}")
+    def pin_public_message(cid: str, mid: int, request: Request):
+        me=require_owner(request, True)
+        with db() as c:
+            row=c.execute("SELECT kind FROM chats WHERE id=?",(cid,)).fetchone()
+            if not row or row["kind"] in ("direct","saved"):
+                fail("Приватні повідомлення недоступні.",403)
+            if not c.execute("SELECT 1 FROM messages WHERE chat_id=? AND id=?",(cid,mid)).fetchone():
+                fail("Повідомлення не знайдено.",404)
+            c.execute("""INSERT INTO cloux_admin_chat_meta(chat_id,pinned_message_id) VALUES(?,?)
+                 ON CONFLICT(chat_id) DO UPDATE SET pinned_message_id=excluded.pinned_message_id""",(cid,mid))
+            audit(c,me["id"],"message.pin",str(mid),{"chat":cid})
+        return {"ok":True}
+
+    @app.post("/api/reports")
+    def create_report(body: ReportCreate, request: Request):
+        me=auth(request)
+        limit(request,5,3600)
+        with db() as c:
+            if body.category=="direct":
+                chat=c.execute("SELECT kind FROM chats WHERE id=?",(body.subject_id,)).fetchone()
+                if not chat or chat["kind"]!="direct":
+                    fail("Приватний чат не знайдено.",404)
+                # Do not retain a direct-chat reason that might contain private content.
+                reason="[Скарга на особистий чат, без тексту повідомлень]"
+            else:
+                reason=body.reason
+            c.execute("""INSERT INTO cloux_admin_reports(
+                reporter_id,subject_id,category,reason,created) VALUES(?,?,?,?,?)""",
+                (me["id"],body.subject_id,body.category,reason,int(time.time())))
+        return {"ok":True}
+
+    @app.get("/api/admin/reports")
+    def admin_reports(request: Request):
+        require_owner(request)
+        with db() as c:
+            rows=c.execute("""SELECT id,subject_id,category,reason,status,created
+                FROM cloux_admin_reports ORDER BY id DESC LIMIT 100""").fetchall()
+        return {"reports":[dict(x) for x in rows]}
+
+    @app.put("/api/admin/reports/{rid}")
+    def update_report(rid: int, body: ReportUpdate, request: Request):
+        me=require_owner(request,True)
+        with db() as c:
+            if not c.execute("SELECT 1 FROM cloux_admin_reports WHERE id=?",(rid,)).fetchone():
+                fail("Скаргу не знайдено.",404)
+            c.execute("UPDATE cloux_admin_reports SET status=? WHERE id=?",(body.status,rid))
+            audit(c,me["id"],"report.update",str(rid),{"status":body.status})
+        return {"ok":True}
+
     @app.get("/api/admin/chats")
     def admin_chats(request: Request):
         require_owner(request)
