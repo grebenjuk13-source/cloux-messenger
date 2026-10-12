@@ -18,7 +18,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt httpx pytest
       - name: Syntax check
-        run: python -m compileall -q main.py cloux_admin.py cloux_db.py cloux_auth.py cloux_features.py
+        run: python -m compileall -q main.py cloux_admin.py cloux_db.py cloux_auth.py cloux_features.py scripts/migrate_sqlite_to_postgres.py
       - name: Run application regression tests
         run: PYTHONPATH=. pytest -q tests/test_admin.py tests/test_smoke.py tests/test_social.py
       - name: Build client
