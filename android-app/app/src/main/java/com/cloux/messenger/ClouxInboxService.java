@@ -35,6 +35,7 @@ public final class ClouxInboxService extends Service {
     private static final String PREFS="cloux_inbox";
     private static final String SERVICE_CHANNEL="cloux_sync_v1";
     private static final String MESSAGE_CHANNEL="cloux_messages_v2";
+    private static final String SILENT_CHANNEL="cloux_messages_silent_v1";
     private static final int FOREGROUND_ID=5101;
     private final Handler handler=new Handler(Looper.getMainLooper());
     private final OkHttpClient client=new OkHttpClient.Builder()
@@ -44,6 +45,9 @@ public final class ClouxInboxService extends Service {
     private WebSocket socket;
     private String userId="";
     private boolean stopped;
+    private volatile boolean notificationsAllowed=true;
+    private volatile boolean notificationPreview=true;
+    private volatile boolean notificationSound=true;
 
     private final Runnable pingTask=new Runnable(){
         @Override public void run(){
@@ -102,6 +106,10 @@ public final class ClouxInboxService extends Service {
         messages.setVibrationPattern(new long[]{0,120,70,140});
         messages.setSound(sound,attributes);
         manager.createNotificationChannel(messages);
+        NotificationChannel silent=new NotificationChannel(SILENT_CHANNEL,"Тихі повідомлення Cloux",NotificationManager.IMPORTANCE_DEFAULT);
+        silent.setSound(null,null);
+        silent.enableVibration(false);
+        manager.createNotificationChannel(silent);
     }
 
     private void connectInbox(){
@@ -141,6 +149,16 @@ public final class ClouxInboxService extends Service {
                     if(!response.isSuccessful() || response.body()==null)return;
                     JSONObject root=new JSONObject(response.body().string());
                     JSONArray chats=root.optJSONArray("chats");
+                    try(Response config=client.newCall(new Request.Builder().url(BASE+"/api/cloux/settings").header("Cookie",cookie).get().build()).execute()){
+                        if(config.isSuccessful()&&config.body()!=null){
+                            JSONObject settings=new JSONObject(config.body().string()).optJSONObject("settings");
+                            if(settings!=null){
+                                notificationsAllowed=settings.optBoolean("notifications_messages",true);
+                                notificationPreview=settings.optBoolean("show_message_preview",true);
+                                notificationSound=settings.optBoolean("notifications_sound",true);
+                            }
+                        }
+                    }catch(Exception ignored){}
                     if(chats==null)return;
                     android.content.SharedPreferences prefs=getSharedPreferences(PREFS,MODE_PRIVATE);
                     android.content.SharedPreferences.Editor edit=prefs.edit();
@@ -150,8 +168,8 @@ public final class ClouxInboxService extends Service {
                         long latest=chat.optLong("last_message_id",0);
                         String key="last:"+userId+":"+id;
                         boolean known=prefs.contains(key);long previous=prefs.getLong(key,0);
-                        if(allowNotifications && known && latest>previous && !userId.equals(chat.optString("last_sender")) && chat.optInt("muted",0)==0)
-                            showMessage(chat.optString("title","Cloux"),chat.optString("last_text","Нове повідомлення"),id);
+                        if(allowNotifications && notificationsAllowed && known && latest>previous && !userId.equals(chat.optString("last_sender")) && chat.optInt("muted",0)==0)
+                            showMessage(chat.optString("title","Cloux"),notificationPreview?chat.optString("last_text","Нове повідомлення"):"Нове повідомлення",id);
                         if(!known || latest>previous)edit.putLong(key,latest);
                     }
                     edit.apply();
@@ -163,7 +181,7 @@ public final class ClouxInboxService extends Service {
     private void showMessage(String title,String body,String chatId){
         if(Build.VERSION.SDK_INT>=33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED)return;
         NotificationManager manager=getSystemService(NotificationManager.class);if(manager==null)return;
-        Notification notification=new Notification.Builder(this,MESSAGE_CHANNEL)
+        Notification notification=new Notification.Builder(this,notificationSound?MESSAGE_CHANNEL:SILENT_CHANNEL)
             .setSmallIcon(R.drawable.ic_launcher)
             .setContentTitle(title.isEmpty()?"Cloux":title)
             .setContentText(body.isEmpty()?"Нове повідомлення":body)
