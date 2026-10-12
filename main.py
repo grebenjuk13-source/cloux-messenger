@@ -415,3 +415,14 @@ cloux_email.install(app,db,fail,limit,set_cookie,cloux_features.seed_user)
 # One-click email sender approval (Resend OAuth 2.1 + PKCE).
 import cloux_resend_oauth
 cloux_resend_oauth.install(app,db)
+
+
+# Isolated, network-blocked, single-HTML local demo; existing online Cloux is unchanged.
+@app.get("/offline")
+@app.get("/offline/")
+def offline_single_file_cloux():
+    return FileResponse(BASE / "offline" / "index.html", media_type="text/html", headers={
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer",
+    })
