@@ -1,0 +1,33 @@
+{
+  "id": "/v5/",
+  "name": "Cloux Messenger",
+  "short_name": "Cloux",
+  "description": "Cloux — чорно-червоний месенджер",
+  "start_url": "/v5/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#e10600",
+  "lang": "uk",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/assets/cloux-default-avatar.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Чати Cloux",
+      "short_name": "Чати",
+      "url": "/v5/"
+    },
+    {
+      "name": "Cloux Studio",
+      "short_name": "Studio",
+      "url": "/studio/"
+    }
+  ]
+}
