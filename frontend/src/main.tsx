@@ -151,7 +151,24 @@ function App(){const [me,setMe]=useState<User|null|undefined>(undefined),[chats,
   return()=>{live=false;document.removeEventListener('cloux:product-settings',update)};
  },[me?.id]);
  useEffect(()=>{if(!me)return;let stopped=false,ws:WebSocket|null=null,retry:ReturnType<typeof setTimeout>|null=null;
- const refresh=()=>{api<{chats:Chat[]}>('/api/chats').then(x=>{if(!stopped)setChats(x.chats)}).catch(()=>{})};
+ const known=new Map<string,number>();
+ let rules={notifications_messages:true,notifications_sound:true,show_message_preview:true};
+ api<{settings:typeof rules}>('/api/cloux/settings').then(x=>{rules={...rules,...x.settings}}).catch(()=>{});
+ const onSettings=(e:Event)=>{const v=(e as CustomEvent<Partial<typeof rules>>).detail;if(v)rules={...rules,...v}};
+ document.addEventListener('cloux:product-settings',onSettings);
+ const refresh=()=>{api<{chats:Chat[]}>('/api/chats').then(x=>{if(stopped)return;
+  for(const c of x.chats){
+   const latest=Number(c.last_message_id||0),previous=known.get(c.id);
+   if(previous!==undefined&&latest>previous&&c.last_sender!==me.id&&!c.muted&&document.hidden&&!window.ClouxAndroid&&rules.notifications_messages&&'Notification'in window&&Notification.permission==='granted'){
+    try{
+     const n=new Notification(c.title,{body:rules.show_message_preview?c.last_text||'Нове повідомлення':'Нове повідомлення',silent:!rules.notifications_sound,tag:'cloux-'+c.id});
+     n.onclick=()=>{window.focus();setActive(c.id);setTab('chats');n.close()};
+    }catch{}
+   }
+   known.set(c.id,Math.max(previous||0,latest));
+  }
+  setChats(x.chats);
+ }).catch(()=>{})};
  refresh();
  const connect=()=>{if(stopped)return;try{ws=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/ws/inbox')}catch{return}
   ws.onmessage=e=>{try{if(JSON.parse(e.data).type==='inbox_update')refresh()}catch{}};
@@ -161,7 +178,7 @@ function App(){const [me,setMe]=useState<User|null|undefined>(undefined),[chats,
  const ping=setInterval(()=>{if(ws?.readyState===WebSocket.OPEN)ws.send('ping')},25000);
  const visibility=()=>{if(document.visibilityState==='visible')refresh()};
  document.addEventListener('visibilitychange',visibility);
- return()=>{stopped=true;ws?.close();if(retry)clearTimeout(retry);clearInterval(id);clearInterval(ping);document.removeEventListener('visibilitychange',visibility)}
+ return()=>{stopped=true;ws?.close();if(retry)clearTimeout(retry);clearInterval(id);clearInterval(ping);document.removeEventListener('visibilitychange',visibility);document.removeEventListener('cloux:product-settings',onSettings)}
 },[me?.id]);
  useEffect(()=>{if(me)window.ClouxAndroid?.enableNotifications(me.id)},[me?.id]);
  useEffect(()=>{if(tab==='chats'&&active&&autoCall){const id=window.setTimeout(()=>setAutoCall(null),1800);return()=>clearTimeout(id)}},[tab,active,autoCall]);
