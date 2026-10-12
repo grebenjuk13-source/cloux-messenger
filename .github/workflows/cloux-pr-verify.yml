@@ -25,3 +25,32 @@ jobs:
         run: |
           npm install --prefix frontend --no-audit --no-fund
           npm run --prefix frontend build
+
+  postgres-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: cloux_ci
+          POSTGRES_PASSWORD: local_ci_password
+          POSTGRES_DB: cloux_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cloux_ci -d cloux_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://cloux_ci:local_ci_password@127.0.0.1:5432/cloux_ci
+      OWNER_EMAIL: verified-admin@example.test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt httpx
+      - name: Test actual PostgreSQL startup and persisted login
+        run: PYTHONPATH=. python tests/pg_startup_check.py
