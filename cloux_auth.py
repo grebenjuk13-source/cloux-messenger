@@ -37,7 +37,7 @@ class Registration(BaseModel):
     password: str = Field(min_length=8, max_length=128)
 
 
-def install(app, db, fail, limit, set_cookie):
+def install(app, db, fail, limit, set_cookie, verify_password):
     with db() as conn:
         columns = {row['name'] for row in conn.execute('PRAGMA table_info(users)')}
         if 'email' not in columns:
@@ -73,10 +73,11 @@ def install(app, db, fail, limit, set_cookie):
             user = conn.execute('SELECT id,password_hash FROM users WHERE ' + where, args).fetchone()
         if not user:
             fail('Електронна адреса або пароль Cloux неправильні.', 401)
-        try:
-            HASHER.verify(user['password_hash'], body.password)
-        except Exception:
-            fail('Електронна адреса або пароль Cloux неправильні.', 401)
+        # Use the same password verifier as the existing /api/login route.
+        # Historic Cloux accounts used PBKDF2; newly registered ones use Argon2.
+        # Reject unsupported/bad hashes without deleting, resetting or recreating accounts.
+        if not verify_password(body.password, user['password_hash']):
+            fail('Пошта, телефон, нікнейм або пароль Cloux неправильні.', 401)
         return set_cookie(JSONResponse({'ok': True}), user['id'])
 
     @app.post('/api/v6/register')
