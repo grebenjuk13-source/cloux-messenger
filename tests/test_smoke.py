@@ -14,8 +14,10 @@ def test_login_only_and_chat_notification_metadata():
         create_account(bob, phone="+380670000012", username="user_two", display="Другий", password="SecureDev2!")
 
         assert alice.get("/api/me").status_code == 200
-        for route in ("/api/register", "/api/v5/register", "/api/v6/register"):
+        for route in ("/api/register", "/api/v5/register"):
             assert alice.post(route, json={}).status_code == 404
+        # Current enrollment endpoint exists, but rejects missing required fields.
+        assert alice.post("/api/v6/register", json={}).status_code == 422
 
         login = alice.post("/api/login", json={"phone": "+380670000011", "password": "SecureDev1!"})
         assert login.status_code == 200, login.text
