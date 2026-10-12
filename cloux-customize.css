@@ -87,3 +87,14 @@ html[data-cloux-reduced='1'] *,html[data-cloux-reduced='1'] *:before,html[data-c
 body:has(.shell) .shell{height:calc(100dvh - var(--cloux-footer-height))!important;min-height:0!important}
 body:has(.shell) .main{height:100%!important}
 body:has(.shell) .cloux-legal-footer:not(.cloux-settings-legal){position:relative!important;z-index:2}
+
+/* Custom avatar-only decoration. Never overwrite uploaded image pixels. */
+.settings-view [data-cloux-shape="0"]{border-radius:50%!important}
+.settings-view [data-cloux-shape="1"]{border-radius:34%!important}
+.settings-view [data-cloux-shape="2"]{border-radius:18%!important}
+.settings-view [data-cloux-frame="1"]{outline:3px solid var(--cloux-highlight)!important;outline-offset:3px;box-shadow:0 0 0 6px #ffffff55}
+.settings-view [data-cloux-frame="2"]{outline:3px solid var(--cloux-highlight)!important;box-shadow:0 0 0 5px #ffffff66,0 0 17px var(--cloux-highlight);animation:cloux-ring-spin 6s ease-in-out infinite}
+.settings-view [data-cloux-frame="3"]{outline:2px solid var(--cloux-highlight)!important;box-shadow:0 0 8px var(--cloux-highlight),0 0 22px var(--cloux-highlight)}
+.settings-view [data-cloux-frame="4"]{outline:3px solid #cda955!important;outline-offset:2px;box-shadow:0 0 0 6px #6d4d1b66,0 0 16px #ac783c}
+@keyframes cloux-ring-spin{0%,100%{filter:drop-shadow(0 0 2px var(--cloux-highlight))}50%{filter:drop-shadow(0 0 14px var(--cloux-highlight))}}
+@media(prefers-reduced-motion:reduce){.settings-view [data-cloux-frame="2"]{animation:none!important}}
