@@ -474,7 +474,7 @@ cloux_realtime.install(app,db)
 # Existing account login by email and Cloux password. Self-service signup is disabled.
 import cloux_auth
 cloux_auth.install(app,db,fail,limit,set_cookie)
-cloux_admin.install(app,db,auth,fail,limit,check_password)
+cloux_admin.install(app,db,auth,fail,limit,check_password,cloux_realtime.hub.emit)
 
 
 # Isolated, network-blocked, single-HTML local demo; existing online Cloux is unchanged.
