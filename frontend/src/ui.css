@@ -330,3 +330,63 @@ body,#root,.app-shell,.app-content,.chat-sidebar,.settings-view,.content-screen{
 @media(max-width:760px){.sidebar-head{padding-top:calc(18px + env(safe-area-inset-top,0px))}.chat-header{padding-top:calc(12px + env(safe-area-inset-top,0px));min-height:calc(74px + env(safe-area-inset-top,0px))}.content-screen{padding:calc(22px + env(safe-area-inset-top,0px)) 15px calc(105px + env(safe-area-inset-bottom,0px))}.settings-view{padding-top:calc(22px + env(safe-area-inset-top,0px))}.liquid-nav{bottom:calc(8px + env(safe-area-inset-bottom,0px))}.call-quick{grid-template-columns:1fr}.call-quick button{min-height:104px}.cloux-call-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.create-sheet{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}}
 @media(prefers-reduced-motion:reduce){.create-sheet,.call-quick button{animation:none;transition:none}}
 .msg-audio{display:block;width:min(300px,78vw);height:42px;margin-top:8px;accent-color:#E11D2E}.composer-send.recording{background:#ff2d3d!important;animation:record-pulse 1s infinite;box-shadow:0 0 0 0 #ff2d3d66}@keyframes record-pulse{to{box-shadow:0 0 0 9px #ff2d3d00;transform:scale(1.04)}}.call-redial{display:grid;place-items:center;width:37px;height:37px;border-radius:50%;color:#ff4655;background:#e11d2e20}.call-redial:disabled{opacity:.35}.cloux-call-stage.speaking{box-shadow:inset 0 0 0 2px #55de94,0 0 25px #37d48144}
+
+
+/* Cloux 6: uniform Telegram-inspired night mode across every route. */
+:root,:root[data-theme='light'],:root[data-theme='dark'],:root[data-theme='amoled'] {
+  --bg:#0A0A0C;--ink:#FFFFFF;--ink-sub:#C5C5CD;--muted:#B8B8C1;
+  --surface:#16161A;--panel:#1C1C21;--float:#1C1C21;--in:#25252B;
+  --out:#A5122B;--line:#ffffff27;--accent:#C8102E;color-scheme:dark;
+}
+html,body,#root {background:#0A0A0C;color:#fff}
+.auth-page,.mail-auth,.auth-card,.mail-auth .auth-card,.settings-view,.settings-profile,
+.settings-box,.setting-group,.settings-chat-preview,.chat-sidebar,.chat-room,
+.leaderboard-hero,.leaderboard-row,.content-screen {
+  color:#F2F2F2;
+}
+.auth-page,.mail-auth {background:radial-gradient(circle at 20% 10%,#45101e88,transparent 43%),#0A0A0C!important}
+.auth-side h1,.auth-side h2,.auth-card h1,.auth-card h2,.auth-card h3,
+.mail-auth h1,.mail-auth h2,.section-header h2,.setting-content h3{color:#fff!important}
+.auth-side p,.auth-card label,.auth-card p,.settings-group>small,.setting-row small,
+.setting-content p,.settings-profile small,.chat-heading small {color:#C5C5CD!important}
+.auth-card,.mail-auth .auth-card,.settings-profile,.settings-box,.setting-group,
+.leaderboard-hero,.leaderboard-row {background:#16161A!important;border:1px solid #ffffff23!important}
+.searchbar,.searchbar input,.settings-search,.settings-search input,.composer,.emoji-panel,
+.country-modal,.new-chat-modal,.sheet-inner,.settings-chat-preview,
+.auth-card input,.auth-card label>input,.auth-card .input-with-icon,.auth-card .input-with-icon input,
+.auth-card .pw-wrap,.auth-card .pw-wrap input,.auth-card .country-pick,
+.mail-auth input,.setting-content input:not([type=range]):not([type=checkbox]):not([type=color]),
+.setting-row,.setting-content .setting-row {
+  background:#1C1C21!important;color:#FFF!important;border-color:#ffffff28!important
+}
+.auth-card input::placeholder,.mail-auth input::placeholder,.searchbar input::placeholder,
+.settings-search input::placeholder,.composer textarea::placeholder {color:#ACACB6!important}
+.setting-row,.settings-box .setting-row{color:#fff!important}
+.setting-row>span,.setting-row b,.settings-profile b,.chat-entry b,.chat-entry small{color:#F2F2F2!important}
+.setting-row:hover,.chat-entry:hover{background:#2B2027!important}
+.setting-icon{background:linear-gradient(145deg,#C8102E,#7A0B1E)!important;color:#fff!important}
+.liquid-nav{background:#17171bed!important;backdrop-filter:blur(26px) saturate(1.3);border-color:#ffffff24!important}
+.liquid-nav button{color:#D0D0D6!important}.liquid-nav button.active{background:#8F152B66!important;color:#fff!important}
+.chat-header,.sidebar-head{background:#16161AD8!important;backdrop-filter:blur(20px)}
+.chat-heading{min-width:0;flex:1}.chat-heading b,.chat-heading h3{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;word-break:break-word}
+.messages-area{background:linear-gradient(155deg,#210a10,#0a0a0c 58%,#1a0b14)!important;position:relative}
+.messages-area::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:url('./doodles.svg')!important;background-size:240px 240px;opacity:1!important;mix-blend-mode:normal!important}
+.messages-area>*{position:relative}
+.bubble{background:#25252B!important;color:#FFF!important}
+.own .bubble{background:linear-gradient(125deg,#C8102E,#7A0B1E)!important;color:#fff!important}
+.msg-text,.msg-reply,.msg-foot,.bubble .text,.bubble time{color:#fff!important}
+.msg-foot{opacity:.85!important}.msg-foot small{color:#eee!important}
+.composer-wrap{background:linear-gradient(0deg,#0A0A0C 55%,transparent)!important}
+.composer,.emoji-panel{background:#1C1C21!important;color:#FFF!important}
+.msg-actions{background:#1c1c21f2!important;color:#fff;backdrop-filter:blur(20px)}
+.auth-card .primary,.mail-card .primary,.primary {background:linear-gradient(125deg,#C8102E,#7A0B1E)!important;color:#fff!important}
+.settings-view{padding-top:calc(30px + env(safe-area-inset-top,0px))!important}
+.content-screen{padding-top:calc(30px + env(safe-area-inset-top,0px))!important}
+.settings-profile{margin-top:8px}
+@media(max-width:760px){
+.sidebar-head{padding-top:calc(22px + env(safe-area-inset-top,0px))!important}
+.chat-header{padding-top:calc(18px + env(safe-area-inset-top,0px))!important}
+.auth-page{padding-top:calc(24px + env(safe-area-inset-top,0px))!important}
+.liquid-nav{bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
+}
+@media(prefers-reduced-motion:reduce){.chat-entry,.bubble,.msg-actions,.liquid-nav,.settings-view{animation:none!important;transition:none!important}}
