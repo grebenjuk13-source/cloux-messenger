@@ -16,12 +16,16 @@ function jsonDownload(data:unknown,filename:string){
 function BackupManager({onSchedule,interval}:{onSchedule:(v:'off'|'daily'|'weekly')=>void;interval:'off'|'daily'|'weekly'}){
  const [items,setItems]=useState<Backup[]>([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
  const chooser=useRef<HTMLInputElement>(null);
+ const [archive,setArchive]=useState<{id:string;title:string;messages:number}[]>([]),[selectedArchive,setSelectedArchive]=useState<string|null>(null),[history,setHistory]=useState<{chat_id:string;text:string;sender:string;created:number}[]>([]),[archiveQuery,setArchiveQuery]=useState(''),[archivePage,setArchivePage]=useState(0),[archiveTotal,setArchiveTotal]=useState(0);
+ const reloadArchive=()=>api<{chats:typeof archive}>('/api/cloux/backups/archive/list').then(r=>setArchive(r.chats)).catch(()=>{});
+ useEffect(()=>{void reloadArchive()},[]);
+ useEffect(()=>{if(!selectedArchive)return;let active=true;api<{messages:typeof history;total:number}>('/api/cloux/backups/archive/chat/'+encodeURIComponent(selectedArchive)+'?q='+encodeURIComponent(archiveQuery)+'&offset='+archivePage*100).then(r=>{if(active){setHistory(r.messages);setArchiveTotal(r.total)}}).catch(e=>setMessage(e.message));return()=>{active=false}},[selectedArchive,archiveQuery,archivePage]);
  const refresh=()=>api<{backups:Backup[]}>('/api/cloux/backups').then(r=>setItems(r.backups)).catch(e=>setMessage(e.message));
  useEffect(()=>{void refresh()},[]);
- const run=async(action:()=>Promise<void>)=>{setBusy(true);setMessage('');try{await action();await refresh()}catch(e){setMessage(e instanceof Error?e.message:'Помилка')}finally{setBusy(false)}};
+ const run=async(action:()=>Promise<void>)=>{setBusy(true);setMessage('');try{await action();await refresh();await reloadArchive()}catch(e){setMessage(e instanceof Error?e.message:'Помилка')}finally{setBusy(false)}};
  return <div className="cx-setting-content">
   <h3>Резервні копії CLOUX</h3>
-  <p className="cx-setting-desc">Копія містить налаштування та історію чатів для експорту. Відновлення повертає налаштування й оформлення; повідомлення інших людей не переписуються.</p>
+  <p className="cx-setting-desc">Копія містить налаштування та всю доступну історію. Відновлення повертає оформлення й приватний архів повідомлень: їх можна читати та шукати, не підробляючи нові повідомлення в чужих чатах.</p>
   <button className="cx-action" disabled={busy} onClick={()=>void run(async()=>{await api('/api/cloux/backups','POST');setMessage('Копію збережено на сервері')})}><Cloud size={18}/> Створити резервну копію</button>
   <button className="cx-action" disabled={busy} onClick={()=>void run(async()=>{const data=await api('/api/cloux/backups/export');jsonDownload(data,'Cloux-full-export.json');setMessage('Файл із приватними чатами збережено на пристрої')})}><Download size={18}/> Скачати повний експорт JSON</button>
   <label className="cx-action" style={{display:'flex',gap:10,cursor:'pointer',alignItems:'center'}}><Upload size={18}/> Відновити копію з файлу
@@ -33,8 +37,18 @@ function BackupManager({onSchedule,interval}:{onSchedule:(v:'off'|'daily'|'weekl
   <h3>Збережені на сервері</h3>{items.length===0&&<p className="cx-muted">Резервних копій поки немає.</p>}
   {items.map(x=><div className="cx-person-row" key={x.id}><Cloud size={22}/><span><b>{new Date(x.created*1000).toLocaleString('uk-UA')}</b><small>{Math.round(x.bytes/1024)} КБ</small></span>
    <button disabled={busy} title="Завантажити" onClick={()=>void run(async()=>jsonDownload(await api('/api/cloux/backups/'+x.id),'Cloux-backup-'+x.id+'.json'))}><Download size={17}/></button>
-   <button disabled={busy} onClick={()=>void run(async()=>{if(!confirm('Відновити оформлення й налаштування з цієї копії?'))return;const data=await api('/api/cloux/backups/'+x.id);const out=await api<{notice:string}>('/api/cloux/backups/restore','POST',{data});setMessage(out.notice)})}>Відновити</button>
+   <button disabled={busy} onClick={()=>void run(async()=>{if(!confirm('Відновити налаштування й приватний архів повідомлень із цієї копії?'))return;const data=await api('/api/cloux/backups/'+x.id);const out=await api<{notice:string}>('/api/cloux/backups/restore','POST',{data});setMessage(out.notice)})}>Відновити</button>
    <button disabled={busy} onClick={()=>void run(async()=>{if(confirm('Видалити копію?'))await api('/api/cloux/backups/'+x.id,'DELETE')})}><X size={17}/></button></div>)}
+  <h3>Історія з відновленої копії</h3>
+  <p className="cx-setting-desc">Приватний архів доступний тільки в твоєму акаунті. Повідомлення тут неможливо надіслати повторно від імені інших людей.</p>
+  {archive.length===0?<p className="cx-muted">Архів поки порожній. Віднови копію, щоб переглядати старі повідомлення.</p>:<>
+    <div className="cx-archive-list">{archive.map(a=><button key={a.id} className={selectedArchive===a.id?'cx-selected':''} onClick={()=>{setSelectedArchive(a.id);setArchivePage(0);setArchiveQuery('')}}>{a.title} <small>{a.messages} повідомлень</small></button>)}</div>
+    {selectedArchive&&<div className="cx-archive-content"><div className="cx-search"><Search size={16}/><input placeholder="Пошук в архіві" value={archiveQuery} onChange={e=>{setArchiveQuery(e.target.value);setArchivePage(0)}}/></div>
+      {history.map((m,i)=><article key={i} className="cx-archive-message"><small>{m.sender} · {m.created?new Date(m.created*1000).toLocaleString('uk-UA'):''}</small><p>{m.text}</p></article>)}
+      <div className="cx-wall-tabs"><button disabled={archivePage===0} onClick={()=>setArchivePage(x=>Math.max(0,x-1))}>← Назад</button><span>{Math.min(archivePage*100+1,archiveTotal)}–{Math.min((archivePage+1)*100,archiveTotal)} з {archiveTotal}</span><button disabled={(archivePage+1)*100>=archiveTotal} onClick={()=>setArchivePage(x=>x+1)}>Далі →</button></div>
+    </div>}
+    <button className="cx-action" onClick={()=>void run(async()=>{if(!confirm('Видалити лише приватний відновлений архів?'))return;await api('/api/cloux/backups/archive','DELETE');setSelectedArchive(null);setHistory([])})}>Видалити відновлений архів</button>
+   </>}
   {message&&<p role="status" className="cx-notice">{message}</p>}
  </div>;
 }
