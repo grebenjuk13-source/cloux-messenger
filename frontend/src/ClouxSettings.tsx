@@ -40,9 +40,20 @@ function BackupManager({onSchedule,interval}:{onSchedule:(v:'off'|'daily'|'weekl
 }
 export function ProductSettings({me,theme,onTheme,onProfile,onBack,onLogout}:{me:ClientUser;theme:'dark'|'light'|'amoled'|'auto';onTheme:(theme:'dark'|'light'|'amoled'|'auto')=>void;onProfile:()=>void;onBack:()=>void;onLogout:()=>Promise<void>}){
  const [part,setPart]=useState(''),[values,setValues]=useState<SettingsValue>(initial),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[devices,setDevices]=useState<number|null>(null),[wallOpen,setWallOpen]=useState(false);
- const queued=useRef<Promise<unknown>>(Promise.resolve());
- useEffect(()=>{api<{settings:SettingsValue}>('/api/cloux/settings').then(r=>setValues({...initial,...r.settings})).catch(e=>setNotice(e.message)).finally(()=>setLoading(false))},[me.id]);
- const save=(change:Partial<SettingsValue>)=>{const updated={...values,...change};setValues(updated);queued.current=queued.current.catch(()=>{}).then(()=>api('/api/cloux/settings','PUT',updated)).catch(e=>setNotice('Не вдалося синхронізувати: '+e.message))};
+ const queued=useRef<Promise<unknown>>(Promise.resolve()),latest=useRef<SettingsValue>(initial);
+ const cacheKey='cloux:product-settings:'+me.id;
+ useEffect(()=>{
+   try{const cached=localStorage.getItem(cacheKey);if(cached){const merged={...initial,...JSON.parse(cached)};latest.current=merged;setValues(merged)}}catch{}
+   let alive=true;
+   api<{settings:SettingsValue}>('/api/cloux/settings').then(r=>{if(alive){const merged={...initial,...r.settings};latest.current=merged;setValues(merged);localStorage.setItem(cacheKey,JSON.stringify(merged))}})
+   .catch(e=>{if(alive)setNotice('Сервер недоступний: '+e.message)}).finally(()=>{if(alive)setLoading(false)});
+   return()=>{alive=false};
+ },[me.id]);
+ const save=(change:Partial<SettingsValue>)=>{
+   const updated={...latest.current,...change};latest.current=updated;setValues(updated);
+   try{localStorage.setItem(cacheKey,JSON.stringify(updated))}catch{}
+   queued.current=queued.current.catch(()=>{}).then(async()=>{await api('/api/cloux/settings','PUT',updated);setNotice('')}).catch(e=>setNotice('Збережено на пристрої, але сервер не підтвердив: '+e.message));
+ };
  const toggle=(key:keyof SettingsValue,title:string)=> <label className="cx-setting-toggle"><span>{title}</span><input type="checkbox" checked={Boolean(values[key])} onChange={e=>save({[key]:e.target.checked})}/></label>;
  const row=(title:string,id:string,Icon:typeof Settings,detail='')=><button className="cx-setting-row" onClick={()=>setPart(id)} key={id}><Icon size={20}/><span><b>{title}</b>{detail&&<small>{detail}</small>}</span><ChevronRight size={18}/></button>;
  const sectionTitles:Record<string,string>={privacy:'Конфіденційність',notify:'Сповіщення',chats:'Чати й шпалери',data:'Дані та пам’ять',devices:'Пристрої',language:'Мова',theme:'Оформлення',tools:'Інструменти Cloux'};
