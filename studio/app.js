@@ -174,7 +174,7 @@ function resizeDraft(){const d=$('#draft');d.style.height='46px';d.style.height=
 function shade(close){$('#shade').hidden=false;$('#shade').onclick=close}
 function closeOverlays(){
  $('#sheet').hidden=true;$('#emoji-keyboard').hidden=true;$('#shade').hidden=true;$('#media-modal').hidden=true;
- if(mediaStream&&!$('#call-screen').hidden)return;
+ if(window.ClouxStudioCalls?.active()&&!$('#call-screen').hidden)return;
  stopMedia();
 }
 function sheet(title,rows,extra=''){
