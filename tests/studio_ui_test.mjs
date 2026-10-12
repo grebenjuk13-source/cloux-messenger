@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
+import { copyFile } from 'node:fs/promises';
 
 const browser=await chromium.launch({headless:true,args:['--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']});
 const context=await browser.newContext({viewport:{width:390,height:844},permissions:['camera','microphone'],acceptDownloads:true,serviceWorkers:'block'});
@@ -47,9 +48,9 @@ const path=await received.path();
 assert.ok(path,'Downloaded file path');
 const offline=await context.newPage();
 offline.on('pageerror',e=>problems.push('Exported HTML error: '+e.message));
-await offline.goto('file://'+path,{waitUntil:'domcontentloaded'});
-const debug=await offline.evaluate(()=>({rows:document.querySelectorAll('.chat-row').length,scripts:[...document.scripts].map(s=>({src:s.src,length:s.textContent.length})),body:document.body?.innerText.slice(0,300)}));
-console.log('Export diagnostics:',JSON.stringify(debug),'errors:',JSON.stringify(problems));
+const htmlFile=path+'.html';
+await copyFile(path,htmlFile);
+await offline.goto('file://'+htmlFile,{waitUntil:'domcontentloaded'});
 assert.ok(await offline.locator('.chat-row').count()>=12,'Downloaded HTML opens with 12+ chats');
 await offline.locator('.chat-row').first().click();
 await offline.locator('#draft').fill('Автономний Cloux');
