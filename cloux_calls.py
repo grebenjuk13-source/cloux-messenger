@@ -40,7 +40,10 @@ def install(app, db):
                 JOIN users u ON u.id=s.uid WHERE s.token=? AND s.expires>?""",
                 (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
             kind = c.execute("SELECT kind FROM chats WHERE id=?", (chat_id,)).fetchone()
-            valid = bool(user and kind and kind["kind"]=="direct" and c.execute(
+            import cloux_admin
+            valid = bool(user and cloux_admin.flag(c, "calls")
+                and not cloux_admin.moderation(c, user["id"])["blocked"]
+                and kind and kind["kind"]=="direct" and c.execute(
                 "SELECT 1 FROM chat_members WHERE chat_id=? AND user_id=?",
                 (chat_id,user["id"])).fetchone())
         if not valid:
