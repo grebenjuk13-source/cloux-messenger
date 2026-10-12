@@ -56,3 +56,10 @@
 .mail-spinner{animation:mail-spin .8s linear infinite;flex:none}
 @keyframes mail-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.mail-spinner{animation:none}}
+
+/* Telegram-like six-digit confirmation, styled for Cloux. */
+.mail-code.shake{animation:mail-code-shake .38s ease-in-out}
+.mail-code input[aria-invalid="true"]{border-color:#ff526d;box-shadow:0 0 0 1px #ff526d55}
+.mail-code-error{margin:-14px 0 17px;color:#ff667c;font-size:13px;font-weight:600;line-height:1.45}
+@keyframes mail-code-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@media(prefers-reduced-motion:reduce){.mail-code.shake{animation:none}}
