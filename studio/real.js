@@ -9,7 +9,7 @@ const $$=(q,root=document)=>[...root.querySelectorAll(q)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const avatar='/assets/cloux-default-avatar.jpg';
 let me=null,profile=null,chats=[],active=null,messages=[],reactions={},filter='all',q='',reply=null,editing=null,wsChat=null,wsInbox=null,typingTimer=0;
-let syncTimer=0,chatTimer=0,toastTimer=0,authView='login',reconnecting=false,selectedMsg=null,pref={};
+let syncTimer=0,chatTimer=0,toastTimer=0,authView='login',reconnecting=false,selectedMsg=null,pref={},lastIncomingCall='';
 const drafts={};try{Object.assign(drafts,JSON.parse(sessionStorage.getItem('cloux:live:drafts')||'{}'))}catch{}
 const formatTime=ts=>ts?new Date(ts*1000).toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}):'';
 const activeChat=()=>chats.find(c=>c.id===active);
@@ -64,7 +64,10 @@ async function authenticate(){
  me=await request('/api/me');const root=$('#cloux-auth');if(root)root.hidden=true;
  $('#shell').classList.remove('signed-out');try{profile=(await request('/api/profile')).profile}catch{profile={display:me.display,username:me.username}}
  $('#welcome').hidden=false;$('#chat-view').hidden=true;$('#shell').classList.remove('chat-open');
- await loadChats();connectInbox();startPolling();notify('Вітаємо у Cloux, '+me.display);
+ await loadChats();connectInbox();startPolling();
+ const join=new URL(location.href).searchParams.get('join');
+ if(join){try{const joined=await request('/api/invites/'+encodeURIComponent(join)+'/join',{method:'POST'});history.replaceState({},'',location.pathname);await loadChats();await openChat(joined.chat_id);notify('Ти приєднався до чату')}catch(err){notify('Запрошення: '+err.message)}}
+ notify('Вітаємо у Cloux, '+me.display);
 }
 async function initialize(){
  $('#chat-view').hidden=true;$('#welcome').hidden=false;
@@ -91,6 +94,7 @@ function connectInbox(){
  wsInbox?.close();
  wsInbox=websocket('/ws/inbox',data=>{
   if(data.type==='inbox_update')void loadChats(true);
+ if(data.type==='call_invite')void incomingCall(data);
  });
 }
 function connectChat(id){
@@ -98,6 +102,7 @@ function connectChat(id){
   if(!me||id!==active)return;
   if(['new_message','message_updated','message_deleted','reactions_updated','read'].includes(data.type)){
    clearTimeout(chatTimer);chatTimer=setTimeout(()=>{void loadMessages(true);void loadChats(true)},120);
+  }else if(data.type==='call_invite'){void incomingCall(data);
   }else if(data.type==='typing'&&data.user_id!==me.id){
    $('#chat-status').textContent='Друкує…';
    clearTimeout(typingTimer);typingTimer=setTimeout(()=>setChatStatus(),1800);
@@ -292,7 +297,7 @@ function openChatMenu(){
 async function createInvite(id){
  try{const data=await request('/api/chats/'+encodeURIComponent(id)+'/invite',{method:'POST'});
  if(!data.code)throw Error('Посилання не створено');
- const link=location.origin+'/invite/'+encodeURIComponent(data.code);
+ const link=location.origin+'/?join='+encodeURIComponent(data.code);
  await navigator.clipboard.writeText(link);notify('Запрошення скопійовано')}
  catch(e){notify(e.message)}
 }
@@ -389,7 +394,20 @@ async function call(mode){
  const c=activeChat();if(!c)return;
  if(c.kind!=='direct'){notify('Наразі WebRTC доступний для особистих дзвінків');return}
  if(!window.ClouxStudioLiveCalls){notify('З’єднання дзвінків недоступне');return}
+ const invite=()=>{if(wsChat?.readyState===WebSocket.OPEN){wsChat.send(JSON.stringify({type:'call_invite',mode}))}};
+ if(wsChat?.readyState===WebSocket.OPEN)invite();else wsChat?.addEventListener('open',invite,{once:true});
  await window.ClouxStudioLiveCalls.start({room:c.id,title:nameOf(c),mode,target:$('#call-screen'),onStatus:notify});
+}
+async function incomingCall(data){
+ if(!me||data.user_id===me.id||!['audio','video'].includes(data.mode))return;
+ const c=chats.find(x=>x.id===data.chat_id);if(!c||c.kind!=='direct')return;
+ const key=data.user_id+'|'+data.chat_id+'|'+data.mode;
+ if(lastIncomingCall===key)return;lastIncomingCall=key;setTimeout(()=>{if(lastIncomingCall===key)lastIncomingCall=''},9000);
+ if(window.ClouxStudioLiveCalls?.active())return;
+ if(confirm((data.mode==='video'?'Відеодзвінок':'Голосовий дзвінок')+' від '+nameOf(c)+'. Прийняти?')){
+  if(active!==c.id)await openChat(c.id);
+  await window.ClouxStudioLiveCalls.start({room:c.id,title:nameOf(c),mode:data.mode,target:$('#call-screen'),onStatus:notify});
+ }
 }
 function openNewChat(){
  sheet('Новий чат',[
