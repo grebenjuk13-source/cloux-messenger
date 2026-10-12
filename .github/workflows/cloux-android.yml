@@ -48,12 +48,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          FILE="android-app/app/build/outputs/apk/debug/app-debug.apk"
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk Cloux-Android.apk
+          FILE="Cloux-Android.apk"
           if gh release view cloux-android >/dev/null 2>&1; then
-            gh release upload cloux-android "$FILE#Cloux-Android.apk" --clobber
+            gh release upload cloux-android "$FILE" --clobber
+            gh release delete-asset cloux-android app-debug.apk --yes || true
             gh release edit cloux-android --title "Cloux Android 6.2.0" --notes "Cloux 6.2.0 для Android 8+. Наявна збірка APK — debug, для тестування. При оновленні Android може вимагати видалити стару APK, якщо сертифікати збірок відрізняються. Повноцінне безперервне оновлення потребує постійного ключа підпису."
           else
-            gh release create cloux-android "$FILE#Cloux-Android.apk" --title "Cloux Android 6.2.0" --notes "Cloux 6.2.0 для Android 8+. Тестова debug APK; підписані збірки потребують постійного приватного ключа."
+            gh release create cloux-android "$FILE" --title "Cloux Android 6.2.0" --notes "Cloux 6.2.0 для Android 8+. Тестова debug APK; підписані збірки потребують постійного приватного ключа."
           fi
       - name: Update direct APK download
         run: |

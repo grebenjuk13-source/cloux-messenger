@@ -30,7 +30,7 @@
 <div class="banner"><div><strong id="version-label">Cloux — завантажуємо дані версії</strong><p id="version-date">Актуальні зміни перевіряються без кешу</p></div><a class="btn red" href="/v5/">Відкрити зараз ↗</a></div>
 <h2 class="section-title">Застосунок для всіх пристроїв</h2><p class="subtle">Обери свою платформу або встанови PWA без окремого файлу.</p>
 <section class="cards" aria-label="Завантаження">
-<article class="card" id="android"><div class="icon">▣</div><h3>Android</h3><p>Завантажити Android APK. Вебінтерфейс оновлюється при з'єднанні з інтернетом; APK може вимагати окремого оновлення для змін Android-оболонки.</p><a class="btn red" href="/apk">↓ Завантажити Android APK</a></article>
+<article class="card" id="android"><div class="icon">▣</div><h3>Android</h3><p>APK Cloux 6.2.0 для Android 8+. Поки що це тестова збірка з debug-підписом: при зміні сертифіката може знадобитися перевстановлення. Справжні чати відкриваються з сервера.</p><a class="btn red" href="/apk">↓ Завантажити Android APK</a></article>
 <article class="card" id="iphone"><div class="icon">▯</div><h3>iPhone / iPad</h3><p>Відкрий Cloux у Safari та додай на головний екран — отримаєш PWA із власною іконкою без App Store.</p><button class="btn red" id="ios-help">Як встановити на iPhone →</button></article>
 <article class="card" id="windows"><div class="icon">▤</div><h3>Windows</h3><p>Окремий Windows EXE та можливість встановити вебверсію як програму через Chrome або Edge.</p><a class="btn red" href="/exe">↓ Завантажити Windows EXE</a></article>
 <article class="card" id="mac"><div class="icon">▰</div><h3>macOS</h3><p>Універсальний DMG для Mac. Вебверсію також можна використовувати в Safari як окремий застосунок.</p><a class="btn red" href="/dmg">↓ Завантажити Mac DMG</a></article>
@@ -93,6 +93,7 @@ $('download-html').onclick=async()=>{
   calls=calls.replaceAll('/assets/cloux-default-avatar.jpg',avatar);
   app=app.replaceAll('/assets/cloux-default-avatar.jpg',avatar);
   index=index.replaceAll('href="/v5/"','href="https://cloux-messenger.onrender.com/v5/"');
+  app=app.replaceAll("window.location.href='/v5/'","window.location.href='https://cloux-messenger.onrender.com/v5/'");
   const script=x=>'<script>'+x.replace(/<\/script/gi,'<\\/script')+'<\\/script>'.replaceAll('\\/','/');
   index=index.replace('</body>','<script>'+media+'<\/script><script>'+calls+'<\/script><script>'+app+'<\/script></body>');
   const url=URL.createObjectURL(new Blob([index],{type:'text/html;charset=utf-8'}));

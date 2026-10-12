@@ -45,6 +45,14 @@ const [received]=await Promise.all([download.waitForEvent('download'),download.l
 assert.ok(received.suggestedFilename().endsWith('.html'),'Offline HTML export');
 const path=await received.path();
 assert.ok(path,'Downloaded file path');
+const offline=await context.newPage();
+offline.on('pageerror',e=>problems.push('Exported HTML error: '+e.message));
+await offline.goto('file://'+path,{waitUntil:'domcontentloaded'});
+assert.ok(await offline.locator('.chat-row').count()>=12,'Downloaded HTML opens with 12+ chats');
+await offline.locator('.chat-row').first().click();
+await offline.locator('#draft').fill('Автономний Cloux');
+await offline.locator('#send').click();
+await offline.locator('#messages').getByText('Автономний Cloux').waitFor();
 await download.screenshot({path:'cloux-download-mobile.png'});
 if(problems.length)throw new Error(problems.join('\n'));
 console.log('PASS: Mobile + desktop Studio, messages, emoji search, settings, download and JS console');

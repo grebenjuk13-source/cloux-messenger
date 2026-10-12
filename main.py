@@ -326,7 +326,7 @@ def cloux_download_page():
 
 @app.get("/apk")
 def cloux_apk_download():
-    return RedirectResponse("https://raw.githubusercontent.com/grebenjuk13-source/cloux-messenger/main/downloads/Cloux-Android-debug.apk",status_code=302)
+    return RedirectResponse("https://github.com/grebenjuk13-source/cloux-messenger/releases/download/cloux-android/Cloux-Android.apk",status_code=302,headers={"Cache-Control":"no-store"})
 
 @app.get("/dmg")
 def cloux_mac_download():
