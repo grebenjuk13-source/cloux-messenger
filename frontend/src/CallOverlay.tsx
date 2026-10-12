@@ -137,9 +137,9 @@ export default function CallOverlay({chatId,title,mode,onClose}:Props){
   <div className="cloux-call-panel">
    <div className="cloux-call-heading"><div className="cloux-call-badge">CLOUX · CALL</div><button aria-label={full?"Згорнути дзвінок":"На весь екран"} onClick={()=>{if(document.fullscreenElement){void document.exitFullscreen().catch(()=>{});setFull(false)}else{void document.querySelector('.cloux-call-panel')?.requestFullscreen?.().then(()=>setFull(true)).catch(()=>{})}}}><Maximize2 size={18}/></button></div>
    <h2>{title}</h2><div className="cloux-call-clock">{clock}</div><p className="cloux-call-status"><span className={peerOnline?'connected':''}/>{status}</p>
-   <div className={'cloux-call-stage '+(talking?'speaking':'')}><video ref={remoteRef} playsInline autoPlay muted={deafened} className="cloux-remote" />
+   <div className={'cloux-call-stage '+(talking?'speaking':'')}><video ref={remoteRef} playsInline disablePictureInPicture autoPlay muted={deafened} className="cloux-remote" />
     <div className="cloux-call-placeholder"><Users size={54}/><span>{peerOnline?'Учасник дзвінка':'Очікування співрозмовника'}</span></div>
-    <video ref={localRef} playsInline autoPlay muted className="cloux-local"/>
+    <video ref={localRef} playsInline disablePictureInPicture autoPlay muted className="cloux-local"/>
    </div>
    <div className="cloux-call-controls">
     <button className={muted?'off':''} onClick={toggleMic} aria-label={muted?'Увімкнути мікрофон':'Вимкнути мікрофон'}>{muted?<MicOff/>:<Mic/>}<span>Мікрофон</span></button>

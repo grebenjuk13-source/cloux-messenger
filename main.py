@@ -1,4 +1,4 @@
-"""Cloux early-access web messenger. Warning: Render Free storage is ephemeral."""
+"""Cloux web messenger. Persistent storage must be configured for production."""
 import hashlib
 import hmac
 import os
@@ -24,11 +24,20 @@ requests_by_ip = defaultdict(deque)
 
 @contextmanager
 def db():
+    if os.getenv('DATABASE_URL'):
+        from cloux_db import connect
+        with connect(os.environ['DATABASE_URL']) as c:
+            yield c
+        return
     c = sqlite3.connect(DB, timeout=12)
     c.row_factory = sqlite3.Row
     c.execute("PRAGMA foreign_keys=ON")
     try:
         yield c
+    except BaseException:
+        c.rollback()
+        raise
+    else:
         c.commit()
     finally:
         c.close()
@@ -51,6 +60,12 @@ with db() as c:
     CREATE INDEX IF NOT EXISTS messages_by_chat ON messages(chat_id,id);
     """)
 
+# Protect the 1 phone = 1 account invariant even when an earlier development
+# schema lacked a UNIQUE(phone) constraint. Never merge or delete accounts.
+# Conflicting phone rows cause a safe startup failure until reviewed.
+with db() as c:
+    c.execute("CREATE UNIQUE INDEX IF NOT EXISTS users_phone_unique_idx ON users(phone)")
+
 class Login(BaseModel):
     phone: str
     password: str
@@ -68,10 +83,28 @@ def fail(msg, status=400):
 def limit(request, max_calls=24, period=60):
     ip = (request.client.host if request.client else "unknown")
     now = time.monotonic()
-    q = requests_by_ip[ip]
+    q = requests_by_ip[(ip, request.url.path)]
     while q and now - q[0] > period: q.popleft()
     if len(q) >= max_calls: fail("Забагато спроб. Спробуйте пізніше.", 429)
     q.append(now)
+
+def failed_login_attempt(request, identifier: str):
+    """Limit bad password guesses, not successful account sign-ins.
+
+    Failed guesses from the same IP are capped for a short window. Every valid
+    password can still sign in repeatedly without consuming the login budget.
+    This also avoids old /api/login and new /api/v6/login having separate budgets.
+    """
+    ip = request.client.host if request.client else "unknown"
+    key = (ip, "invalid-credentials")
+    now = time.monotonic()
+    bucket = requests_by_ip[key]
+    while bucket and now - bucket[0] >= 900:
+        bucket.popleft()
+    bucket.append(now)
+    if len(bucket) > 25:
+        fail("Забагато неправильних паролів. Зачекайте 15 хвилин або перевірте дані входу.", 429)
+
 
 def hash_password(password: str, salt=None):
     salt = salt or secrets.token_bytes(16)
@@ -101,7 +134,14 @@ def auth(request):
             JOIN users ON users.id=sessions.uid WHERE sessions.token=? AND sessions.expires>?""",
             (hashlib.sha256(token.encode()).hexdigest(), int(time.time()))).fetchone()
     if not x: fail("Сесія недійсна. Увійдіть повторно.", 401)
-    return dict(x)
+    result = dict(x)
+    with db() as c:
+        if cloux_admin.moderation(c, result["id"])["blocked"]:
+            fail("Цей акаунт заблоковано.", 403)
+        result["is_admin"] = cloux_admin.is_owner(c, result["id"])
+        result["can_verify_owner"] = cloux_admin.candidate(c, result["id"]) and not result["is_admin"]
+        result["badges"] = [r["badge_id"] for r in c.execute("SELECT badge_id FROM user_badges WHERE user_id=?", (result["id"],))]
+    return result
 
 def set_cookie(response, user_id):
     secret = secrets.token_urlsafe(42)
@@ -119,6 +159,25 @@ def member(c, uid, chat_id):
 @app.middleware("http")
 async def security_headers(request, call_next):
     response = await call_next(request)
+    # Enforce global feature flags for the corresponding API operations.
+    api_path = request.url.path
+    if api_path.startswith("/api/") and request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        with db() as c:
+            if not api_path.startswith(("/api/admin/", "/api/account/", "/api/login", "/api/logout", "/api/v6/login", "/api/v6/register")) and cloux_admin.flag(c, "maintenance"):
+                return JSONResponse({"detail": "Cloux тимчасово на обслуговуванні."}, status_code=503)
+            flag_name = (
+                "groups" if api_path in ("/api/groups", "/api/servers") else
+                "channels" if api_path.endswith("/channels") and api_path.startswith("/api/servers/") else
+                "reactions" if api_path.startswith("/api/messages/") and api_path.endswith("/reactions") else None
+            )
+            if flag_name and not cloux_admin.flag(c, flag_name):
+                return JSONResponse({"detail": "Ця функція тимчасово вимкнена."}, status_code=403)
+    # Cookie authentication needs server-side same-origin validation on writes.
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        origin = request.headers.get("origin", "")
+        host = request.headers.get("host", "")
+        if origin and origin not in ("https://" + host, "http://" + host):
+            return JSONResponse({"detail": "Недозволений запит з іншого сайту."}, status_code=403)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "no-referrer"
     response.headers["X-Frame-Options"] = "DENY"
@@ -146,7 +205,7 @@ def classic():
 
 @app.get("/api/health")
 def health():
-    return {"status":"ok","app":"cloux","stage":"early-access","persistent_storage": False}
+    return {"status":"ok","app":"cloux","stage":"early-access","persistent_storage": bool(os.getenv("DATABASE_URL")) or os.getenv("CLOUX_PERSISTENT_STORAGE") == "1"}
 
 @app.get("/api/me")
 def me(request: Request):
@@ -163,11 +222,11 @@ def me(request: Request):
 
 @app.post("/api/login")
 def login(payload: Login, request: Request):
-    limit(request, 10)
     phone = re.sub(r"[\s()\-]", "", payload.phone)
     with db() as c:
         found=c.execute("SELECT id,password_hash FROM users WHERE phone=?",(phone,)).fetchone()
     if not found or not check_password(payload.password,found["password_hash"]):
+        failed_login_attempt(request, phone)
         fail("Неправильний номер або пароль.",401)
     return set_cookie(JSONResponse({"ok":True}),found["id"])
 
@@ -190,7 +249,14 @@ def users(request: Request, q: str = ""):
            AND (username LIKE ? OR display LIKE ?)
            AND NOT EXISTS (SELECT 1 FROM cloux_preferences p WHERE p.uid=users.id AND p.searchable=0)
            LIMIT 20""", (me["id"],"%"+needle+"%","%"+needle+"%")).fetchall()
-    return {"users":[dict(x) for x in rows]}
+    with db() as c:
+        result = []
+        for x in rows:
+            item = dict(x)
+            item["badges"] = [b["badge_id"] for b in c.execute(
+                "SELECT badge_id FROM user_badges WHERE user_id=?", (item["id"],))]
+            result.append(item)
+    return {"users":result}
 
 @app.post("/api/direct/{other_id}")
 def direct(other_id: str, request: Request):
@@ -236,7 +302,7 @@ def chats(request: Request):
            (SELECT m.id FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_message_id,
            (SELECT m.sender FROM messages m WHERE m.chat_id=ch.id ORDER BY m.id DESC LIMIT 1) last_sender
            FROM chats ch JOIN chat_members cm ON cm.chat_id=ch.id WHERE cm.user_id=?
-           ORDER BY COALESCE(last_time,ch.created) DESC LIMIT 200""",(user["id"],)).fetchall()
+           ORDER BY ch.created DESC LIMIT 200""",(user["id"],)).fetchall()
         result=[]
         for row in rows:
             d=dict(row)
@@ -246,6 +312,11 @@ def chats(request: Request):
                 if other:
                     d["title"]=other["display"]
                     d["other_id"]=other["id"]
+                    d["badges"]=[b["badge_id"] for b in c.execute(
+                        "SELECT badge_id FROM user_badges WHERE user_id=?", (other["id"],))]
+            if d["kind"] in ("channel", "news", "group"):
+                d["subscribers"]=c.execute("SELECT count(*) n FROM chat_members WHERE chat_id=?",
+                                           (d["id"],)).fetchone()["n"]
             pr=c.execute("SELECT pinned,archived,muted FROM cloux_chat_prefs WHERE uid=? AND chat_id=?", (user["id"],d["id"])).fetchone()
             d.update(dict(pr) if pr else {"pinned":0,"archived":0,"muted":0})
             owner=c.execute("SELECT owner_id FROM cloux_owners WHERE chat_id=?",(d["id"],)).fetchone()
@@ -253,6 +324,21 @@ def chats(request: Request):
             result.append(d)
     result.sort(key=lambda x:(x["pinned"],x["last_time"] or 0),reverse=True)
     return {"chats":result}
+
+@app.delete("/api/chats/{chat_id}")
+def hide_chat(chat_id: str, request: Request):
+    user=auth(request)
+    with db() as c:
+        if not member(c,user["id"],chat_id):fail("Цей чат недоступний.",403)
+        chat=c.execute("SELECT kind FROM chats WHERE id=?",(chat_id,)).fetchone()
+        if not chat or chat["kind"] in ("news","saved"):
+            fail("Системний чат не можна прибрати.",403)
+        owner=c.execute("SELECT owner_id FROM cloux_owners WHERE chat_id=?",(chat_id,)).fetchone()
+        if owner and owner["owner_id"]==user["id"]:
+            fail("Спочатку передайте керування каналом або групою.",403)
+        c.execute("DELETE FROM cloux_chat_prefs WHERE uid=? AND chat_id=?",(user["id"],chat_id))
+        c.execute("DELETE FROM chat_members WHERE user_id=? AND chat_id=?",(user["id"],chat_id))
+    return {"ok":True}
 
 @app.get("/api/chats/{chat_id}/messages")
 def messages(chat_id: str, request: Request, after: int = 0):
@@ -268,7 +354,14 @@ def messages(chat_id: str, request: Request, after: int = 0):
               FROM messages m
             JOIN users u ON u.id=m.sender WHERE m.chat_id=? AND m.id>? ORDER BY m.id ASC LIMIT 200""",
             (chat_id,max(after,0))).fetchall()
-    return {"messages":[dict(x) for x in rows]}
+    with db() as c:
+        result = []
+        for x in rows:
+            item=dict(x)
+            item["badges"]=[b["badge_id"] for b in c.execute(
+                "SELECT badge_id FROM user_badges WHERE user_id=?", (item["sender"],))]
+            result.append(item)
+    return {"messages":result}
 
 @app.post("/api/chats/{chat_id}/messages")
 def send(chat_id: str, payload: Message, request: Request):
@@ -276,6 +369,8 @@ def send(chat_id: str, payload: Message, request: Request):
     limit(request,120)
     with db() as c:
         if not member(c,user["id"],chat_id): fail("Немає доступу.",403)
+        if cloux_admin.moderation(c, user["id"])["muted_until"] > int(time.time()):
+            fail("Надсилання повідомлень тимчасово обмежене.", 403)
         kind=c.execute("SELECT kind FROM chats WHERE id=?",(chat_id,)).fetchone()
         if kind and kind["kind"]=="news": fail("Офіційний канал тільки для читання.",403)
         if kind and kind["kind"]=="channel":
@@ -291,6 +386,8 @@ def send(chat_id: str, payload: Message, request: Request):
 
 
 # Optional Cloux features initialized after the base routes are registered.
+import cloux_admin
+cloux_admin.init(db)
 import cloux_features
 cloux_features.initialize(db,hash_password)
 cloux_features.install(app,db,auth,fail,hash_password,check_password,member,limit)
@@ -400,7 +497,8 @@ cloux_realtime.install(app,db)
 
 # Existing account login by email and Cloux password. Self-service signup is disabled.
 import cloux_auth
-cloux_auth.install(app,db,fail,limit,set_cookie)
+cloux_auth.install(app,db,fail,limit,set_cookie,check_password,failed_login_attempt)
+cloux_admin.install(app,db,auth,fail,limit,check_password,cloux_realtime.hub.emit)
 
 
 # Isolated, network-blocked, single-HTML local demo; existing online Cloux is unchanged.

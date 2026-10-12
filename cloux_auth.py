@@ -37,7 +37,7 @@ class Registration(BaseModel):
     password: str = Field(min_length=8, max_length=128)
 
 
-def install(app, db, fail, limit, set_cookie):
+def install(app, db, fail, limit, set_cookie, verify_password, failed_login_attempt):
     with db() as conn:
         columns = {row['name'] for row in conn.execute('PRAGMA table_info(users)')}
         if 'email' not in columns:
@@ -57,27 +57,34 @@ def install(app, db, fail, limit, set_cookie):
 
     @app.post('/api/v6/login')
     def login(body: PasswordLogin, request: Request):
-        limit(request, 10, 900)
         identifier = (body.identifier or body.email).strip()
         email = normalize_email(identifier)
         phone = re.sub(r'[^+0-9]', '', identifier)
-        if not email and (len(re.sub(r'\D', '', phone)) < 7 or len(phone) > 16):
-            fail('Введіть коректну пошту або номер телефону.')
+        if email:
+            where, args = 'email=? COLLATE NOCASE', (email,)
+        elif re.fullmatch(r'@?[a-zA-Z0-9_]{3,32}', identifier):
+            where, args = 'username=? COLLATE NOCASE', (identifier.lstrip('@').lower(),)
+        elif 7 <= len(re.sub(r'\D', '', phone)) <= 15 and len(phone) <= 16:
+            where, args = 'phone=?', (phone,)
+        else:
+            fail('Введіть коректну пошту, нікнейм або номер телефону.')
         with db() as conn:
-            user = conn.execute('''SELECT id,password_hash FROM users
-                WHERE (email=? COLLATE NOCASE AND ? IS NOT NULL) OR (phone=? AND ? IS NULL)''',
-                (email, email, phone if not email else '', email)).fetchone()
-        if not user:
-            fail('Електронна адреса або пароль Cloux неправильні.', 401)
-        try:
-            HASHER.verify(user['password_hash'], body.password)
-        except Exception:
-            fail('Електронна адреса або пароль Cloux неправильні.', 401)
+            user = conn.execute('SELECT id,password_hash FROM users WHERE ' + where, args).fetchone()
+        # Successful logins never consume the failed-attempt budget.
+        if not user or not verify_password(body.password, user['password_hash']):
+            failed_login_attempt(request, identifier)
+            fail('Пошта, телефон, нікнейм або пароль Cloux неправильні.', 401)
         return set_cookie(JSONResponse({'ok': True}), user['id'])
 
     @app.post('/api/v6/register')
     def register(body: Registration, request: Request):
-        limit(request, 5, 3600)
+        import cloux_admin
+        with db() as conn:
+            if not cloux_admin.flag(conn, 'registration') or cloux_admin.flag(conn, 'maintenance'):
+                fail('Реєстрацію тимчасово призупинено.', 503)
+        # A public/shared Wi-Fi IP must not lock everyone out after 5 signups.
+        # Keep a generous short-lived abuse guard on account creation.
+        limit(request, 80, 3600)
         email = normalize_email(body.email)
         phone = re.sub(r'[^+0-9]', '', body.phone)
         username = body.username.strip().lstrip('@').lower()
@@ -90,6 +97,9 @@ def install(app, db, fail, limit, set_cookie):
             fail('Нікнейм: латиниця, цифри й _ (від 3 символів).')
         if not display or len(display) > 48:
             fail('Вкажи ім’я (до 48 символів).')
+        with db() as conn:
+            if conn.execute('SELECT 1 FROM users WHERE phone=?', (phone,)).fetchone():
+                fail('Цей номер телефону вже зареєстрований. Увійдіть у свій акаунт.', 409)
         try:
             from uuid import uuid4
             uid = str(uuid4())
@@ -99,3 +109,13 @@ def install(app, db, fail, limit, set_cookie):
         except sqlite3.IntegrityError:
             fail('Ця пошта, телефон або нікнейм уже використовуються.')
         return set_cookie(JSONResponse({'ok': True}), uid)
+
+    @app.get('/api/v6/username-available')
+    def username_available(username: str, request: Request):
+        limit(request, 240, 60)
+        name = username.strip().lstrip('@').lower()
+        if not re.fullmatch(r'[a-z0-9_]{3,32}', name):
+            return {'available': False, 'reason': 'Нікнейм: 3–32 символи, латиниця, цифри й _'}
+        with db() as conn:
+            taken = conn.execute('SELECT 1 FROM users WHERE username=? COLLATE NOCASE', (name,)).fetchone()
+        return {'available': not bool(taken)}

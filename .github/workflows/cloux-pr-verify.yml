@@ -1,0 +1,84 @@
+name: Cloux proposed upgrade checks
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt httpx pytest
+      - name: Syntax check
+        run: python -m compileall -q main.py cloux_admin.py cloux_db.py cloux_auth.py cloux_features.py scripts/migrate_sqlite_to_postgres.py
+      - name: Run application regression tests
+        run: PYTHONPATH=. pytest -q tests/test_admin.py tests/test_smoke.py tests/test_social.py
+      - name: Build client
+        run: |
+          npm install --prefix frontend --no-audit --no-fund
+          npm run --prefix frontend build
+
+  postgres-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: cloux_ci
+          POSTGRES_PASSWORD: local_ci_password
+          POSTGRES_DB: cloux_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cloux_ci -d cloux_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://cloux_ci:local_ci_password@127.0.0.1:5432/cloux_ci
+      OWNER_EMAIL: verified-admin@example.test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt httpx
+      - name: Test actual PostgreSQL startup and persisted login
+        run: PYTHONPATH=. python tests/pg_startup_check.py
+
+  browser-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix frontend --no-audit --no-fund
+      - run: npm run --prefix frontend build
+      - run: npm install --no-save playwright@1.56.1
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Start standalone PWA preview
+        run: |
+          (cd frontend && ./node_modules/.bin/vite preview --host 127.0.0.1 --port 4173) > vite-v6.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/v5/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/v5/ >/dev/null
+      - name: Verify responsive mobile Chrome / WebKit
+        run: node tests/cloux_v6_browser_test.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloux-v6-browser-logs
+          path: vite-v6.log

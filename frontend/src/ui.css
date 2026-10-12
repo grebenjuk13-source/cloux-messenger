@@ -330,3 +330,202 @@ body,#root,.app-shell,.app-content,.chat-sidebar,.settings-view,.content-screen{
 @media(max-width:760px){.sidebar-head{padding-top:calc(18px + env(safe-area-inset-top,0px))}.chat-header{padding-top:calc(12px + env(safe-area-inset-top,0px));min-height:calc(74px + env(safe-area-inset-top,0px))}.content-screen{padding:calc(22px + env(safe-area-inset-top,0px)) 15px calc(105px + env(safe-area-inset-bottom,0px))}.settings-view{padding-top:calc(22px + env(safe-area-inset-top,0px))}.liquid-nav{bottom:calc(8px + env(safe-area-inset-bottom,0px))}.call-quick{grid-template-columns:1fr}.call-quick button{min-height:104px}.cloux-call-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.create-sheet{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}}
 @media(prefers-reduced-motion:reduce){.create-sheet,.call-quick button{animation:none;transition:none}}
 .msg-audio{display:block;width:min(300px,78vw);height:42px;margin-top:8px;accent-color:#E11D2E}.composer-send.recording{background:#ff2d3d!important;animation:record-pulse 1s infinite;box-shadow:0 0 0 0 #ff2d3d66}@keyframes record-pulse{to{box-shadow:0 0 0 9px #ff2d3d00;transform:scale(1.04)}}.call-redial{display:grid;place-items:center;width:37px;height:37px;border-radius:50%;color:#ff4655;background:#e11d2e20}.call-redial:disabled{opacity:.35}.cloux-call-stage.speaking{box-shadow:inset 0 0 0 2px #55de94,0 0 25px #37d48144}
+
+
+/* Cloux 6: uniform Telegram-inspired night mode across every route. */
+:root,:root[data-theme='light'],:root[data-theme='dark'],:root[data-theme='amoled'] {
+  --bg:#0A0A0C;--ink:#FFFFFF;--ink-sub:#C5C5CD;--muted:#B8B8C1;
+  --surface:#16161A;--panel:#1C1C21;--float:#1C1C21;--in:#25252B;
+  --out:#A5122B;--line:#ffffff27;--accent:#C8102E;color-scheme:dark;
+}
+html,body,#root {background:#0A0A0C;color:#fff}
+.auth-page,.mail-auth,.auth-card,.mail-auth .auth-card,.settings-view,.settings-profile,
+.settings-box,.setting-group,.settings-chat-preview,.chat-sidebar,.chat-room,
+.leaderboard-hero,.leaderboard-row,.content-screen {
+  color:#F2F2F2;
+}
+.auth-page,.mail-auth {background:radial-gradient(circle at 20% 10%,#45101e88,transparent 43%),#0A0A0C!important}
+.auth-side h1,.auth-side h2,.auth-card h1,.auth-card h2,.auth-card h3,
+.mail-auth h1,.mail-auth h2,.section-header h2,.setting-content h3{color:#fff!important}
+.auth-side p,.auth-card label,.auth-card p,.settings-group>small,.setting-row small,
+.setting-content p,.settings-profile small,.chat-heading small {color:#C5C5CD!important}
+.auth-card,.mail-auth .auth-card,.settings-profile,.settings-box,.setting-group,
+.leaderboard-hero,.leaderboard-row {background:#16161A!important;border:1px solid #ffffff23!important}
+.searchbar,.searchbar input,.settings-search,.settings-search input,.composer,.emoji-panel,
+.country-modal,.new-chat-modal,.sheet-inner,.settings-chat-preview,
+.auth-card input,.auth-card label>input,.auth-card .input-with-icon,.auth-card .input-with-icon input,
+.auth-card .pw-wrap,.auth-card .pw-wrap input,.auth-card .country-pick,
+.mail-auth input,.setting-content input:not([type=range]):not([type=checkbox]):not([type=color]),
+.setting-row,.setting-content .setting-row {
+  background:#1C1C21!important;color:#FFF!important;border-color:#ffffff28!important
+}
+.auth-card input::placeholder,.mail-auth input::placeholder,.searchbar input::placeholder,
+.settings-search input::placeholder,.composer textarea::placeholder {color:#ACACB6!important}
+.setting-row,.settings-box .setting-row{color:#fff!important}
+.setting-row>span,.setting-row b,.settings-profile b,.chat-entry b,.chat-entry small{color:#F2F2F2!important}
+.setting-row:hover,.chat-entry:hover{background:#2B2027!important}
+.setting-icon{background:linear-gradient(145deg,#C8102E,#7A0B1E)!important;color:#fff!important}
+.liquid-nav{background:#17171bed!important;backdrop-filter:blur(26px) saturate(1.3);border-color:#ffffff24!important}
+.liquid-nav button{color:#D0D0D6!important}.liquid-nav button.active{background:#8F152B66!important;color:#fff!important}
+.chat-header,.sidebar-head{background:#16161AD8!important;backdrop-filter:blur(20px)}
+.chat-heading{min-width:0;flex:1}.chat-heading b,.chat-heading h3{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;word-break:break-word}
+.messages-area{background:linear-gradient(155deg,#210a10,#0a0a0c 58%,#1a0b14)!important;position:relative}
+.messages-area::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:url('./doodles.svg')!important;background-size:240px 240px;opacity:1!important;mix-blend-mode:normal!important}
+.messages-area>*{position:relative}
+.bubble{background:#25252B!important;color:#FFF!important}
+.own .bubble{background:linear-gradient(125deg,#C8102E,#7A0B1E)!important;color:#fff!important}
+.msg-text,.msg-reply,.msg-foot,.bubble .text,.bubble time{color:#fff!important}
+.msg-foot{opacity:.85!important}.msg-foot small{color:#eee!important}
+.composer-wrap{background:linear-gradient(0deg,#0A0A0C 55%,transparent)!important}
+.composer,.emoji-panel{background:#1C1C21!important;color:#FFF!important}
+.msg-actions{background:#1c1c21f2!important;color:#fff;backdrop-filter:blur(20px)}
+.auth-card .primary,.mail-card .primary,.primary {background:linear-gradient(125deg,#C8102E,#7A0B1E)!important;color:#fff!important}
+.settings-view{padding-top:calc(30px + env(safe-area-inset-top,0px))!important}
+.content-screen{padding-top:calc(30px + env(safe-area-inset-top,0px))!important}
+.settings-profile{margin-top:8px}
+@media(max-width:760px){
+.sidebar-head{padding-top:calc(22px + env(safe-area-inset-top,0px))!important}
+.chat-header{padding-top:calc(18px + env(safe-area-inset-top,0px))!important}
+.auth-page{padding-top:calc(24px + env(safe-area-inset-top,0px))!important}
+.liquid-nav{bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
+}
+@media(prefers-reduced-motion:reduce){.chat-entry,.bubble,.msg-actions,.liquid-nav,.settings-view{animation:none!important;transition:none!important}}
+
+.cloux-user-badges{display:inline-flex;align-items:center;gap:3px;margin-inline-start:5px;vertical-align:middle}.cloux-user-badge{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#ffffff1a;font-size:12px;font-weight:900;line-height:1}.cloux-msg-author{display:flex;align-items:center;color:#ff8ea0;font-size:11px;font-weight:700;margin-bottom:3px}.chat-header-tools{flex-shrink:0}.chat-heading{overflow-wrap:anywhere}.chat-heading b{font-size:clamp(13px,3.8vw,16px)}
+@media(prefers-reduced-motion:no-preference){.msg-actions{animation:cloux-pop .22s cubic-bezier(.2,1.3,.3,1) both}.quick-reactions button{animation:cloux-pop .25s cubic-bezier(.2,1.3,.3,1) both}.quick-reactions button:nth-child(2){animation-delay:.025s}.quick-reactions button:nth-child(3){animation-delay:.05s}.quick-reactions button:nth-child(4){animation-delay:.075s}.quick-reactions button:nth-child(5){animation-delay:.1s}@keyframes cloux-pop{from{opacity:0;scale:.84}to{opacity:1;scale:1}}}
+
+.cloux-pwa-toast{position:fixed;z-index:99999;bottom:calc(105px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);max-width:calc(100vw - 24px);min-width:260px;padding:13px 16px;border:1px solid #ff6b7a80;border-radius:16px;background:#26131cf2;color:#fff;backdrop-filter:blur(18px);box-shadow:0 16px 55px #0009;font-size:13px;font-weight:700;cursor:pointer;animation:cloux-update-enter .27s cubic-bezier(.2,.9,.25,1) both}@keyframes cloux-update-enter{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}@media(prefers-reduced-motion:reduce){.cloux-pwa-toast{animation:none}}
+
+/* Global administrator theme preferences. */
+:root{--global-radius:18px;--global-font:system-ui,sans-serif}
+#root,.app-shell,.chat-sidebar,.chat-room,.cloux-admin{font-family:var(--global-font)}
+.bubble,.settings-box,.settings-profile,.chat-entry,.composer,.settings-group{border-radius:var(--global-radius)}
+:root[data-cloux-wallpaper='plain'] .messages-area::before{opacity:0!important}
+:root[data-cloux-wallpaper='stars'] .messages-area::before{background-image:radial-gradient(#ff8ca250 1.2px,transparent 1.7px)!important;background-size:42px 42px!important}
+.cloux-admin select{background:#17171d;color:#fff;border:1px solid #ffffff45;border-radius:12px;padding:9px;min-height:41px;max-width:100%;font:inherit}
+.cloux-admin select:focus-visible{outline:2px solid #ff6b7a;outline-offset:2px}
+.cloux-admin .admin-badge{flex-wrap:wrap}
+
+.cloux-date-divider{display:table;max-width:80%;margin:18px auto 12px;padding:5px 13px;border-radius:25px;background:#15151bce;border:1px solid #ffffff20;box-shadow:0 3px 18px #0005;backdrop-filter:blur(13px);color:#e2d7de;font-size:11px;text-align:center;font-weight:650}
+.msg-line.grouped{margin-top:-3px}
+.msg-line.grouped .bubble{border-top-left-radius:7px}
+.msg-line.grouped.own .bubble{border-top-left-radius:var(--global-radius);border-top-right-radius:7px}
+
+
+/* Cloux 2026 cloud redesign — matches the supplied three mobile screens. */
+.cloux-cloud-loading{
+  min-height:100dvh;background:
+   radial-gradient(ellipse 80% 25% at -15% 100%,rgba(80,3,19,.12),transparent 75%),
+   radial-gradient(ellipse 75% 30% at 115% 0%,rgba(59,2,17,.10),transparent 76%),
+   #000!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:23px
+}
+.cloux-cloud-loading p{color:#c1bfc2;letter-spacing:-.03em;font-size:clamp(17px,4vw,23px);margin:0}
+.cloux-floating-logo{position:relative;isolation:isolate;animation:cloux-float 4.5s ease-in-out infinite}
+.cloux-floating-logo img{display:block;width:100px;height:100px;object-fit:cover;border-radius:27px;background:#000;
+ box-shadow:0 15px 48px #000,0 0 25px #aa112936;filter:drop-shadow(0 0 5px #a7192942)}
+.cloux-floating-logo:after{content:"";position:absolute;left:19%;right:19%;bottom:-31px;height:13px;border-radius:50%;
+ background:#a3132c3b;filter:blur(13px);z-index:-1;animation:cloux-shadow 4.5s ease-in-out infinite}
+@keyframes cloux-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes cloux-shadow{0%,100%{opacity:.44;scale:1}50%{opacity:.23;scale:.84}}
+
+.settings-view{background:#08080a!important}
+.settings-view .cloux-profile-hero{
+ position:relative;display:block;isolation:isolate;overflow:hidden;padding:0 18px 20px!important;
+ min-height:295px;border-radius:24px!important;border:1px solid #ffffff23!important;
+ background:linear-gradient(180deg,#060508 0%,#0c0910 62%,#0a090c 100%)!important;
+ box-shadow:0 18px 45px #0007,inset 0 1px #ffffff0d;
+ cursor:default
+}
+.cloux-hero-sky{position:absolute;z-index:-1;inset:0 0 25%;
+ background:
+ radial-gradient(circle at 26% 29%,#fff 0 1px,transparent 2px),
+ radial-gradient(circle at 56% 18%,#fff9 0 1px,transparent 2px),
+ radial-gradient(circle at 79% 36%,#fff7 0 1px,transparent 2px),
+ radial-gradient(circle at 63% 47%,#fff7 0 1.5px,transparent 2px),
+ radial-gradient(circle at 91% 8%,#ff98a7 0 1px,transparent 2px),
+ radial-gradient(circle at 12% 59%,#fff7 0 1px,transparent 2px),
+ radial-gradient(ellipse 65% 32% at 9% 8%,#6015258a,transparent 75%),
+ radial-gradient(ellipse 70% 29% at 93% 60%,#5b0b20aa,transparent 75%),
+ linear-gradient(180deg,#000 0%,#09050b 75%,#16060c);
+ background-size:100% 100%
+}
+.cloux-hero-sky:before,.cloux-hero-sky:after{content:"";position:absolute;inset:0;pointer-events:none}
+.cloux-hero-sky:before{
+ background:radial-gradient(ellipse 43% 19% at 18% 88%,#300f1ccc,transparent 100%),
+ radial-gradient(ellipse 39% 18% at 72% 73%,#42152399,transparent 100%),
+ radial-gradient(ellipse 30% 17% at 110% 57%,#2c0714,transparent 100%);
+ filter:blur(7px)
+}
+.cloux-hero-sky:after{background:
+ radial-gradient(circle at 48% 30%,#fff8 0 1px,transparent 2px),
+ radial-gradient(circle at 21% 13%,#fff9 0 1px,transparent 2px),
+ radial-gradient(circle at 91% 75%,#fff6 0 1px,transparent 2px);
+ opacity:.65}
+.cloux-hero-top{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;min-height:49px}
+.cloux-hero-actions{display:flex;align-items:center;gap:7px}
+.cloux-hero-action{display:grid;place-items:center;width:38px;height:38px;min-width:38px;border-radius:13px;
+ background:#17161abb;color:#fff;border:1px solid #ffffff18;backdrop-filter:blur(14px)}
+.cloux-hero-action:focus-visible,.cloux-avatar-add:focus-visible{outline:2px solid #ff8497;outline-offset:2px}
+.cloux-hero-main{display:flex;justify-content:space-between;align-items:end;gap:12px;min-height:112px}
+.cloux-hero-identity{display:flex;flex-direction:column;gap:4px;max-width:65%;min-width:0}
+.cloux-hero-identity b{color:#fff!important;font-size:clamp(22px,5vw,31px);font-weight:820;
+ letter-spacing:-.045em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cloux-hero-identity small{color:#d0c8d0!important;font-size:13px;overflow-wrap:anywhere}
+.cloux-hero-avatar-wrap{position:relative;flex:none;width:102px;height:102px}
+.cloux-hero-avatar{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;
+ border:3px solid #c7c7d2;box-shadow:0 0 0 6px #ffffff21,0 0 22px #000; background:#000}
+.cloux-avatar-add{position:absolute;display:grid;place-items:center;right:-7px;bottom:-4px;width:37px;height:37px;
+ border-radius:50%;border:2px solid #10070d;background:linear-gradient(125deg,#fa304a,#b40928);color:#fff;
+ box-shadow:0 7px 18px #0009}
+.cloux-hero-statistics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:24px 0 0;
+ padding:0 0 10px}
+.cloux-hero-statistics>div{display:flex;flex-direction:column;gap:2px}
+.cloux-hero-statistics strong{color:#fff;font-size:clamp(20px,5vw,26px);font-weight:800;font-variant-numeric:tabular-nums}
+.cloux-hero-statistics small{color:#c8c4ca!important;font-size:clamp(11px,2.9vw,14px)}
+.cloux-hero-bio{margin:6px 0 0!important;color:#fff!important;font-size:13px}
+.cloux-hero-menu{position:absolute;z-index:10;right:12px;top:56px;width:220px;background:#211820f5;
+ border:1px solid #ffffff34;border-radius:13px;box-shadow:0 16px 45px #000b;overflow:hidden}
+.cloux-hero-menu button{display:block;width:100%;text-align:left;padding:12px;color:#fff}
+.cloux-hero-menu button:hover{background:#a80f2a55}
+
+/* Puffy cloud silhouettes are on the settings list containers only.
+   All existing settings, headings, bottom navigation and logout remain operable. */
+.settings-view .settings-group{background:transparent!important;border:0!important;overflow:visible}
+.settings-view .settings-box{position:relative;isolation:isolate;overflow:visible;
+ border:1px solid #fb617875!important;
+ border-radius:40px 48px 34px 45px / 36px 43px 42px 34px!important;
+ background:linear-gradient(135deg,#e12442 0%,#bf132f 36%,#930e28 69%,#610c22 100%)!important;
+ box-shadow:inset 0 2px 2px #ffabb136,inset 0 -8px 25px #42051358,0 16px 32px #0007,0 7px 20px #c30c2729;
+ padding:6px 5px}
+.settings-view .settings-box:before{content:"";position:absolute;inset:-15px 8% auto 10%;height:30px;z-index:-1;
+ background:radial-gradient(ellipse 23% 94% at 15% 100%,#d31a37 98%,transparent 102%),
+ radial-gradient(ellipse 26% 100% at 48% 100%,#d51c39 98%,transparent 102%),
+ radial-gradient(ellipse 23% 94% at 82% 100%,#be1632 98%,transparent 102%);
+ pointer-events:none;filter:drop-shadow(0 -2px 3px #0002)}
+.settings-view .settings-box .setting-row{background:transparent!important;border:0!important;
+ border-bottom:1px solid #ffffff21!important;color:#fff!important;border-radius:19px;
+ min-height:72px;padding:10px 12px}
+.settings-view .settings-box .setting-row:last-child{border-bottom:0!important}
+.settings-view .settings-box .setting-row:hover{background:#ffffff13!important}
+.settings-view .settings-box .setting-row>span:nth-child(2){font-size:clamp(13px,3.8vw,16px);
+ color:#fff!important;font-weight:650;text-shadow:0 1px 2px #420b18a8}
+.settings-view .settings-box .setting-row>svg:last-child{color:#ffe4e9!important;flex:none}
+.settings-view .settings-box .setting-icon{width:43px;height:43px;border-radius:15px;
+ border:1px solid #ffffff2f;box-shadow:0 3px 8px #50091a66,inset 0 1px #ffffff47}
+.settings-view .settings-box .ic-profile,.settings-view .settings-box .ic-chats,
+.settings-view .settings-box .ic-calls,.settings-view .settings-box .ic-notify,
+.settings-view .settings-box .ic-data,.settings-view .settings-box .ic-language,
+.settings-view .settings-box .ic-about{background:linear-gradient(145deg,#cc8762,#a95746)!important}
+.settings-view .settings-box .ic-privacy,.settings-view .settings-box .ic-devices{
+ background:linear-gradient(145deg,#82a68a,#46755e)!important}
+.settings-view .settings-box .ic-look,.settings-view .settings-box .ic-emoji{
+ background:linear-gradient(145deg,#b58da9,#795984)!important}
+.settings-view .settings-group>small{color:#ce756f!important}
+.settings-view .logout{background:transparent!important;color:#fc8797!important}
+@media(max-width:760px){
+ .settings-view .settings-group{margin:26px 4px 34px}
+ .settings-view .settings-box{margin:10px 4px 0}
+ .settings-view .cloux-profile-hero{min-height:280px}
+}
+@media(max-width:360px){.settings-view .settings-box .setting-row{gap:10px}.cloux-hero-avatar-wrap{width:89px;height:89px}.cloux-hero-statistics{gap:4px}}
+@media(prefers-reduced-motion:reduce){.cloux-floating-logo,.cloux-floating-logo:after{animation:none}}
