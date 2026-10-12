@@ -18,6 +18,11 @@ await page.route('**/api/**', async route=>{
   assert.equal(body.password,'SomeClouxPassword123');
   signedIn=true;return json(200,{ok:true});
  }
+ if(path==='/api/cloux/profile/demo-user')return json(200,{profile:{id:'demo-user',display:'Cloux Tester',username:'cloux_demo',bio:'',status:'',photo_version:0,last_seen:0,online:false,friends_count:0,friendship:'self',mutual:[],friends_visible:true,accent:'#E11D2E',banner_gradient:'linear-gradient(120deg,#390c1b,#08090e)',status_icon:'✨',banner_video:false}});
+ if(path==='/api/cloux/friend-requests')return json(200,{incoming:[],outgoing:[]});
+ if(path==='/api/cloux/settings'&&method==='GET')return json(200,{settings:{friends_visibility:'all',show_online:true,allow_requests:true,allow_calls:true,show_message_preview:true,notifications_messages:true,notifications_calls:true,notifications_sound:true,language:'uk',backup_interval:'off',profile_accent:'#E11D2E',banner_gradient:'linear-gradient(120deg,#390c1b,#08090e)',status_icon:'✨',banner_video:false}});
+ if(path==='/api/cloux/settings'&&method==='PUT')return json(200,{ok:true});
+ if(path==='/api/cloux/wallpaper'&&method==='GET')return json(200,{wallpaper:null});
  if(path==='/api/v5/ui-prefs'&&method==='GET')return json(200,{preferences:{}});
  if(path==='/api/v5/ui-prefs'&&method==='PUT')return json(200,{ok:true});
  if(path==='/api/chats'&&method==='GET')return json(200,{chats});
