@@ -73,13 +73,13 @@ function render(ctx,w,h,isOutput=false){
  ctx.clearRect(0,0,w,h);ctx.fillStyle='#140a0f';ctx.fillRect(0,0,w,h);
  if(!image){ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='16px Inter';ctx.fillText('Обери зображення',w/2,h/2);return}
  const view=$('#ce-canvas',modal);const sx=isOutput?w/view.width:1,sy=isOutput?h/view.height:1;
- ctx.save();if(!isOutput&&kind==='avatar'){ctx.beginPath();ctx.arc(w/2,h/2,Math.min(w,h)/2-2,0,2*Math.PI);ctx.clip()}
+ ctx.save();if(!isOutput&&kind==='avatar'&&read('shape','0')==='0'){ctx.beginPath();ctx.arc(w/2,h/2,Math.min(w,h)/2-2,0,2*Math.PI);ctx.clip()}
  ctx.translate(w/2+offsetX*sx,h/2+offsetY*sy);ctx.rotate(angle*Math.PI/180);
  const sc=Math.max(w/image.width,h/image.height)*zoom;ctx.scale(flipped?-sc:sc,sc);
  ctx.filter='brightness('+filters.brightness+'%) contrast('+filters.contrast+'%) saturate('+filters.saturation+'%) blur('+(filters.blur*sx)+'px)';
  ctx.drawImage(image,-image.width/2,-image.height/2);ctx.restore();
  if(filters.dim){ctx.fillStyle='rgba(0,0,0,'+(filters.dim/100)+')';ctx.fillRect(0,0,w,h)}
- if(!isOutput){ctx.strokeStyle='#ffffff88';ctx.lineWidth=2;if(kind==='avatar'){ctx.beginPath();ctx.arc(w/2,h/2,Math.min(w,h)/2-3,0,2*Math.PI);ctx.stroke()}else ctx.strokeRect(2,2,w-4,h-4)}
+ if(!isOutput){ctx.strokeStyle='#ffffff88';ctx.lineWidth=2;if(kind==='avatar'&&read('shape','0')==='0'){ctx.beginPath();ctx.arc(w/2,h/2,Math.min(w,h)/2-3,0,2*Math.PI);ctx.stroke()}else ctx.strokeRect(2,2,w-4,h-4)}
 }
 function draw(){const canvas=$('#ce-canvas',modal);if(canvas)render(canvas.getContext('2d'),canvas.width,canvas.height)}
 async function resultBlob(){if(!image)throw Error('Спочатку вибери зображення');const canvas=document.createElement('canvas');canvas.width=kind==='avatar'?640:1500;canvas.height=kind==='avatar'?640:500;render(canvas.getContext('2d'),canvas.width,canvas.height,true);return blobOf(canvas)}
@@ -88,6 +88,7 @@ function applyPhoto(which,url){
   for(const node of document.querySelectorAll('.settings-profile .avatar img, .settings-view .avatar img, .avatar-large img')){
    if(node.getAttribute('src')!==url)node.src=url;
   }
+  for(const element of document.querySelectorAll('.settings-view .avatar, .settings-profile .avatar')){element.dataset.clouxShape=read('shape','0');element.dataset.clouxFrame=read('frame','0')}
  }else{
   for(const el of document.querySelectorAll('.settings-profile'))el.style.backgroundImage='linear-gradient(transparent,#0005),url("'+url+'")';
  }
@@ -103,7 +104,10 @@ async function persist(){
 }
 async function preset(){
  const c=document.createElement('canvas');c.width=kind==='avatar'?600:1500;c.height=kind==='avatar'?600:500;
- const ctx=c.getContext('2d'),colors=['#e10600','#090909','#380017'];const g=ctx.createLinearGradient(0,0,c.width,c.height);g.addColorStop(0,colors[0]);g.addColorStop(1,colors[2]);ctx.fillStyle=g;ctx.fillRect(0,0,c.width,c.height);
+ const ctx=c.getContext('2d');
+ const name=kind==='banner'?prompt('Банер: crimson / aurora / mesh / hologram / waves','aurora'):'crimson';if(name===null)return;
+ const palettes={crimson:['#e10600','#380017'],aurora:['#136b67','#2b0c44'],mesh:['#b50918','#120a1b'],hologram:['#5279ae','#29123e'],waves:['#2c0010','#a62440']};
+ const colors=palettes[name]||palettes.crimson;const g=ctx.createLinearGradient(0,0,c.width,c.height);g.addColorStop(0,colors[0]);g.addColorStop(1,colors[2]);ctx.fillStyle=g;ctx.fillRect(0,0,c.width,c.height);
  if(kind==='avatar'){
   const value=prompt('Ініціали на аватарці (1–3 символи)','CX');if(value===null)return;
   ctx.fillStyle='#fff';ctx.font='800 190px Inter';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(value.slice(0,3).toUpperCase(),c.width/2,c.height/2);
@@ -145,6 +149,12 @@ function editor(which='avatar'){
   try{if(new URL(url).protocol!=='https:')throw Error('Потрібне HTTPS');const r=await fetch(url,{mode:'cors'});if(!r.ok)throw Error('Файл не відкривається');const b=await r.blob();await accept(new File([b],'photo.'+(b.type.split('/')[1]||'jpg'),{type:b.type}))}catch(x){status('Фото недоступне (можливо CORS): '+x.message)}
  };
  $('#ce-preset',modal).onclick=()=>void preset().catch(x=>status(x.message));
+ if(kind==='avatar'){
+  $('#ce-frame',modal).selectedIndex=Number(read('frame','0'));
+  $('#ce-shape',modal).selectedIndex=Number(read('shape','0'));
+  $('#ce-frame',modal).onchange=e=>{write('frame',e.target.selectedIndex);if(cachedAvatar)applyPhoto('avatar',cachedAvatar)};
+  $('#ce-shape',modal).onchange=e=>{write('shape',e.target.selectedIndex);draw();if(cachedAvatar)applyPhoto('avatar',cachedAvatar)};
+ }
  const drop=$('#ce-drop',modal);drop.ondragover=e=>e.preventDefault();drop.ondrop=e=>{e.preventDefault();void accept(e.dataTransfer.files?.[0]).catch(x=>status(x.message))};
  modal.addEventListener('paste',e=>{const b=Array.from(e.clipboardData?.items||[]).find(x=>x.type.startsWith('image/'))?.getAsFile();if(b){e.preventDefault();void accept(b).catch(x=>status(x.message))}});
  const stage=$('#ce-area',modal);let point=null;
@@ -173,9 +183,27 @@ function editor(which='avatar'){
  };
 }
 async function profilePanel(){
- openModal('Профіль CLOUX','<p>Створюй і редагуй фото профілю та банер. Поточні чати й акаунт не видаляються.</p><div class="cloux-tools"><button id="cp-avatar">Аватарка</button><button id="cp-banner">Банер</button><button id="cp-theme">Теми</button><button id="cp-export">Експорт JSON</button><button id="cp-import">Імпорт JSON</button><input hidden type="file" accept="application/json" id="cp-file"></div><div class="cloux-profile-card"><div class="cloux-banner-sample"></div><div class="cloux-profile-card-inner"><img id="cp-image" src="'+(cachedAvatar||DEFAULT)+'"><div><b id="cp-display">Cloux</b><p id="cp-username"></p></div></div></div><div class="cloux-tools"><button id="cp-png">Зберегти PNG-картку</button><button id="cp-link">Копіювати посилання</button></div><p class="cloux-status" role="status"></p>');
+ openModal('Профіль CLOUX','<p>Створюй і редагуй фото профілю та банер. Поточні чати й акаунт не видаляються.</p><div class="cloux-tools"><button id="cp-avatar">Аватарка</button><button id="cp-banner">Банер</button><button id="cp-theme">Теми</button><button id="cp-export">Експорт JSON</button><button id="cp-import">Імпорт JSON</button><input hidden type="file" accept="application/json" id="cp-file"></div><div class="cloux-profile-card"><div class="cloux-banner-sample"></div><div class="cloux-profile-card-inner"><img id="cp-image" src="'+(cachedAvatar||DEFAULT)+'"><div><b id="cp-display">Cloux</b><p id="cp-username"></p></div></div></div><form id="cp-profile-edit" class="cloux-section"><div class="cloux-grid"><label>Ім’я<input type="text" name="display" id="cp-edit-name" maxlength="48" required></label><label>@юзернейм<input type="text" name="username" id="cp-edit-user" maxlength="24" minlength="4" pattern="[a-zA-Z0-9_]+" required></label></div><label>Біо<input type="text" name="bio" id="cp-edit-bio" maxlength="180"></label><div class="cloux-tools"><button type="submit" class="primary">Зберегти ім’я та профіль на сервері</button></div></form><div class="cloux-grid"><label>Дата народження (лише на цьому пристрої)<input type="date" id="cp-birth"></label><label>Емодзі-статус (локально)<input id="cp-emoji" type="text" maxlength="8"></label></div><div class="cloux-tools"><button id="cp-png">Зберегти PNG-картку</button><button id="cp-link">Копіювати посилання</button></div><p class="cloux-status" role="status"></p>');
  $('#cp-avatar',modal).onclick=()=>editor('avatar');$('#cp-banner',modal).onclick=()=>editor('banner');$('#cp-theme',modal).onclick=themePanel;
- let me=null;try{me=await user();if(!modal)return;$('#cp-display',modal).textContent=me.display;$('#cp-username',modal).textContent='@'+me.username}catch(x){status(x.message)}
+ let me=null;try{me=await user();if(!modal)return;$('#cp-display',modal).textContent=me.display;$('#cp-username',modal).textContent='@'+me.username;
+ $('#cp-edit-name',modal).value=me.display;$('#cp-edit-user',modal).value=me.username;
+ const p=await fetch('/api/profile',{credentials:'same-origin'});if(p.ok){const d=await p.json();$('#cp-edit-bio',modal).value=d.profile?.bio||''}
+ }catch(x){status(x.message)}
+ const birth=$('#cp-birth',modal),emoji=$('#cp-emoji',modal);birth.value=read('birthday','');emoji.value=read('emoji','');
+ birth.onchange=e=>write('birthday',e.target.value);emoji.onchange=e=>write('emoji',e.target.value);
+ $('#cp-profile-edit',modal).onsubmit=async e=>{
+  e.preventDefault();const name=$('#cp-edit-name',modal).value.trim(),nick=$('#cp-edit-user',modal).value.trim().toLowerCase(),bio=$('#cp-edit-bio',modal).value.trim();
+  if(!/^[a-z0-9_]{4,24}$/.test(nick)||!name){status('Перевір ім’я та позивний (4–24 латинські символи для позивного)');return}
+  try{const r=await fetch('/api/profile',{method:'PATCH',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({display:name,username:nick,bio})});const data=await r.json();if(!r.ok)throw Error(data.detail||'Не вдалося змінити профіль');
+   me.display=name;me.username=nick;$('#cp-display',modal).textContent=name;$('#cp-username',modal).textContent='@'+nick;status('Профіль збережено на сервері. Ім’я оновиться в чатах після синхронізації.');
+  }catch(x){status(x.message)}
+ };
+ $('#cp-edit-user',modal).onblur=async e=>{
+  if(!me||e.target.value.trim().toLowerCase()===me.username.toLowerCase())return;
+  try{const data=await (await fetch('/api/users?q='+encodeURIComponent(e.target.value.trim()),{credentials:'same-origin'})).json();
+   if((data.users||[]).some(x=>x.username?.toLowerCase()===e.target.value.trim().toLowerCase()))status('Цей позивний уже зайнятий.');
+  }catch{}
+ };
  $('#cp-export',modal).onclick=()=>{
   const out={version:1,appearance:{theme:read('theme','crimson'),accent:read('accent','#e10600')},profile:{display:me?.display,username:me?.username}};
   fileSave(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),'Cloux-profile.json')
