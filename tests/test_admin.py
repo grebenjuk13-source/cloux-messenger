@@ -90,3 +90,44 @@ def test_secure_session_survives_reopen_until_logout(app_client):
     assert client.get("/api/me").status_code == 200
     assert client.post("/api/logout").status_code == 200
     assert client.get("/api/me").status_code == 401
+
+
+def test_owner_public_chat_role_and_privacy(app_client, monkeypatch):
+    owner=app_client
+    assert register(owner,"verified-admin@example.test","owner_public","+380670000666").status_code==200
+    codes=[]
+    monkeypatch.setattr(cloux_admin,"send_code",lambda address,code: codes.append(code))
+    assert owner.post("/api/account/verify-email/send").status_code==200
+    assert owner.post("/api/account/verify-email/confirm",json={"code":codes[-1]}).status_code==200
+    with TestClient(main.app,base_url=HOST) as member:
+        assert register(member,"member@example.test","community_user","+380670000777").status_code==200
+        member_id=member.get("/api/me").json()["id"]
+        assert member.get("/api/admin/chats").status_code==403
+        assert owner.put(f"/api/admin/users/{member_id}/role",json={"role":"moderator"}).status_code==200
+        assert member.get("/api/admin/overview").status_code==403
+        assert owner.put(f"/api/admin/users/{member_id}/role",json={"role":"owner"}).status_code==422
+        new_chat=owner.post("/api/admin/chats",json={
+            "title":"Команда Cloux","kind":"channel","description":"Офіційна спільнота"
+        })
+        assert new_chat.status_code==200,new_chat.text
+        channel_id=new_chat.json()["chat_id"]
+        assert owner.patch(f"/api/admin/chats/{channel_id}",json={
+            "title":"Наш канал","description":"Новини команди"
+        }).status_code==200
+        assert any(ch["title"]=="Наш канал" for ch in owner.get("/api/admin/chats").json()["chats"])
+        owner_uid=owner.get("/api/me").json()["id"]
+        private=member.post(f"/api/direct/{owner_uid}").json()["chat_id"]
+        assert all(ch["id"]!=private for ch in owner.get("/api/admin/chats").json()["chats"])
+        assert owner.patch(f"/api/admin/chats/{private}",json={
+            "title":"Hidden chat","description":""
+        }).status_code==403
+        assert owner.delete(f"/api/admin/chats/{private}/messages/1").status_code==403
+        report=member.post("/api/reports",json={
+            "subject_id":private,"category":"direct",
+            "reason":"Private conversation should be reviewed"
+        })
+        assert report.status_code==200,report.text
+        rows=owner.get("/api/admin/reports").json()["reports"]
+        assert rows and "Private conversation" not in rows[0]["reason"]
+        assert owner.put(f"/api/admin/reports/{rows[0]['id']}",
+                         json={"status":"resolved"}).status_code==200
