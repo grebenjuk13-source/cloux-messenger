@@ -23,11 +23,11 @@ class UISettings(BaseModel):
     chat_previews: bool = True
 
 
-def install(app, db, auth, fail, limit, set_cookie, seed_user):
+def install(app, db, auth, fail):
     with db() as conn:
         conn.execute('''CREATE TABLE IF NOT EXISTS cloux_v5_ui_prefs(
             uid TEXT PRIMARY KEY REFERENCES users(id), value TEXT NOT NULL, updated INTEGER NOT NULL)''')
-        # Remove obsolete one-time SMS registration state. No SMS codes are used by Cloux signup.
+        # Drop obsolete one-time SMS registration tables after migration.
         conn.execute('DROP TABLE IF EXISTS cloux_v5_grants')
         conn.execute('DROP TABLE IF EXISTS cloux_v5_sms_limits')
 
