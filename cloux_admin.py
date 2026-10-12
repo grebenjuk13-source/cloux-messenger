@@ -541,7 +541,10 @@ def install(app, db, auth, fail, limit, check_password, emit=None):
     def admin_chats(request: Request):
         require_owner(request)
         with db() as c:
-            rows = c.execute("SELECT id,title,kind,created FROM chats WHERE kind NOT IN ('direct','saved') ORDER BY created DESC LIMIT 150").fetchall()
+            rows = c.execute("""SELECT ch.id,ch.title,ch.kind,ch.created,
+                COALESCE(meta.description,'') description,meta.pinned_message_id
+                FROM chats ch LEFT JOIN cloux_admin_chat_meta meta ON meta.chat_id=ch.id
+                WHERE ch.kind NOT IN ('direct','saved') ORDER BY ch.created DESC LIMIT 150""").fetchall()
         return {"chats": [dict(x) for x in rows]}
 
     @app.get("/api/admin/audit")
