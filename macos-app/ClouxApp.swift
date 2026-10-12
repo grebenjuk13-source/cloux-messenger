@@ -78,6 +78,7 @@ struct ClouxWebView: NSViewRepresentable {
 
     func updateNSView(_ webView: WKWebView, context: Context) {}
 
+    @MainActor
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         let state: BrowserState
         init(state: BrowserState) { self.state = state }

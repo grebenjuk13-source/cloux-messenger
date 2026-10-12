@@ -28,8 +28,8 @@ jobs:
           APP="$RUNNER_TEMP/Cloux.app"
           mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
-          swiftc -O -target arm64-apple-macos13.0 -framework AppKit -framework SwiftUI -framework WebKit macos-app/ClouxApp.swift -o "$RUNNER_TEMP/Cloux-arm64"
-          swiftc -O -target x86_64-apple-macos13.0 -framework AppKit -framework SwiftUI -framework WebKit macos-app/ClouxApp.swift -o "$RUNNER_TEMP/Cloux-x86_64"
+          swiftc -parse-as-library -O -target arm64-apple-macos13.0 -framework AppKit -framework SwiftUI -framework WebKit macos-app/ClouxApp.swift -o "$RUNNER_TEMP/Cloux-arm64"
+          swiftc -parse-as-library -O -target x86_64-apple-macos13.0 -framework AppKit -framework SwiftUI -framework WebKit macos-app/ClouxApp.swift -o "$RUNNER_TEMP/Cloux-x86_64"
           lipo -create "$RUNNER_TEMP/Cloux-arm64" "$RUNNER_TEMP/Cloux-x86_64" -output "$APP/Contents/MacOS/Cloux"
 
           mkdir -p "$RUNNER_TEMP/Cloux.iconset"
