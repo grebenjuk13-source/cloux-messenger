@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0c10">
+  <meta name="description" content="Отримай свій код Cloux для потрібного пристрою.">
+  <title>Cloux — коди для пристроїв</title>
+  <script>
+    // ВСТАВ СВОЇ КОДИ ЗАМІСТЬ ТЕСТОВИХ. Залишай 5 об'єктів на кожну платформу або додай більше.
+    const CODES = [
+      { platform: 'windows', code: 'WIN-TEST-0001' },
+      { platform: 'windows', code: 'WIN-TEST-0002' },
+      { platform: 'windows', code: 'WIN-TEST-0003' },
+      { platform: 'windows', code: 'WIN-TEST-0004' },
+      { platform: 'windows', code: 'WIN-TEST-0005' },
+      { platform: 'macos', code: 'MAC-TEST-0001' },
+      { platform: 'macos', code: 'MAC-TEST-0002' },
+      { platform: 'macos', code: 'MAC-TEST-0003' },
+      { platform: 'macos', code: 'MAC-TEST-0004' },
+      { platform: 'macos', code: 'MAC-TEST-0005' },
+      { platform: 'iphone', code: 'IOS-TEST-0001' },
+      { platform: 'iphone', code: 'IOS-TEST-0002' },
+      { platform: 'iphone', code: 'IOS-TEST-0003' },
+      { platform: 'iphone', code: 'IOS-TEST-0004' },
+      { platform: 'iphone', code: 'IOS-TEST-0005' },
+      { platform: 'android', code: 'AND-TEST-0001' },
+      { platform: 'android', code: 'AND-TEST-0002' },
+      { platform: 'android', code: 'AND-TEST-0003' },
+      { platform: 'android', code: 'AND-TEST-0004' },
+      { platform: 'android', code: 'AND-TEST-0005' }
+    ];
+  </script>
+  <style>
+    :root{color-scheme:dark;--bg:#090a0d;--panel:#111319;--panel2:#171a22;--text:#f5f6fa;--muted:#9298a8;--line:#272b35;--accent:#ff1f47;--accent2:#c80f32;--glow:#ff1f472e;--good:#52d7a3;--warn:#f2bf65;--shadow:0 24px 70px #0008;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    :root[data-theme="light"]{color-scheme:light;--bg:#f3f4f7;--panel:#fff;--panel2:#f7f8fb;--text:#171922;--muted:#697080;--line:#e1e4eb;--accent:#e92348;--accent2:#c9183a;--glow:#e923481c;--good:#138b62;--warn:#9a6500;--shadow:0 24px 70px #19203314}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -15%,var(--glow),transparent 55%),var(--bg);color:var(--text);transition:background .2s,color .2s}button{font:inherit;color:inherit}.wrap{width:min(100% - 32px,1040px);margin:auto}.topbar{height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:850;letter-spacing:.16em}.logo{height:38px;width:38px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#ff526f,#d41139);color:#fff;box-shadow:0 5px 24px #ff31553d;font-size:19px;letter-spacing:0}.theme{width:42px;height:42px;border:1px solid var(--line);border-radius:50%;background:var(--panel);cursor:pointer;display:grid;place-items:center;font-size:18px;transition:transform .2s,border-color .2s}.theme:hover{transform:rotate(-12deg);border-color:var(--accent)}.hero{text-align:center;padding:62px 0 30px}.eyebrow{text-transform:uppercase;letter-spacing:.19em;color:var(--accent);font-size:11px;font-weight:800}.hero h1{font-size:clamp(34px,7vw,58px);letter-spacing:-.055em;line-height:1.05;margin:14px 0 14px}.hero p{max-width:600px;margin:0 auto;color:var(--muted);font-size:15px;line-height:1.7}.device-card{max-width:760px;margin:0 auto 34px;background:var(--panel);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}.device-head{padding:24px 26px 0}.device-head h2{font-size:19px;margin:0 0 6px}.device-head p{margin:0;color:var(--muted);font-size:13px}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:22px 26px 0}.tab{border:1px solid var(--line);background:var(--panel2);border-radius:13px;padding:12px 8px;cursor:pointer;color:var(--muted);font-size:12px;font-weight:750;transition:transform .16s,border-color .16s,background .16s,color .16s}.tab:hover{transform:translateY(-2px);color:var(--text)}.tab[aria-selected="true"]{color:var(--text);border-color:var(--accent);background:var(--glow);box-shadow:inset 0 0 0 1px var(--accent)}.tab-icon{display:block;font-size:19px;margin-bottom:5px}.panel{display:none;padding:26px}.panel.active{display:block;animation:appear .22s ease-out}.panel-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.device-title{display:flex;align-items:center;gap:12px}.device-icon{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:var(--panel2);font-size:22px}.device-title h3{margin:0 0 4px;font-size:18px}.device-title p{margin:0;color:var(--muted);font-size:12px}.recommended{font-size:10px;color:var(--good);font-weight:800;background:color-mix(in srgb,var(--good) 12%,transparent);padding:7px 9px;border-radius:99px;white-space:nowrap}.claim-area{margin-top:25px;border:1px solid var(--line);border-radius:17px;background:var(--panel2);padding:18px}.empty{text-align:center;padding:8px 0 12px}.empty p{color:var(--muted);font-size:13px;margin:0 0 16px}.get{width:100%;min-height:50px;border:0;border-radius:12px;background:linear-gradient(110deg,var(--accent),var(--accent2));color:#fff;font-weight:850;cursor:pointer;box-shadow:0 9px 24px var(--glow);transition:transform .16s,filter .16s}.get:hover{transform:translateY(-2px);filter:brightness(1.08)}.get:active{transform:scale(.99)}.get:disabled{opacity:.55;cursor:not-allowed;transform:none}.code-result{display:none}.code-result.visible{display:block;animation:appear .24s ease-out}.code-label{font-size:11px;color:var(--muted);margin:1px 0 9px}.code-row{display:flex;align-items:center;gap:9px}.code{min-width:0;flex:1;border:1px dashed color-mix(in srgb,var(--accent) 60%,var(--line));background:var(--bg);border-radius:12px;padding:14px 12px;font:700 15px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.045em;overflow-wrap:anywhere}.copy{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:12px 14px;font-size:12px;font-weight:800;cursor:pointer;transition:border-color .16s,background .16s}.copy:hover{border-color:var(--accent)}.status{min-height:18px;margin:11px 0 0;font-size:12px;color:var(--good)}.limit{margin-top:19px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--warn) 30%,var(--line));border-radius:12px;background:color-mix(in srgb,var(--warn) 6%,transparent);color:var(--muted);font-size:11px;line-height:1.55}.limit strong{color:var(--warn)}.bottom{padding:0 0 34px;text-align:center;color:var(--muted);font-size:11px}.bottom span{color:var(--accent)}.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,14px);opacity:0;pointer-events:none;background:var(--text);color:var(--bg);padding:11px 15px;border-radius:99px;font-size:12px;font-weight:800;transition:opacity .18s,transform .18s}.toast.show{opacity:1;transform:translate(-50%,0)}@keyframes appear{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}@media(max-width:600px){.topbar{height:64px}.hero{padding:43px 0 24px}.hero p{font-size:14px}.device-card{border-radius:19px}.device-head{padding:20px 17px 0}.tabs{gap:6px;padding:17px 12px 0}.tab{padding:10px 3px;font-size:10px;border-radius:11px}.tab-icon{font-size:17px}.panel{padding:20px 14px}.recommended{font-size:9px}.claim-area{padding:14px}.code-row{align-items:stretch}.code{font-size:13px;padding:13px 9px}.copy{padding:10px}.limit{font-size:10px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand"><span class="logo" aria-hidden="true">C</span><span>CLOUX</span></div>
+      <nav style="display:flex;gap:10px;align-items:center"><a href="/v5/" style="font-size:12px;font-weight:800;color:var(--text);text-decoration:none;border:1px solid var(--line);padding:11px 13px;border-radius:12px">Відкрити Cloux</a><a href="/download" style="font-size:12px;font-weight:800;color:var(--text);text-decoration:none;border:1px solid var(--line);padding:11px 13px;border-radius:12px">Завантажити</a></nav>
+      <button class="theme" id="theme" type="button" aria-label="Змінити тему" title="Змінити тему">☼</button>
+    </header>
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Твій пристрій · твій код</div>
+        <h1>Отримай свій код</h1>
+        <p>Обери систему свого пристрою та забери код. Ми автоматично запропонували версію, яка найкраще підходить до твого пристрою.</p>
+      </section>
+      <section class="device-card" aria-label="Коди для пристроїв">
+        <div class="device-head"><h2>Для якого пристрою потрібен код?</h2><p>На одному браузері можна отримати лише один код.</p></div>
+        <div class="tabs" role="tablist" aria-label="Операційна система">
+          <button class="tab" id="tab-windows" type="button" role="tab" aria-controls="panel-windows" aria-selected="false" data-platform="windows"><span class="tab-icon">▦</span>Windows</button>
+          <button class="tab" id="tab-macos" type="button" role="tab" aria-controls="panel-macos" aria-selected="false" data-platform="macos"><span class="tab-icon">⌘</span>macOS</button>
+          <button class="tab" id="tab-iphone" type="button" role="tab" aria-controls="panel-iphone" aria-selected="false" data-platform="iphone"><span class="tab-icon">▯</span>iPhone</button>
+          <button class="tab" id="tab-android" type="button" role="tab" aria-controls="panel-android" aria-selected="false" data-platform="android"><span class="tab-icon">◈</span>Android</button>
+        </div>
+        <section class="panel" id="panel-windows" role="tabpanel" aria-labelledby="tab-windows" data-panel="windows"><div class="panel-top"><div class="device-title"><div class="device-icon">▦</div><div><h3>Cloux для Windows</h3><p>Для ноутбуків і комп’ютерів з Windows</p></div></div><span class="recommended" hidden>ТВОЯ ВЕРСІЯ</span></div><div class="claim-area" data-claim-area></div></section>
+        <section class="panel" id="panel-macos" role="tabpanel" aria-labelledby="tab-macos" data-panel="macos"><div class="panel-top"><div class="device-title"><div class="device-icon">⌘</div><div><h3>Cloux для macOS</h3><p>Для MacBook, iMac і Mac mini</p></div></div><span class="recommended" hidden>ТВОЯ ВЕРСІЯ</span></div><div class="claim-area" data-claim-area></div></section>
+        <section class="panel" id="panel-iphone" role="tabpanel" aria-labelledby="tab-iphone" data-panel="iphone"><div class="panel-top"><div class="device-title"><div class="device-icon">▯</div><div><h3>Cloux для iPhone</h3><p>Для iPhone та iPad</p></div></div><span class="recommended" hidden>ТВОЯ ВЕРСІЯ</span></div><div class="claim-area" data-claim-area></div></section>
+        <section class="panel" id="panel-android" role="tabpanel" aria-labelledby="tab-android" data-panel="android"><div class="panel-top"><div class="device-title"><div class="device-icon">◈</div><div><h3>Cloux для Android</h3><p>Для смартфонів і планшетів Android</p></div></div><span class="recommended" hidden>ТВОЯ ВЕРСІЯ</span></div><div class="claim-area" data-claim-area></div></section>
+      </section>
+      <p style="max-width:760px;margin:-12px auto 30px;padding:12px 15px;border:1px solid color-mix(in srgb,var(--warn) 30%,var(--line));border-radius:12px;color:var(--muted);font-size:11px;line-height:1.55"><strong style="color:var(--warn)">Важливо:</strong> це статична демоверсія. Коди та позначки використання зберігаються лише в цьому браузері — між різними телефонами вони не синхронізуються. Для гарантовано унікальної видачі всім людям потрібен сервер зі спільною базою.</p>
+    </main>
+    <footer class="bottom"><a href="/v5/" style="color:inherit">Cloux Messenger</a> <span>•</span> Коди пристроїв</footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const CLAIM_KEY = 'cloux-codes-device-claim-v1';
+    const USED_KEY = 'cloux-codes-used-v1';
+    const THEME_KEY = 'cloux-codes-theme-v1';
+    const PLATFORM_NAMES = { windows: 'Windows', macos: 'macOS', iphone: 'iPhone', android: 'Android' };
+    let activePlatform = detectPlatform();
+    let claiming = false;
+
+    function detectPlatform() {
+      const ua = navigator.userAgent || '';
+      const platform = navigator.userAgentData?.platform || navigator.platform || '';
+      if (/Android/i.test(ua)) return 'android';
+      if (/iPhone|iPad|iPod/i.test(ua) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'iphone';
+      if (/Mac/i.test(platform) || /Macintosh/i.test(ua)) return 'macos';
+      if (/Win/i.test(platform) || /Windows/i.test(ua)) return 'windows';
+      return 'windows';
+    }
+    function readJSON(key, fallback) {
+      try { const value = JSON.parse(localStorage.getItem(key)); return value ?? fallback; }
+      catch { return fallback; }
+    }
+    function getClaim() { return readJSON(CLAIM_KEY, null); }
+    function getUsed() { const value = readJSON(USED_KEY, []); return Array.isArray(value) ? value : []; }
+    function setText(node, value) { node.textContent = value; }
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      setText(toast, text); toast.classList.add('show');
+      clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove('show'), 1900);
+    }
+    function setPlatform(platform) {
+      activePlatform = platform;
+      document.querySelectorAll('.tab').forEach((tab) => {
+        const selected = tab.dataset.platform === platform;
+        tab.setAttribute('aria-selected', String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+      });
+      document.querySelectorAll('.panel').forEach((panel) => panel.classList.toggle('active', panel.dataset.panel === platform));
+      document.querySelectorAll('.recommended').forEach((badge) => { badge.hidden = badge.closest('.panel').dataset.panel !== detectPlatform(); });
+      renderClaim();
+    }
+    function renderClaim() {
+      const claim = getClaim();
+      document.querySelectorAll('[data-claim-area]').forEach((area) => {
+        area.replaceChildren();
+        if (claim) {
+          const result = document.createElement('div'); result.className = 'code-result visible';
+          const label = document.createElement('div'); label.className = 'code-label';
+          setText(label, claim.platform === activePlatform ? 'Твій код для цього пристрою' : `На цьому пристрої вже закріплено код для ${PLATFORM_NAMES[claim.platform] || 'пристрою'}`);
+          const row = document.createElement('div'); row.className = 'code-row';
+          const code = document.createElement('div'); code.className = 'code'; setText(code, claim.code);
+          const copy = document.createElement('button'); copy.className = 'copy'; copy.type = 'button'; setText(copy, 'Копіювати');
+          copy.addEventListener('click', () => copyCode(claim.code, copy));
+          row.append(code, copy);
+          const status = document.createElement('p'); status.className = 'status'; setText(status, 'Код закріплений у цьому браузері. Повторно інший не видаватиметься.');
+          result.append(label, row, status); area.append(result); return;
+        }
+        const empty = document.createElement('div'); empty.className = 'empty';
+        const text = document.createElement('p'); setText(text, 'Натисни кнопку — і код збережеться за цим браузером.');
+        const button = document.createElement('button'); button.className = 'get'; button.type = 'button'; setText(button, 'Отримати код');
+        button.addEventListener('click', claimCode);
+        empty.append(text, button); area.append(empty);
+      });
+    }
+    function claimCode() {
+      if (claiming) return;
+      claiming = true;
+      try {
+        const existing = getClaim();
+        if (existing) { renderClaim(); return; }
+        const used = new Set(getUsed());
+        const next = CODES.find((item) => item.platform === activePlatform && !used.has(item.code));
+        if (!next) { showToast(`Коди для ${PLATFORM_NAMES[activePlatform]} закінчилися`); return; }
+        const claim = { code: next.code, platform: next.platform, claimedAt: new Date().toISOString() };
+        used.add(next.code);
+        localStorage.setItem(USED_KEY, JSON.stringify([...used]));
+        localStorage.setItem(CLAIM_KEY, JSON.stringify(claim));
+        renderClaim();
+        showToast('Код збережено за цим браузером');
+      } catch {
+        showToast('Увімкни localStorage у налаштуваннях браузера');
+      } finally { claiming = false; }
+    }
+    async function copyCode(value, button) {
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch {
+        const field = document.createElement('textarea'); field.value = value; field.setAttribute('readonly', '');
+        field.style.position = 'fixed'; field.style.opacity = '0'; document.body.append(field); field.select();
+        const copied = document.execCommand('copy'); field.remove();
+        if (!copied) { showToast('Не вдалося скопіювати код'); return; }
+      }
+      const previous = button.textContent; setText(button, 'Скопійовано ✓'); showToast('Код скопійовано');
+      setTimeout(() => setText(button, previous), 1500);
+    }
+    document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => setPlatform(tab.dataset.platform)));
+    document.querySelector('.tabs').addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      const tabs = [...document.querySelectorAll('.tab')]; const current = tabs.findIndex((tab) => tab.dataset.platform === activePlatform);
+      const next = tabs[(current + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      next.focus(); setPlatform(next.dataset.platform);
+    });
+    const themeButton = document.getElementById('theme');
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      setText(themeButton, theme === 'dark' ? '☼' : '☾');
+      themeButton.setAttribute('aria-label', theme === 'dark' ? 'Увімкнути світлу тему' : 'Увімкнути темну тему');
+      document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#0b0c10' : '#f3f4f7';
+    }
+    let theme = readJSON(THEME_KEY, matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    applyTheme(theme);
+    themeButton.addEventListener('click', () => {
+      theme = theme === 'dark' ? 'light' : 'dark'; applyTheme(theme);
+      try { localStorage.setItem(THEME_KEY, JSON.stringify(theme)); } catch { /* Theme remains available for this page. */ }
+    });
+    window.addEventListener('storage', (event) => { if ([CLAIM_KEY, USED_KEY].includes(event.key)) renderClaim(); });
+    setPlatform(activePlatform);
+  </script>
+</body>
+</html>
