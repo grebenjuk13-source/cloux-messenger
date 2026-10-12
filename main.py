@@ -332,6 +332,10 @@ def cloux_apk_download():
 def cloux_mac_download():
     return RedirectResponse("https://github.com/grebenjuk13-source/cloux-messenger/releases/download/cloux-macos/Cloux-macOS.dmg",status_code=302)
 
+@app.get("/exe")
+def cloux_windows_download():
+    return RedirectResponse("https://github.com/grebenjuk13-source/cloux-messenger/releases/download/cloux-windows/Cloux.exe",status_code=302)
+
 @app.get("/assets/cloux-official-{size}.jpg")
 def cloux_official_icon(size: int):
     if size not in (192,512):
