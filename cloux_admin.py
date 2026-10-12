@@ -15,7 +15,9 @@ from pydantic import BaseModel, Field
 NEWS = "cloux-official-news"
 SYSTEM = "cloux-system"
 COLORS = {"accent": "#C8102E", "background": "#0A0A0C",
-          "surface": "#16161A", "bubble": "#A5122B", "text": "#FFFFFF"}
+          "surface": "#16161A", "bubble": "#A5122B", "text": "#FFFFFF",
+          "name": "Cloux.", "icon": "default", "wallpaper": "doodles", "radius": 18,
+          "font": "system"}
 FEATURES = {"registration": True, "calls": True, "groups": True, "channels": True,
             "stickers": True, "reactions": True, "maintenance": False}
 BADGES = [
@@ -67,6 +69,14 @@ def init(db):
         CREATE TABLE IF NOT EXISTS owner_totp(
             uid TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
             secret TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE IF NOT EXISTS cloux_admin_chat_meta(
+            chat_id TEXT PRIMARY KEY REFERENCES chats(id) ON DELETE CASCADE,
+            description TEXT NOT NULL DEFAULT '', avatar TEXT NOT NULL DEFAULT '',
+            pinned_message_id INTEGER);
+        CREATE TABLE IF NOT EXISTS cloux_admin_reports(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, reporter_id TEXT NOT NULL,
+            subject_id TEXT NOT NULL, category TEXT NOT NULL, reason TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'open', created INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS owner_totp_sessions(
             session_hash TEXT PRIMARY KEY, uid TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             expires INTEGER NOT NULL);
@@ -154,6 +164,11 @@ class BadgeToggle(BaseModel):
 
 
 class ThemeUpdate(BaseModel):
+    name: str = Field(default="Cloux.", min_length=2, max_length=32)
+    icon: str = Field(default="default", pattern=r"^(default|official)$")
+    wallpaper: str = Field(default="doodles", pattern=r"^(doodles|plain|stars)$")
+    radius: int = Field(default=18, ge=4, le=32)
+    font: str = Field(default="system", pattern=r"^(system|rounded|mono)$")
     accent: str = Field(pattern=r"^#[0-9a-fA-F]{6}$")
     background: str = Field(pattern=r"^#[0-9a-fA-F]{6}$")
     surface: str = Field(pattern=r"^#[0-9a-fA-F]{6}$")
@@ -172,6 +187,26 @@ class UserEdit(BaseModel):
     blocked: bool | None = None
     muted_minutes: int | None = Field(default=None, ge=0, le=525600)
 
+
+class RoleUpdate(BaseModel):
+    role: str = Field(pattern=r"^(user|moderator|admin)$")
+
+class ChatCreate(BaseModel):
+    title: str = Field(min_length=2, max_length=65)
+    kind: str = Field(default="channel", pattern=r"^(channel|group)$")
+    description: str = Field(default="", max_length=500)
+
+class ChatUpdate(BaseModel):
+    title: str = Field(min_length=2, max_length=65)
+    description: str = Field(default="", max_length=500)
+
+class ReportCreate(BaseModel):
+    subject_id: str = Field(min_length=1, max_length=120)
+    category: str = Field(pattern=r"^(user|group|channel|direct)$")
+    reason: str = Field(min_length=10, max_length=500)
+
+class ReportUpdate(BaseModel):
+    status: str = Field(pattern=r"^(open|reviewing|resolved|dismissed)$")
 
 class Announcement(BaseModel):
     text: str = Field(min_length=2, max_length=4000)
@@ -284,6 +319,7 @@ def install(app, db, auth, fail, limit, check_password, emit=None):
             out = []
             for r in rows:
                 d = dict(r)
+                d["role"] = (c.execute("SELECT role FROM roles WHERE user_id=?",(r["id"],)).fetchone() or {"role":"user"})["role"]
                 d["badges"] = [x["badge_id"] for x in c.execute(
                     "SELECT badge_id FROM user_badges WHERE user_id=?", (r["id"],))]
                 out.append(d)
