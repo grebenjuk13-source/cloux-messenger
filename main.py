@@ -135,6 +135,19 @@ def member(c, uid, chat_id):
 @app.middleware("http")
 async def security_headers(request, call_next):
     response = await call_next(request)
+    # Enforce global feature flags for the corresponding API operations.
+    api_path = request.url.path
+    if api_path.startswith("/api/") and request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        with db() as c:
+            if not api_path.startswith(("/api/admin/", "/api/account/", "/api/login", "/api/logout", "/api/v6/login", "/api/v6/register")) and cloux_admin.flag(c, "maintenance"):
+                return JSONResponse({"detail": "Cloux тимчасово на обслуговуванні."}, status_code=503)
+            flag_name = (
+                "groups" if api_path in ("/api/groups", "/api/servers") else
+                "channels" if api_path.endswith("/channels") and api_path.startswith("/api/servers/") else
+                "reactions" if api_path.startswith("/api/messages/") and api_path.endswith("/reactions") else None
+            )
+            if flag_name and not cloux_admin.flag(c, flag_name):
+                return JSONResponse({"detail": "Ця функція тимчасово вимкнена."}, status_code=403)
     # Cookie authentication needs server-side same-origin validation on writes.
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
         origin = request.headers.get("origin", "")
