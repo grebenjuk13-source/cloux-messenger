@@ -271,9 +271,9 @@ def install(app,db,auth,member,fail,limit,data_dir):
         u=auth(request)
         with db() as c:
             got=c.execute("""SELECT r.sender id,u.display,u.username,r.created
-              FROM cloux_friend_requests r JOIN users u ON u.id=r.sender WHERE r.recipient=? ORDER BY created DESC""",(u['id'],)).fetchall()
+              FROM cloux_friend_requests r JOIN users u ON u.id=r.sender WHERE r.recipient=? ORDER BY r.created DESC""",(u['id'],)).fetchall()
             sent=c.execute("""SELECT r.recipient id,u.display,u.username,r.created
-              FROM cloux_friend_requests r JOIN users u ON u.id=r.recipient WHERE r.sender=? ORDER BY created DESC""",(u['id'],)).fetchall()
+              FROM cloux_friend_requests r JOIN users u ON u.id=r.recipient WHERE r.sender=? ORDER BY r.created DESC""",(u['id'],)).fetchall()
         return {'incoming':[dict(x) for x in got],'outgoing':[dict(x) for x in sent]}
 
     @app.post('/api/cloux/friends/{uid}/request')
