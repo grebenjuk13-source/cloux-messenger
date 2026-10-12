@@ -100,6 +100,7 @@ async function persist(){
  storePhoto(id.id+':'+kind,blob).catch(()=>{});
  const url=data.url||'/api/profile/'+encodeURIComponent(id.id)+'/media/'+kind+'?v='+Date.now();
  if(kind==='avatar')cachedAvatar=url;else cachedBanner=url;
+ if(kind==='banner')await fetch('/api/cloux/banner/video',{method:'DELETE',credentials:'same-origin'}).catch(()=>{});
  applyPhoto(kind,url);document.dispatchEvent(new CustomEvent('cloux:profile-photo',{detail:{kind,url}}));
 }
 async function preset(){
