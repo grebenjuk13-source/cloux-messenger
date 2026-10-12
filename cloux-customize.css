@@ -82,3 +82,8 @@ html[data-cloux-blur="1"]:not(:focus-within) #root{filter:blur(11px)}
 .cloux-modal input[type=password],.cloux-modal input[type=time]{background:#ffffff10;border:1px solid #ffffff3b;border-radius:12px;color:#fff;padding:11px;min-height:44px;width:100%}
 html[data-cloux-reduced='1'] *,html[data-cloux-reduced='1'] *:before,html[data-cloux-reduced='1'] *:after{animation-duration:.001ms!important;transition-duration:.001ms!important}
 .settings-view .cloux-settings-legal,.settings-view .cloux-settings-legal *{font-size:12px!important;line-height:1.4!important}
+
+/* Studio has its own full-height shell, so reserve the legal footer's space here too. */
+body:has(.shell) .shell{height:calc(100dvh - var(--cloux-footer-height))!important;min-height:0!important}
+body:has(.shell) .main{height:100%!important}
+body:has(.shell) .cloux-legal-footer:not(.cloux-settings-legal){position:relative!important;z-index:2}
