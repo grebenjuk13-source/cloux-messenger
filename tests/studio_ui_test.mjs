@@ -14,7 +14,7 @@ await page.locator('.chat-row').first().click();
 await page.getByText('Сьогодні · демонстрація').waitFor();
 await page.locator('#draft').fill('Привіт Studio ❤️');
 await page.locator('#send').click();
-await page.getByText('Привіт Studio ❤️').waitFor();
+await page.locator('#messages').getByText('Привіт Studio ❤️').waitFor();
 await page.locator('#emoji-open').click();
 await page.getByRole('dialog',{name:'Панель емодзі'}).waitFor();
 await page.locator('#emoji-query').fill('серце');
