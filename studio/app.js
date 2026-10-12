@@ -261,3 +261,145 @@ function scheduleMessage(){
  tell('Заплановано локально; залиш відкритою цю вкладку');$('#draft').value='';resizeDraft();
  setTimeout(()=>{const target=byId(id);if(target){target.messages.push({id:uid(),text,time:now(),mine:true,type:'text',reactions:{}});save();if(active===id)renderMessages();renderList()}},start-now());
 }
+
+/* Connect widgets and persist non-sensitive local-demo preferences. */
+function handleFile(file){if(!file)return;attachLocal(file)}
+function attachLocal(file){
+ if(file.size>25*1024*1024){tell('У Studio максимальний розмір вкладення 25 МБ; для великих файлів потрібен сервер');return}
+ const c=chat();if(!c)return;
+ const type=file.type.startsWith('image/')?'photo':file.type.startsWith('video/')?'video':file.type.startsWith('audio/')?'audio':'file';
+ const url=type==='file'?null:URL.createObjectURL(file);
+ const id=uid();if(url)localAttachments.set(id,url);
+ c.messages.push({id,text:type==='file'?'📎 '+file.name:'',url,type,time:now(),mine:true,reactions:{}});
+ save();renderMessages();renderList();
+ tell('Файл у локальному демочаті. Медіавкладення не зберігається після перезавантаження.');
+}
+function stopMedia(){window.ClouxStudioMedia?.stop?.();$('#media-modal').hidden=true}
+async function camera(){
+ await window.ClouxStudioMedia.camera({
+  target:$('#media-modal'),
+  onFile:handleFile,
+  onState:message=>{const s=$('#cloux-camera-status');if(s)s.textContent=message},
+  onError:tell
+ });
+}
+async function voice(){
+ if(window.ClouxStudioMedia.isRecording()){window.ClouxStudioMedia.finishVoice();return}
+ $('#send').textContent='■';
+ const ok=await window.ClouxStudioMedia.voice({
+  onFile:handleFile,
+  onLevel:level=>{$('#send').style.boxShadow='0 0 '+(17+level*130)+'px #ff1a1a'},
+  onState:message=>{if(message==='Запис зупинено'){$('#send').textContent='●';$('#send').style.boxShadow='';tell('Запис завершено')}else{$('#send').title=message}},
+  onError:t=>{tell(t);$('#send').textContent='●'}
+ });
+ if(ok)tell('Запис голосового. Натисни ■ для завершення.');
+}
+function callNow(mode){
+ if(!active){tell('Спочатку відкрий чат');return}
+ const current=chat();
+ if(current?.kind==='channel'){tell('У каналі немає особистих дзвінків');return}
+ void window.ClouxStudioCalls.start({
+  target:$('#call-screen'),room:active,title:current?.name||'Cloux',
+  mode,toast:tell
+ });
+}
+function searchMessages(){
+ const q=prompt('Знайти повідомлення в цьому чаті');if(!q?.trim())return;
+ const c=chat(),found=c?.messages.find(m=>String(m.text||'').toLocaleLowerCase('uk').includes(q.toLocaleLowerCase('uk')));
+ if(!found){tell('Нічого не знайдено');return}
+ const node=$('[data-message="'+found.id+'"]');node?.scrollIntoView({behavior:'smooth',block:'center'});
+ if(node){node.classList.add('selected');setTimeout(()=>node.classList.remove('selected'),1600)}
+}
+function showMenu(){
+ sheet('Cloux Studio',[
+  {label:'✉ Новий локальний демочат',run:createChat},
+  {label:'⚙ Налаштування Studio',run:settings},
+  {label:'📦 Запланувати повідомлення локально',run:scheduleMessage},
+  {label:'🗂 Відкрити архів',run:()=>{filter='archived';syncFilter();backChat()}},
+  {label:'↗ Справжній Cloux',run:()=>{window.location.href='/v5/'}}
+ ],'<p>Це окрема демонстрація інтерфейсу. Повідомлення в демочатах не надсилаються іншим людям.</p>');
+}
+function syncFilter(){
+ $$('#folders button').forEach(b=>b.classList.toggle('selected',b.dataset.filter===filter));renderList();
+}
+function setup(){
+ $('#chat-view').hidden=true;$('#welcome').hidden=false;active=null;
+ renderStories();renderList();syncFilter();
+ $('#back-chat').onclick=backChat;
+ $('#sidebar-menu').onclick=showMenu;
+ $('#new-chat').onclick=createChat;
+ $('#preferences').onclick=settings;
+ $('#chat-options').onclick=openChatMenu;
+ $('#chat-search').onclick=searchMessages;
+ $('#call-audio').onclick=()=>callNow('audio');
+ $('#call-video').onclick=()=>callNow('video');
+ $('#emoji-open').onclick=()=>emojiPicker(e=>{const d=$('#draft');const start=d.selectionStart??d.value.length;const end=d.selectionEnd??d.value.length;d.value=d.value.slice(0,start)+e+d.value.slice(end);d.focus();d.setSelectionRange(start+e.length,start+e.length);resizeDraft();if(chat()){db.drafts[active]=d.value;save()}});
+ $('#camera').onclick=()=>void camera();
+ $('#attach').onclick=()=>$('#attachment-input').click();
+ $('#attachment-input').onchange=e=>{const file=e.target.files?.[0];handleFile(file);e.target.value=''};
+ $('#send').onclick=()=>{if($('#draft').value.trim())sendText();else void voice()};
+ const draft=$('#draft');
+ draft.oninput=()=>{resizeDraft();if(chat()){db.drafts[active]=draft.value;save()}};
+ draft.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendText()}if(e.key==='Escape'){replyId=null;editId=null;updateReply()}};
+ $('#search').oninput=e=>{query=e.target.value.trim().toLocaleLowerCase('uk');renderList()};
+ $$('#folders button').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;syncFilter()});
+ $('#scroll-bottom').onclick=()=>{$('#chat-wall').scrollTo({top:$('#chat-wall').scrollHeight,behavior:'smooth'})};
+ $('#chat-wall').onscroll=()=>{
+  const wall=$('#chat-wall');
+  $('#scroll-bottom').style.opacity=wall.scrollHeight-wall.clientHeight-wall.scrollTop>250?'1':'.25';
+ };
+ let pointerTimer=0,longTriggered=false,pointerX=0,pointerY=0,suppressClick=false;
+ $('#send').addEventListener('pointerdown',e=>{
+  if(e.pointerType!=='touch'||draft.value.trim())return;
+  pointerX=e.clientX;pointerY=e.clientY;longTriggered=false;
+  pointerTimer=window.setTimeout(()=>{longTriggered=true;suppressClick=true;void voice()},350);
+ });
+ $('#send').addEventListener('pointermove',e=>{
+  if(e.pointerType!=='touch'||!longTriggered||!window.ClouxStudioMedia?.isRecording())return;
+  if(e.clientX-pointerX< -85){window.ClouxStudioMedia.cancelVoice();tell('Голосове скасовано');longTriggered=false}
+  else if(e.clientY-pointerY< -75){longTriggered=false;tell('🔒 Запис закріплено — натисни ■ для завершення')}
+ });
+ $('#send').addEventListener('pointerup',e=>{
+  clearTimeout(pointerTimer);
+  if(e.pointerType==='touch'&&longTriggered&&window.ClouxStudioMedia?.isRecording()){window.ClouxStudioMedia.finishVoice();longTriggered=false;suppressClick=true}
+ });
+ $('#send').addEventListener('pointercancel',()=>clearTimeout(pointerTimer));
+ $('#send').addEventListener('click',e=>{if(suppressClick){e.stopImmediatePropagation();e.preventDefault();suppressClick=false}},true);
+ window.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){if(window.ClouxStudioCalls?.active())window.ClouxStudioCalls.end();else if(!$('#shade').hidden)closeOverlays();else if(active)backChat()}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#search').focus();if(active)backChat()}
+  if((e.ctrlKey||e.metaKey)&&['b','i'].includes(e.key.toLowerCase())&&document.activeElement===draft){
+   e.preventDefault();const start=draft.selectionStart,end=draft.selectionEnd;if(start===end)return;
+   const wrapper=e.key.toLowerCase()==='b'?'**':'*';
+   draft.setRangeText(wrapper+draft.value.slice(start,end)+wrapper,start,end,'end');resizeDraft();
+  }
+  if(e.altKey&&['ArrowUp','ArrowDown'].includes(e.key)&&active){
+   e.preventDefault();const arr=filteredChats(),i=arr.findIndex(x=>x.id===active),c=arr[i+(e.key==='ArrowUp'?-1:1)];if(c)openChat(c.id)
+  }
+  if(e.key==='ArrowUp'&&!draft.value&&document.activeElement===draft&&chat()){
+   const last=[...chat().messages].reverse().find(x=>x.mine&&x.type==='text');
+   if(last){editId=last.id;draft.value=last.text;updateReply();resizeDraft()}
+  }
+ });
+ document.addEventListener('dragover',e=>e.preventDefault());
+ document.addEventListener('drop',e=>{
+  if(!active||!e.dataTransfer?.files.length)return;
+  e.preventDefault();handleFile(e.dataTransfer.files[0]);
+ });
+ window.addEventListener('resize',slideFolderIndicator);
+ window.addEventListener('storage',e=>{if(e.key==='cloux:studio:6'&&e.newValue){try{db=JSON.parse(e.newValue);renderList();if(active&&byId(active))renderMessages()}catch{}}});
+ if('serviceWorker' in navigator&&window.isSecureContext&&location.protocol!=='file:'){
+   navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{});
+ }
+ const banner=$('#update-banner');
+ $('#update-now').onclick=async()=>{
+  const waiting=(await navigator.serviceWorker?.getRegistration?.('/'))?.waiting;
+  if(waiting){waiting.postMessage({type:'SKIP_WAITING'})}else location.reload();
+ };
+ if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{banner.hidden=false});
+ }
+ resizeDraft();
+}
+setup();
+})();
