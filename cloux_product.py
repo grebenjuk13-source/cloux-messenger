@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 from typing import Literal
 from fastapi import Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 from PIL import Image, UnidentifiedImageError
 
@@ -76,6 +76,12 @@ def install(app,db,auth,member,fail,limit,data_dir):
           b TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
           created INTEGER NOT NULL,
           PRIMARY KEY(a,b),CHECK(a<b));
+        CREATE TABLE IF NOT EXISTS cloux_product_backups(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          uid TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          created INTEGER NOT NULL,
+          value TEXT NOT NULL);
+        CREATE INDEX IF NOT EXISTS cloux_product_backups_user ON cloux_product_backups(uid,created DESC);
         CREATE TABLE IF NOT EXISTS cloux_wallpaper_settings(
           uid TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
           scope TEXT NOT NULL, mode TEXT NOT NULL,
@@ -315,6 +321,133 @@ def install(app,db,auth,member,fail,limit,data_dir):
         if not re.fullmatch(r'w[0-9]{1,2}',value.preset) or not 0<=int(value.preset[1:])<34:
             fail('Невідомі шпалери.')
         return value.model_dump()
+
+    def generate_snapshot(c,uid):
+        user=c.execute('SELECT id,display,username FROM users WHERE id=?',(uid,)).fetchone()
+        if not user:fail('Акаунт не знайдено.',404)
+        preferences=c.execute('SELECT value FROM cloux_v5_ui_prefs WHERE uid=?',(uid,)).fetchone()
+        wallpaper_rows=c.execute('SELECT scope,mode,value FROM cloux_wallpaper_settings WHERE uid=?',(uid,)).fetchall()
+        chats=c.execute('''SELECT ch.id,ch.title,ch.kind FROM chats ch
+               JOIN chat_members cm ON ch.id=cm.chat_id WHERE cm.user_id=?''',(uid,)).fetchall()
+        messages=[]
+        for row in chats:
+            # Export only chats this account is currently allowed to access.
+            history=c.execute('''SELECT id,chat_id,sender,text,created FROM messages
+                  WHERE chat_id=? ORDER BY id DESC LIMIT 500''',(row['id'],)).fetchall()
+            messages.extend(dict(m) for m in reversed(history))
+        return {'format':'cloux-backup-2','account':dict(user),'created':int(time.time()),
+         'settings':settings(c,uid),
+         'ui':json.loads(preferences['value']) if preferences else {},
+         'wallpapers':[{'scope':x['scope'],'mode':x['mode'],'wallpaper':json.loads(x['value'])} for x in wallpaper_rows],
+         'chats':[dict(x) for x in chats], 'messages':messages}
+
+    def snapshot_to_db(c,uid):
+        content=json.dumps(generate_snapshot(c,uid),ensure_ascii=False,separators=(',',':'))
+        if len(content.encode())>12_000_000:fail('Копія більша за 12 МБ. Експортуй чати окремо.',413)
+        cursor=c.execute('INSERT INTO cloux_product_backups(uid,created,value) VALUES(?,?,?)',(uid,int(time.time()),content))
+        c.execute('''DELETE FROM cloux_product_backups WHERE uid=? AND id NOT IN
+          (SELECT id FROM cloux_product_backups WHERE uid=? ORDER BY created DESC,id DESC LIMIT 8)''',(uid,uid))
+        return cursor.lastrowid
+
+    @app.post('/api/cloux/backups')
+    def create_backup(request:Request):
+        u=auth(request);limit(request,10,3600)
+        with db() as c:identifier=snapshot_to_db(c,u['id'])
+        return {'id':identifier,'ok':True}
+
+    @app.get('/api/cloux/backups')
+    def list_backups(request:Request):
+        u=auth(request)
+        with db() as c:
+            rows=c.execute('SELECT id,created,LENGTH(value) bytes FROM cloux_product_backups WHERE uid=? ORDER BY created DESC,id DESC',(u['id'],)).fetchall()
+        return {'backups':[dict(x) for x in rows]}
+
+    @app.get('/api/cloux/backups/export')
+    def export_backup(request:Request):
+        u=auth(request)
+        with db() as c:value=generate_snapshot(c,u['id'])
+        return JSONResponse(value,headers={'Cache-Control':'private,no-store','Content-Disposition':'attachment; filename="Cloux-backup.json"'})
+
+    @app.get('/api/cloux/backups/{bid}')
+    def download_backup(bid:int,request:Request):
+        u=auth(request)
+        with db() as c:row=c.execute('SELECT value FROM cloux_product_backups WHERE id=? AND uid=?',(bid,u['id'])).fetchone()
+        if not row:fail('Копію не знайдено.',404)
+        return JSONResponse(json.loads(row['value']),headers={'Cache-Control':'private,no-store',
+               'Content-Disposition':'attachment; filename="Cloux-backup-'+str(bid)+'.json"'})
+
+    class RestoreFile(BaseModel):
+        data: dict=Field(default_factory=dict)
+    # FastAPI resolves JSON body in the enclosing installation scope.
+    @app.post('/api/cloux/backups/restore')
+    def restore_backup(body:RestoreFile,request:Request):
+        u=auth(request);limit(request,12,3600)
+        data=body.data
+        if data.get('format')!='cloux-backup-2' or data.get('account',{}).get('id')!=u['id']:
+            fail('Копія має належати цьому акаунту Cloux.',403)
+        values=ProductSettings.model_validate(data.get('settings',{})).model_dump()
+        try:checked_style(values)
+        except ValueError as e:fail(str(e))
+        styles=[]
+        for item in data.get('wallpapers',[]):
+            if not isinstance(item,dict):continue
+            scope=item.get('scope')
+            mode=item.get('mode')
+            if not isinstance(scope,str) or mode not in ('dark','light'):continue
+            styles.append((scope,mode,verify_wall(Wallpaper.model_validate(item.get('wallpaper',{})))))
+        with db() as c:
+            c.execute("""INSERT INTO cloux_product_settings(uid,value,updated) VALUES(?,?,?)
+              ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated""",
+              (u['id'],json.dumps(values,ensure_ascii=False),int(time.time())))
+            restored=0
+            for scope,mode,wall in styles:
+                if scope!='all' and not member(c,u['id'],scope):continue
+                if wall['kind']=='image' and not image_path(u['id'],scope,mode).is_file():continue
+                c.execute('''INSERT INTO cloux_wallpaper_settings(uid,scope,mode,value,updated) VALUES(?,?,?,?,?)
+                  ON CONFLICT(uid,scope,mode) DO UPDATE SET value=excluded.value,updated=excluded.updated''',
+                  (u['id'],scope,mode,json.dumps(wall),int(time.time())))
+                restored+=1
+            ui=data.get('ui')
+            if isinstance(ui,dict) and ui:
+                # The existing preferences endpoint validates on read.
+                c.execute('''INSERT INTO cloux_v5_ui_prefs(uid,value,updated) VALUES(?,?,?)
+                    ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated''',
+                    (u['id'],json.dumps(ui,ensure_ascii=False),int(time.time())))
+        return {'ok':True,'settings_restored':True,'wallpapers_restored':restored,
+          'messages_restored':0,'notice':'Налаштування й оформлення відновлено. Історія повідомлень у копії доступна для експорту, але серверні повідомлення не перезаписуються.'}
+
+    @app.delete('/api/cloux/backups/{bid}')
+    def delete_backup(bid:int,request:Request):
+        u=auth(request)
+        with db() as c:
+            cur=c.execute('DELETE FROM cloux_product_backups WHERE uid=? AND id=?',(u['id'],bid))
+            if cur.rowcount==0:fail('Копію не знайдено.',404)
+        return {'ok':True}
+
+    async def scheduled_backups():
+        while True:
+            await asyncio.sleep(900)
+            try:
+                with db() as c:
+                    rows=c.execute('SELECT uid,value FROM cloux_product_settings').fetchall()
+                    now=int(time.time())
+                    for row in rows:
+                        schedule=json.loads(row['value']).get('backup_interval','off')
+                        interval={'daily':86400,'weekly':604800}.get(schedule)
+                        if not interval:continue
+                        last=c.execute('SELECT MAX(created) n FROM cloux_product_backups WHERE uid=?',(row['uid'],)).fetchone()['n'] or 0
+                        if now-last>=interval:
+                            try:snapshot_to_db(c,row['uid'])
+                            except Exception:continue
+            except Exception:continue
+    @app.on_event('startup')
+    async def begin_product_backup_timer():
+        app.state.cloux_backup_task=asyncio.create_task(scheduled_backups())
+    @app.on_event('shutdown')
+    async def stop_product_backup_timer():
+        task=getattr(app.state,'cloux_backup_task',None)
+        if task:task.cancel()
+
     def image_path(uid,scope,mode):
         slug=hashlib.sha256((uid+':'+scope+':'+mode).encode()).hexdigest()
         return root/(slug+'.webp')
