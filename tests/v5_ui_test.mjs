@@ -12,9 +12,13 @@ await page.route('**/api/**', async route=>{
  const request=route.request(),url=new URL(request.url()),path=url.pathname,method=request.method();
  const json=(status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
  if(path==='/api/me')return json(signedIn?200:401,signedIn?me:{detail:'Увійдіть до акаунта'});
- if(path==='/api/v6/config')return json(200,{email_enabled:true,registration:'gmail'});
- if(path==='/api/v6/email/send')return json(200,{ok:true,retry_after:60});
- if(path==='/api/v6/email/verify')return json(200,{grant:'fake-client-test-grant',expires_in:600});
+ if(path==='/api/v6/register'&&method==='POST'){
+  const body=JSON.parse(request.postData()||'{}');
+  assert.equal(body.email,'frontend.test@example.com');
+  assert.equal(body.phone,'+380501234567');
+  assert.equal(body.password,'SomeClouxPassword123');
+  signedIn=true;return json(200,{ok:true});
+ }
  if(path==='/api/v6/login'&&method==='POST'){signedIn=true;return json(200,{ok:true})}
  if(path==='/api/v5/ui-prefs'&&method==='GET')return json(200,{preferences:{}});
  if(path==='/api/v5/ui-prefs'&&method==='PUT')return json(200,{ok:true});
@@ -28,18 +32,14 @@ await page.route('**/api/**', async route=>{
  return json(404,{detail:'Not mocked: '+path});
 });
 await page.goto('http://127.0.0.1:4173/v5/',{waitUntil:'networkidle'});
-await page.getByRole('heading',{name:'Твоя Google-пошта'}).waitFor();
-await page.getByRole('textbox',{name:'Електронна пошта'}).fill('frontend.test@gmail.com');
-await page.getByRole('button',{name:'Надіслати код'}).click();
-await page.getByRole('heading',{name:'Підтверди пошту'}).waitFor();
-assert.equal(await page.locator('.mail-code input').count(),6);
-for(let i=0;i<6;i++)await page.locator('.mail-code input').nth(i).fill(String(i+1));
-await page.getByRole('heading',{name:'Номер телефону'}).waitFor();
-await page.reload({waitUntil:'networkidle'});
-await page.getByRole('button',{name:/Увійти/}).first().click();
-await page.getByPlaceholder('example@gmail.com').fill('frontend.test@gmail.com');
-await page.locator('input[type=password]').fill('SomeExistingPassword123');
-await page.getByRole('button',{name:/Увійти$/}).first().click();
+await page.getByRole('heading',{name:'Створи акаунт Cloux'}).waitFor();
+await page.getByLabel('Електронна пошта').fill('frontend.test@example.com');
+await page.getByLabel('Номер телефону').fill('+380501234567');
+await page.getByLabel('Пароль Cloux', {exact:true}).first().fill('SomeClouxPassword123');
+await page.getByLabel('Повтори пароль Cloux').fill('SomeClouxPassword123');
+assert.equal(await page.locator('input[autocomplete="one-time-code"]').count(),0);
+assert.equal(await page.getByText(/код надіслано|підтверди пошту/i).count(),0);
+await page.getByRole('button',{name:/Створити акаунт/}).click();
 await page.locator('.chat-entry').first().waitFor();
 await page.screenshot({path:'cloux-v5-mobile-list.png',fullPage:true});
 await page.getByRole('button',{name:'Налаштування'}).click();
@@ -62,5 +62,5 @@ assert.equal(await page.locator('.chat-sidebar').isVisible(),true);
 assert.equal(await page.locator('.chat-room').isVisible(),true);
 await page.screenshot({path:'cloux-v5-desktop.png',fullPage:true});
 if(errors.length)throw new Error(errors.join('\n'));
-console.log('Cloux Stage 1 mobile + desktop: PASS');
+console.log('Cloux mobile + desktop and password registration: PASS');
 await browser.close();

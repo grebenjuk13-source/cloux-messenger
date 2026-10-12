@@ -1,132 +1,61 @@
-import React, {useEffect,useRef,useState} from 'react';
-import {ArrowLeft,Check,CheckCheck,ChevronRight,Eye,EyeOff,Mail,ShieldCheck,Search,X,LoaderCircle,ImagePlus} from 'lucide-react';
-import {countries,UA,flag,formatPhone,normalizePhone,validPhone,type Country} from './phone';
-import {palette,wallpapers,DEFAULT_ACCENT} from './design';
+import React, {useState} from 'react';
+import {ChevronRight, Eye, EyeOff, LockKeyhole} from 'lucide-react';
 import './email-wizard.css';
 
+type Mode='register'|'login';
 const DEFAULT_AVATAR='/assets/cloux-default-avatar.jpg';
-const MAIL=/^[a-z0-9][a-z0-9.+_-]*@(gmail\.com|googlemail\.com)$/i;
-type Mode='register'|'login'|'recovery';
-type Phase='email'|'otp'|'phone'|'profile'|'appearance'|'password'|'welcome';
-type Availability='bad'|'checking'|'free'|'taken';
 
-async function call<T>(url:string,data?:unknown):Promise<T>{
- const response=await fetch(url,{method:data?'POST':'GET',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:data?JSON.stringify(data):undefined});
+async function call(url:string,data:unknown){
+ const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(data)});
  const result=await response.json().catch(()=>({detail:'Сервіс тимчасово недоступний.'}));
- if(!response.ok)throw new Error(result.detail||'Помилка запиту');
- return result as T;
-}
-function normalizedUser(email:string){return email.trim().toLowerCase().split('@')[0].split('+')[0].replaceAll('.','')}
-function passwordRequirements(value:string,email:string,username:string){const v=value.toLowerCase();const local=normalizedUser(email);return [
- ['8+ символів',value.length>=8],['Велика літера',/[A-ZА-ЯІЇЄҐ]/.test(value)],
- ['Мала літера',/[a-zа-яіїєґ]/.test(value)],['Цифра',/\d/.test(value)],
- ['Спецсимвол',/[^\p{L}\p{N}\s]/u.test(value)],['Без пробілів',!(/\s/.test(value))],
- ['Без пошти й позивного',Boolean(username)&&!v.includes(username.toLowerCase())&&!v.includes(email.toLowerCase())&&!v.includes(local)]
- ] as const}
-
-function Crop({file,onCancel,onSave}:{file:File;onCancel:()=>void;onSave:(file:File,url:string)=>void}){
- const [url,setUrl]=useState(''),[zoom,setZoom]=useState(1),[x,setX]=useState(0),[y,setY]=useState(0),[busy,setBusy]=useState(false);
- useEffect(()=>{const u=URL.createObjectURL(file);setUrl(u);return()=>URL.revokeObjectURL(u)},[file]);
- async function save(){setBusy(true);try{const img=new Image();img.src=url;await img.decode();const s=Math.min(img.naturalWidth,img.naturalHeight)/zoom;
- const canvas=document.createElement('canvas');canvas.width=canvas.height=512;const ctx=canvas.getContext('2d');if(!ctx)throw Error('Помилка обробки фото');
- const px=Math.max(0,Math.min(img.naturalWidth-s,(img.naturalWidth-s)*(x+100)/200));
- const py=Math.max(0,Math.min(img.naturalHeight-s,(img.naturalHeight-s)*(y+100)/200));
- ctx.drawImage(img,px,py,s,s,0,0,512,512);
- const blob=await new Promise<Blob>((ok,fail)=>canvas.toBlob(b=>b?ok(b):fail(Error('Неможливо зберегти фото')),'image/webp',.9));
- onSave(new File([blob],'cloux-avatar.webp',{type:'image/webp'}),URL.createObjectURL(blob));
- }catch(e){alert(e instanceof Error?e.message:'Помилка фото')}finally{setBusy(false)}}
- return <div className="mail-modal" role="dialog" aria-label="Обрізати власну аватарку"><div className="mail-crop glass"><button className="mail-close" onClick={onCancel}><X/></button><h3>Налаштувати аватарку</h3><div className="mail-crop-preview"><img src={url} alt="Власне фото" style={{transform:`scale(${zoom}) translate(${x/5}%,${y/5}%)`}}/></div>
-  <label>Збільшення<input type="range" min="1" max="3" step=".1" value={zoom} onChange={e=>setZoom(+e.target.value)}/></label><label>Позиція по горизонталі<input type="range" min="-100" max="100" value={x} onChange={e=>setX(+e.target.value)}/></label><label>Позиція по вертикалі<input type="range" min="-100" max="100" value={y} onChange={e=>setY(+e.target.value)}/></label><button className="primary full" disabled={busy} onClick={save}>Зберегти фото</button></div></div>
+ if(!response.ok)throw new Error(result.detail||'Не вдалося виконати запит.');
+ return result;
 }
 
-export default function EmailWizard({onDone,onLegacy}:{onDone:()=>void;onLegacy:()=>void}){
- const [mode,setMode]=useState<Mode>('register'),[phase,setPhase]=useState<Phase>('email');
- const [email,setEmail]=useState(''),[otp,setOtp]=useState<string[]>(Array(6).fill('')),[grant,setGrant]=useState(''),[recoveryUsername,setRecoveryUsername]=useState('');
- const [country,setCountry]=useState<Country>(UA),[phone,setPhone]=useState(''),[countryOpen,setCountryOpen]=useState(false),[countrySearch,setCountrySearch]=useState('');
- const [display,setDisplay]=useState(''),[username,setUsername]=useState(''),[available,setAvailable]=useState<Availability>('bad');
- const [avatar,setAvatar]=useState(DEFAULT_AVATAR),[avatarFile,setAvatarFile]=useState<File|null>(null),[cropFile,setCropFile]=useState<File|null>(null);
- const [password,setPassword]=useState(''),[confirm,setConfirm]=useState(''),[showPassword,setShowPassword]=useState(false),[showConfirm,setShowConfirm]=useState(false);
- const [loginPassword,setLoginPassword]=useState(''),[showLoginPass,setShowLoginPass]=useState(false),[retry,setRetry]=useState(0),[configured,setConfigured]=useState(false),[loadingConfig,setLoadingConfig]=useState(true),[mailStatus,setMailStatus]=useState('not_connected');
- const [onboardTheme,setOnboardTheme]=useState<'dark'|'light'|'amoled'>('dark');
- const [onboardAccent,setOnboardAccent]=useState(DEFAULT_ACCENT),[onboardWallpaper,setOnboardWallpaper]=useState('w0');
- const [onboardGlass,setOnboardGlass]=useState(true),[onboardAnimations,setOnboardAnimations]=useState(true);
- const [busy,setBusy]=useState(false),[error,setError]=useState(''),[codeError,setCodeError]=useState(''),[shakeCode,setShakeCode]=useState(false);const inputRefs=useRef<(HTMLInputElement|null)[]>([]);const verifyLock=useRef(false);
- const full=normalizePhone(phone,country);
- const validEmail=MAIL.test(email.trim())&&email.trim().length<=254&& !email.includes('..');
- const rules=passwordRequirements(password,email,mode==='recovery'?recoveryUsername:username);const strong=rules.every(x=>x[1])&&password===confirm;
- const stage=['email','otp','phone','profile','appearance','password','welcome'].indexOf(phase);
- const activePurpose=mode==='recovery'?'recovery':'register';
- useEffect(()=>{
-  let mounted=true;
-  async function refreshMail(){
-    try{
-      const response=await fetch('/api/v6/config',{credentials:'same-origin',cache:'no-store'});
-      if(!response.ok)throw Error('Неможливо перевірити поштовий сервер');
-      const x=await response.json() as {email_enabled:boolean;email_status?:string};
-      if(mounted){setConfigured(x.email_enabled);setMailStatus(x.email_status||'not_connected')}
-    }catch{if(mounted){setConfigured(false);setMailStatus('connection_error')}}
-    finally{if(mounted)setLoadingConfig(false)}
-  }
-  refreshMail();
-  const timer=setInterval(refreshMail,20000);
-  window.addEventListener('focus',refreshMail);
-  return()=>{mounted=false;clearInterval(timer);window.removeEventListener('focus',refreshMail)};
- },[]);
- useEffect(()=>{if(retry===0)return;const t=setTimeout(()=>setRetry(n=>Math.max(n-1,0)),1000);return()=>clearTimeout(t)},[retry]);
- useEffect(()=>{if(phase==='otp')requestAnimationFrame(()=>inputRefs.current[0]?.focus())},[phase]);
- useEffect(()=>{if(!/^[a-z0-9_]{4,24}$/.test(username)){setAvailable('bad');return};setAvailable('checking');const t=setTimeout(()=>call<{available:boolean}>('/api/v5/username?username='+encodeURIComponent(username)).then(x=>setAvailable(x.available?'free':'taken')).catch(()=>setAvailable('bad')),350);return()=>clearTimeout(t)},[username]);
- async function action(cb:()=>Promise<void>){setBusy(true);setError('');try{await cb()}catch(e){setError(e instanceof Error?e.message:'Сталася помилка. Спробуй ще раз.')}finally{setBusy(false)}}
- function switchMode(m:Mode){setMode(m);setPhase('email');setOtp(Array(6).fill(''));setGrant('');setRetry(0);setError('')}
- async function sendCode(){await action(async()=>{if(!validEmail)throw Error('Введи адресу Gmail або Googlemail.');await call('/api/v6/email/send',{email:email.trim(),purpose:activePurpose});setOtp(Array(6).fill(''));setRetry(60);setPhase('otp')})}
- async function verify(code=otp.join('')){if(code.length!==6||verifyLock.current)return;verifyLock.current=true;setBusy(true);setError('');setCodeError('');try{const r=await call<{grant:string;username?:string}>('/api/v6/email/verify',{email:email.trim(),purpose:activePurpose,code});setGrant(r.grant);if(mode==='recovery')setRecoveryUsername(r.username||'');setPhase(mode==='recovery'?'password':'phone')}catch(e){const message=e instanceof Error?e.message:'';const shown=/простроч|expired/i.test(message)?'Код прострочений. Запроси новий':/забагато|спроб|attempt/i.test(message)&&/забагато|too many|ліміт|limit/i.test(message)?'Забагато спроб. Запроси новий код':'Невірний код. Спробуй ще раз';setCodeError(shown);setShakeCode(true);window.setTimeout(()=>setShakeCode(false),420);setOtp(Array(6).fill(''));requestAnimationFrame(()=>inputRefs.current[0]?.focus())}finally{verifyLock.current=false;setBusy(false)}}
- function digitChange(i:number,input:string){const digits=input.replace(/\D/g,'').slice(0,6);const next=[...otp];if(digits.length>1){for(let j=0;j<digits.length&&i+j<6;j++)next[i+j]=digits[j];inputRefs.current[Math.min(5,i+digits.length)]?.focus()}else{next[i]=digits;if(digits&&i<5)inputRefs.current[i+1]?.focus()}setOtp(next);setCodeError('');if(next.every(Boolean))void verify(next.join(''))}
- async function register(){await action(async()=>{
-   if(!full)throw Error('Перевір телефон.');
-   await call('/api/v6/register',{email,grant,phone:full,display:display.trim(),username:username.toLowerCase(),password});
-   if(avatarFile){try{await fetch('/api/profile/media/avatar',{method:'POST',credentials:'same-origin',headers:{'Content-Type':avatarFile.type},body:avatarFile})}catch{}}
-   const ui={theme:onboardTheme,accent:onboardAccent,wallpaper:onboardWallpaper,font_size:15,
-      compact:false,glass:onboardGlass,emoji_style:'telegram',wall_blur:0,wall_dim:12,
-      animated_wallpaper:onboardAnimations,bubble_style:'rounded',chat_previews:true};
-    localStorage.setItem('cloux:v5:ui',JSON.stringify(ui));
-    await fetch('/api/v5/ui-prefs',{method:'PUT',credentials:'same-origin',
-      headers:{'Content-Type':'application/json'},body:JSON.stringify(ui)}).catch(()=>{});
-    setPhase('welcome');setTimeout(onDone,1800);
- })}
- async function login(){await action(async()=>{
-   try{await call('/api/v6/login',{email:email.trim(),password:loginPassword});onDone()}catch(e){if(e instanceof Error&&e.message.includes('Підтвердіть пошту')){try{await call('/api/v6/email/send',{email:email.trim(),purpose:'register'})}catch{/* Existing code might still be valid during cooldown. */}switchMode('register');setPhase('otp');setRetry(60);setError('Введи код із Gmail, щоб завершити реєстрацію.');return}throw e}
- })}
- async function reset(){await action(async()=>{await call('/api/v6/password/reset',{email,grant,password});setLoginPassword('');setPassword('');setConfirm('');switchMode('login');setError('Пароль оновлено! Тепер увійди з новим паролем.')})}
- const stepNames=['Google-пошта','Код із пошти','Телефон','Профіль','Оформлення','Пароль','Готово'];
- const withEye=(val:string,change:(v:string)=>void,shown:boolean,toggle:()=>void,placeholder='Пароль')=><div className="mail-pw"><input type={shown?'text':'password'} autoComplete={mode==='login'?'current-password':'new-password'} placeholder={placeholder} value={val} onChange={e=>change(e.target.value)}/><button aria-label={shown?'Сховати пароль':'Показати пароль'} onClick={toggle}>{shown?<EyeOff size={19}/>:<Eye size={19}/>}</button></div>;
- return <main className="auth-page mail-auth"><div className="auth-glow"/><div className="auth-layout"><div className="auth-side"><img className="auth-logo" src={DEFAULT_AVATAR} alt="Cloux"/><span className="eyebrow">CLOUX MESSENGER</span><h1>Твої розмови.<br/><em>Твій стиль.</em></h1><p>Спілкуйся в сучасному скляному Cloux.</p></div>
- <section className="auth-card glass mail-card"><div className="mail-steps"><span className="eyebrow">{mode==='register'?`РЕЄСТРАЦІЯ · КРОК ${stage+1} З 6`:mode==='recovery'?'ВІДНОВЛЕННЯ ПАРОЛЯ':'ВХІД У CLOUX'}</span>{mode==='register'&&<div className="progress">{stepNames.map((_,i)=><span key={i} className={i<=stage?'fill':''}/>)}</div>}</div>
- {mode==='login'?<><h2>З поверненням!</h2><p className="subtle">Увійди через підтверджену Google-пошту.</p><label>Gmail<input type="email" inputMode="email" autoComplete="email" placeholder="example@gmail.com" value={email} onChange={e=>setEmail(e.target.value.toLowerCase())}/></label><label>Пароль{withEye(loginPassword,setLoginPassword,showLoginPass,()=>setShowLoginPass(!showLoginPass))}</label><button className="primary full" disabled={busy||!validEmail||!loginPassword} onClick={login}>Увійти <ChevronRight size={17}/></button><button className="quiet full" onClick={()=>switchMode('recovery')}>Забув пароль?</button><button className="quiet full" onClick={()=>switchMode('register')}>Створити акаунт</button><button className="quiet full" onClick={onLegacy}>У мене старий акаунт за номером</button></>:
- phase==='email'?<><h2>{mode==='recovery'?'Відновлення пароля':'Твоя Google-пошта'}</h2><p className="subtle">Надішлемо одноразовий код для підтвердження адреси.</p><label>Gmail або Googlemail<input aria-label="Електронна пошта" type="email" inputMode="email" autoComplete="email" value={email} placeholder="yourname@gmail.com" onChange={e=>setEmail(e.target.value.trim().toLowerCase())}/></label>{email&&<p className={'mail-hint '+(validEmail?'good':'bad')}>{validEmail?'✓ Адреса має коректний формат':'Тільки адреси @gmail.com та @googlemail.com'}</p>}{!loadingConfig&&!configured&&<div className="mail-notice" role="status"><ShieldCheck size={18}/><span>Пошта Cloux ще не готова. {mailStatus.startsWith('resend_http_')?'Resend відхилив підключення ('+mailStatus+').':mailStatus==='oauth_exchange_failed'?'Не вдалося зберегти дозвіл від Resend.':mailStatus==='connection_error'?'Не вдалося перевірити сервер.':'Очікуємо завершення підключення Resend.'} Коди не надсилаються, доки поштовий сервіс не підтверджений.</span><button type="button" className="quiet" onClick={()=>{setLoadingConfig(true);fetch('/api/v6/config',{cache:'no-store'}).then(r=>r.json()).then(x=>{setConfigured(Boolean(x.email_enabled));setMailStatus(x.email_status||'not_connected')}).catch(()=>setMailStatus('connection_error')).finally(()=>setLoadingConfig(false))}}>Перевірити ще раз</button></div>}
- <button className="primary full" type="button" aria-busy={busy} disabled={busy||!validEmail} onClick={sendCode}>{busy?<LoaderCircle className="mail-spinner" size={19} aria-hidden="true"/>:<Mail size={19} aria-hidden="true"/>}<span aria-live="polite">{busy?"Надсилаємо код…":"Надіслати код"}</span></button>{mode==='register'&&<button className="quiet full" onClick={()=>switchMode('login')}>У мене вже є акаунт · Увійти</button>}{mode==='recovery'&&<button className="quiet full" onClick={()=>switchMode('login')}>Повернутися до входу</button>}</>:
- phase==='otp'?<><button className="back-inline" onClick={()=>setPhase('email')}><ArrowLeft size={17}/> Змінити пошту</button><h2>Підтверди пошту</h2><p className="subtle">Введи 6-значний код, надісланий на <strong>{email}</strong>. Код діє 10 хвилин.</p><div className={'mail-code '+(shakeCode?'shake':'')} aria-describedby={codeError?'mail-code-error':undefined}>{otp.map((v,i)=><input key={i} ref={e=>{inputRefs.current[i]=e}} aria-label={`Цифра ${i+1}`} aria-invalid={Boolean(codeError)} inputMode="numeric" autoComplete={i===0?'one-time-code':'off'} value={v} onChange={e=>digitChange(i,e.target.value)} onPaste={e=>{const pasted=e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);if(pasted.length>1){e.preventDefault();digitChange(i,pasted)}}} onKeyDown={e=>{if(e.key==='Backspace'&&!v&&i>0)inputRefs.current[i-1]?.focus()}}/>)}</div>{codeError&&<p id="mail-code-error" className="mail-code-error" role="alert">{codeError}</p>}<button className="primary full" disabled={busy||otp.join('').length!==6} onClick={()=>verify()}>{busy?<><LoaderCircle className="mail-spinner" size={19}/> Перевіряємо код…</>:'Підтвердити пошту'} <ChevronRight size={17}/></button><button className="quiet full" disabled={busy||retry>0} onClick={sendCode}>{retry>0?`Надіслати ще раз через ${retry} с`:'Надіслати код ще раз'}</button><p className="subtle">Максимум 5 спроб. Після помилок — пауза 15 хвилин.</p></>:
- phase==='phone'?<><button className="back-inline" onClick={()=>setPhase('otp')}><ArrowLeft size={17}/> Назад</button><h2>Номер телефону</h2><p className="subtle">Цей номер потрібен тільки для профілю — SMS не надсилаємо.</p><label>Країна<button className="country-pick" onClick={()=>setCountryOpen(true)}>{flag(country.code)} {country.name} · {country.dial}<ChevronRight size={16}/></button></label><label>Телефон<input type="tel" inputMode="tel" autoComplete="tel" placeholder={country.code==='UA'?'067 123 45 67':'Номер телефону'} value={phone} onChange={e=>setPhone(formatPhone(e.target.value,country))}/></label><button className="primary full" disabled={!validPhone(phone,country)} onClick={()=>setPhase('profile')}>Далі <ChevronRight size={17}/></button></>:
- phase==='profile'?<><button className="back-inline" onClick={()=>setPhase('phone')}><ArrowLeft size={17}/> Назад</button><h2>Створи профіль</h2><p className="subtle">Твоя аватарка, ім’я й унікальний @username.</p><div className="avatar-picker"><img src={avatar} alt="Аватар"/><label className="small-action"><ImagePlus size={15}/> Вибрати з галереї<input hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const file=e.target.files?.[0];if(file)setCropFile(file)}}/></label></div><label>Ім’я<input value={display} maxLength={60} onChange={e=>setDisplay(e.target.value)} placeholder="Твоє ім’я"/></label><label>Позивний<div className="input-with-icon"><span>@</span><input value={username} maxLength={24} onChange={e=>setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,''))} placeholder="username"/></div></label><p className={'mail-hint '+(available==='free'?'good':available==='taken'?'bad':'')}>{available==='free'?'✓ Позивний вільний':available==='taken'?'Позивний зайнятий':available==='checking'?'Перевіряємо позивний…':'Мінімум 4 символи: латиниця, цифри або _'}</p><button className="primary full" disabled={!display.trim()||available!=='free'} onClick={()=>setPhase('appearance')}>Продовжити <ChevronRight size={17}/></button></>:
- phase==='appearance'?<><button className="back-inline" onClick={()=>setPhase('profile')}><ArrowLeft size={17}/> Назад</button>
-   <h2>Оформи свій Cloux</h2><p className="subtle">Як у месенджері: вибери шпалери, колір і прозорі панелі. Усе можна змінити потім.</p>
-   <div className={'mail-wall-demo '+(onboardTheme==='light'?'light':onboardTheme==='amoled'?'amoled':'')}
-     style={{backgroundImage:wallpapers.find(w=>w.id===onboardWallpaper)?.style, '--mail-accent':onboardAccent} as React.CSSProperties}>
-     <div className={'mail-demo-header '+(onboardGlass?'glass':'')}><img src={DEFAULT_AVATAR} alt="Cloux" /><div><strong>Cloux — Нотатки</strong><small>твій особистий чат</small></div></div>
-     <div className="mail-demo-conversation">
-      <div className="mail-demo-bubble">Привіт! Це твій Cloux <span>12:40</span></div>
-      <div className="mail-demo-bubble own">Тепер у моєму стилі ❤️ <span>12:41 ✓✓</span></div>
-     </div>
-     <div className={'mail-demo-composer '+(onboardGlass?'glass':'')}>☻ <span>Повідомлення…</span> ⊕</div>
-   </div>
-   <h3>Тема</h3><div className="mail-appearance-themes">{(['dark','light','amoled'] as const).map(t=><button className={onboardTheme===t?'selected':''} key={t} onClick={()=>setOnboardTheme(t)}>{t==='dark'?'Темна':t==='light'?'Світла':'AMOLED'}</button>)}</div>
-   <h3>Акцентний колір</h3><div className="mail-appearance-colors">{palette.slice(0,8).map(c=><button key={c} aria-label={'Колір '+c} style={{background:c}} className={onboardAccent===c?'selected':''} onClick={()=>setOnboardAccent(c)}>{onboardAccent===c&&<Check size={16}/>}</button>)}</div>
-   <h3>Шпалери</h3><div className="mail-appearance-walls">{wallpapers.map(w=><button key={w.id} aria-label={w.name} title={w.name} className={onboardWallpaper===w.id?'selected':''} style={{backgroundImage:w.style}} onClick={()=>setOnboardWallpaper(w.id)}>{onboardWallpaper===w.id&&<Check/>}</button>)}</div>
-   <label className="mail-preference-toggle"><span>Liquid Glass</span><input type="checkbox" checked={onboardGlass} onChange={e=>setOnboardGlass(e.target.checked)}/></label>
-   <label className="mail-preference-toggle"><span>Живі шпалери</span><input type="checkbox" checked={onboardAnimations} onChange={e=>setOnboardAnimations(e.target.checked)}/></label>
-   <button className="primary full" onClick={()=>setPhase('password')}>Далі — пароль <ChevronRight size={17}/></button></>:
-phase==='password'?<><button className="back-inline" onClick={()=>setPhase(mode==='recovery'?'otp':'appearance')}><ArrowLeft size={17}/> Назад</button><h2>{mode==='recovery'?'Новий пароль':'Захисти свій акаунт'}</h2><p className="subtle">Пароль зберігатиметься на сервері як Argon2-хеш.</p><label>Пароль{withEye(password,setPassword,showPassword,()=>setShowPassword(!showPassword))}</label><label>Підтвердження пароля{withEye(confirm,setConfirm,showConfirm,()=>setShowConfirm(!showConfirm),'Повтори пароль')}</label>{confirm&&confirm!==password&&<p className="mail-hint bad">Паролі не збігаються</p>}<div className="strength"><div>{[1,2,3].map(n=><span key={n} className={rules.filter(x=>x[1]).length>n*2?'lit':''}/>)}</div><small>{rules.filter(x=>x[1]).length<4?'Слабкий':rules.filter(x=>x[1]).length<7?'Середній':'Сильний'}</small></div><div className="password-checks">{rules.map(([name,ok])=><div className={ok?'ok':''} key={name}>{ok?<Check size={14}/>:<X size={13}/>} {name}</div>)}</div><button className="primary full" disabled={!strong||busy} onClick={mode==='recovery'?reset:register}>{busy?'Зачекай…':mode==='recovery'?'Змінити пароль':'Створити акаунт'} <ChevronRight size={17}/></button></>:
- <div className="mail-welcome"><CheckCheck size={56}/><h2>Вітаємо у Cloux!</h2><p>Пошта підтверджена. Починаємо спілкування.</p></div>}
- {error&&<p className="error" role="alert">{error}</p>}
- {countryOpen&&<div className="mail-modal" role="dialog" aria-label="Вибір країни"><div className="mail-countries glass"><header><b>Обери країну</b><button onClick={()=>setCountryOpen(false)}><X/></button></header><div className="input-with-icon"><Search size={17}/><input autoFocus placeholder="Пошук назви або коду" value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/></div><div className="mail-country-list">{countries.filter(c=>(c.code+c.dial+c.name).toLowerCase().includes(countrySearch.toLowerCase())).map(c=><button key={c.code} onClick={()=>{setCountry(c);setCountryOpen(false);setPhone('');setCountrySearch('')}}>{flag(c.code)} <span>{c.name}</span><small>{c.dial}</small></button>)}</div></div></div>}
- {cropFile&&<Crop file={cropFile} onCancel={()=>setCropFile(null)} onSave={(f,u)=>{setAvatarFile(f);setAvatar(u);setCropFile(null)}}/>}
- </section></div></main>
+export default function EmailWizard({onDone}:{onDone:()=>void}){
+ const [mode,setMode]=useState<Mode>('register');
+ const [email,setEmail]=useState(''),[phone,setPhone]=useState('');
+ const [password,setPassword]=useState(''),[confirm,setConfirm]=useState('');
+ const [showPassword,setShowPassword]=useState(false),[showConfirm,setShowConfirm]=useState(false);
+ const [busy,setBusy]=useState(false),[error,setError]=useState('');
+ const registering=mode==='register';
+
+ async function submit(event:React.FormEvent<HTMLFormElement>){
+  event.preventDefault();if(busy)return;
+  const normalizedEmail=email.trim().toLowerCase();
+  const normalizedPhone=phone.trim().replace(/[\s()-]/g,'');
+  if(registering&&!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)){setError('Введіть номер у міжнародному форматі, наприклад +380501234567.');return}
+  if(password.length<8||password.length>128){setError('Пароль Cloux має містити від 8 до 128 символів.');return}
+  if(registering&&password!==confirm){setError('Паролі Cloux не збігаються.');return}
+  setBusy(true);setError('');
+  try{
+   await call(registering?'/api/v6/register':'/api/v6/login',registering?{email:normalizedEmail,phone:normalizedPhone,password}:{email:normalizedEmail,password});
+   onDone();
+  }catch(e){setError(e instanceof Error?e.message:'Сталася помилка. Спробуйте ще раз.')}
+  finally{setBusy(false)}
+ }
+
+ function switchMode(next:Mode){setMode(next);setError('');setPassword('');setConfirm('')}
+ const passwordField=(value:string,setValue:(value:string)=>void,shown:boolean,toggle:()=>void,label:string,autocomplete:string)=><label>{label}<div className="mail-pw"><input type={shown?'text':'password'} autoComplete={autocomplete} minLength={8} maxLength={128} placeholder="Вигадай окремий пароль Cloux" value={value} onChange={e=>setValue(e.target.value)} required/><button type="button" aria-label={shown?'Сховати пароль':'Показати пароль'} onClick={toggle}>{shown?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>;
+
+ return <main className="auth-page mail-auth"><div className="auth-glow"/><div className="auth-layout">
+  <div className="auth-side"><img className="auth-logo" src={DEFAULT_AVATAR} alt="Cloux"/><span className="eyebrow">CLOUX MESSENGER</span><h1>Твої розмови.<br/><em>Твій стиль.</em></h1><p>Спілкуйся в сучасному скляному Cloux.</p></div>
+  <section className="auth-card glass mail-card" aria-labelledby="auth-title">
+   <div className="mail-steps"><span className="eyebrow">{registering?'СТВОРЕННЯ АКАУНТА':'ВХІД У CLOUX'}</span></div>
+   <h2 id="auth-title">{registering?'Створи акаунт Cloux':'З поверненням!'}</h2>
+   <p className="subtle">{registering?'Вкажи номер, email і створи окремий пароль Cloux.':'Увійди за email і паролем Cloux.'}</p>
+   <form onSubmit={submit}>
+    <label>Електронна пошта<input type="email" inputMode="email" autoComplete="email" maxLength={254} placeholder="name@example.com" value={email} onChange={e=>setEmail(e.target.value)} required/></label>
+    {registering&&<label>Номер телефону<input type="tel" inputMode="tel" autoComplete="tel" placeholder="+380501234567" value={phone} onChange={e=>setPhone(e.target.value)} required/></label>}
+    {passwordField(password,setPassword,showPassword,()=>setShowPassword(!showPassword),'Пароль Cloux',registering?'new-password':'current-password')}
+    {registering&&passwordField(confirm,setConfirm,showConfirm,()=>setShowConfirm(!showConfirm),'Повтори пароль Cloux','new-password')}
+    <p className="password-note"><LockKeyhole size={15}/> Не вводь пароль від Gmail чи іншої пошти. Cloux використовує окремий пароль акаунта.</p>
+    {registering&&<p className="subtle auth-foot">Email поки не перевіряється. Переконайся, що адреса введена правильно; відновлення забутого пароля наразі недоступне.</p>}
+    {error&&<p className="auth-error" role="alert">{error}</p>}
+    <button className="primary full" type="submit" disabled={busy}>{busy?'Зачекай…':registering?'Створити акаунт':'Увійти'} <ChevronRight size={17}/></button>
+   </form>
+   <button className="quiet full" type="button" disabled={busy} onClick={()=>switchMode(registering?'login':'register')}>{registering?'Уже маєш акаунт? Увійти':'Ще немає акаунта? Створити'}</button>
+   <p className="auth-foot">{registering?'Email — це адреса акаунта; пароль Cloux має бути окремим.':'Тут потрібен пароль Cloux, не пароль поштової скриньки.'}</p>
+  </section>
+ </div></main>;
 }
