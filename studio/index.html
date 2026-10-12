@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="description" content="Cloux Studio — інтерактивна демонстрація інтерфейсу в чорно-червоному стилі">
+  <link rel="icon" href="/assets/cloux-default-avatar.jpg">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="./styles.css?v=6.1.0">
+  <title>Cloux Studio • 6.1.0</title>
+</head>
+<body>
+<div class="shell" id="shell">
+  <aside class="sidebar" aria-label="Список чатів">
+    <header class="sidebar-head">
+      <button class="icon flat" id="sidebar-menu" aria-label="Меню">☰</button>
+      <div class="wordmark">Cloux<span>.</span></div>
+      <button class="icon add" id="new-chat" title="Створити чат" aria-label="Створити чат">＋</button>
+    </header>
+    <div class="notice-demo"><b>Інтерактивне демо</b><span>Локальні чати · для спілкування з людьми відкрий основний Cloux</span></div>
+    <label class="find"><span>⌕</span><input id="search" placeholder="Пошук чатів і повідомлень" autocomplete="off" aria-label="Пошук"></label>
+    <div class="stories" id="stories" aria-label="Історії"></div>
+    <nav class="folders" id="folders" aria-label="Папки чатів"><button data-filter="all" class="selected">Усі</button><button data-filter="direct">Особисті</button><button data-filter="group">Групи</button><button data-filter="archived">Архів</button><i class="folder-indicator"></i></nav>
+    <div class="chat-list" id="chat-list"></div>
+    <div class="sidebar-bottom"><button id="preferences">⚙ Налаштування</button><a href="/v5/" class="live-link">Основний Cloux ↗</a></div>
+  </aside>
+  <main class="main" id="main">
+    <div class="chat-view" id="chat-view">
+      <header class="chat-head">
+        <button class="icon mobile-back" id="back-chat" aria-label="До чатів">←</button>
+        <div class="avatar chat-header-avatar" id="chat-avatar">C</div>
+        <div class="chat-ident"><strong id="chat-name">Cloux</strong><small id="chat-status">Локальний демочат</small></div>
+        <button class="icon" id="chat-search" title="Пошук повідомлень" aria-label="Пошук у чаті">⌕</button>
+        <button class="icon" id="call-audio" title="Аудіодзвінок" aria-label="Аудіодзвінок">☎</button>
+        <button class="icon" id="call-video" title="Відеодзвінок" aria-label="Відеодзвінок">▣</button>
+        <button class="icon" id="chat-options" aria-label="Дії з чатом">⋮</button>
+      </header>
+      <div class="chat-wall" id="chat-wall">
+        <div class="wall-decoration"></div>
+        <div class="message-stack" id="messages" aria-live="polite"></div>
+        <button id="scroll-bottom" class="scroll-bottom" title="До нових повідомлень" aria-label="До нових повідомлень">↓</button>
+      </div>
+      <div id="reply-line" class="reply-line" hidden></div>
+      <footer class="composer-outer">
+        <button class="icon attach" id="attach" title="Прикріпити" aria-label="Прикріпити файл">＋</button>
+        <button class="icon" id="emoji-open" aria-label="Емодзі">☺</button>
+        <textarea id="draft" rows="1" maxlength="4000" placeholder="Повідомлення…" aria-label="Текст повідомлення"></textarea>
+        <button class="icon" id="camera" title="Камера" aria-label="Відкрити камеру">▣</button>
+        <button class="send-button" id="send" title="Надіслати повідомлення" aria-label="Надіслати">↑</button>
+        <input id="attachment-input" type="file" hidden accept="image/*,video/*,audio/*,.pdf,.txt">
+      </footer>
+    </div>
+    <div class="welcome" id="welcome">
+      <img src="/assets/cloux-default-avatar.jpg" alt="Cloux" draggable="false">
+      <h1>Cloux<span>.</span></h1><p>Обери діалог, щоб відкрити чат</p>
+      <a href="/v5/" class="primary">Перейти до справжніх чатів →</a>
+    </div>
+  </main>
+  <div class="shade" id="shade" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></section>
+  <section class="emoji-keyboard" id="emoji-keyboard" role="dialog" aria-label="Панель емодзі" hidden></section>
+  <section class="media-modal" id="media-modal" role="dialog" aria-modal="true" hidden></section>
+  <section class="call-screen" id="call-screen" role="dialog" aria-modal="true" aria-label="WebRTC-дзвінок" hidden></section>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="update-banner" id="update-banner" hidden><span>Доступна нова версія Cloux</span><button id="update-now">Оновити →</button></div>
+</div>
+<script defer src="./app.js?v=6.1.0"></script>
+</body>
+</html>
