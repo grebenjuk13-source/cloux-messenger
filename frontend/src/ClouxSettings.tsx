@@ -2,6 +2,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {ArrowLeft,Archive,Check,ChevronRight,Cloud,Download,Globe,ImagePlus,Lock,Monitor,Moon,Palette,RefreshCw,Settings,Shield,Smile,Upload,Users,Volume2,X,MessageCircle,Search} from 'lucide-react';
 import {ProfileScreen,WallpaperStudio,type ClientUser} from './ClouxProduct';
 import {languageOptions,useI18n,hasStoredLocale,type Locale} from './i18n';
+import {AdminPanel} from './ClouxIdentityUI';
 
 type SettingsValue={friends_visibility:'all'|'friends'|'none';show_online:boolean;allow_requests:boolean;allow_calls:boolean;show_message_preview:boolean;notifications_messages:boolean;notifications_calls:boolean;notifications_sound:boolean;language:Locale;backup_interval:'off'|'daily'|'weekly';profile_accent:string;banner_gradient:string;status_icon:string;banner_video:boolean};
 const initial:SettingsValue={friends_visibility:'all',show_online:true,allow_requests:true,allow_calls:true,show_message_preview:true,notifications_messages:true,notifications_calls:true,notifications_sound:true,language:'uk',backup_interval:'off',profile_accent:'#E11D2E',banner_gradient:'linear-gradient(120deg,#390c1b,#08090e)',status_icon:'✨',banner_video:false};
@@ -55,9 +56,11 @@ function BackupManager({onSchedule,interval}:{onSchedule:(v:'off'|'daily'|'weekl
 }
 export function ProductSettings({me,theme,onTheme,onProfile,onBack,onLogout}:{me:ClientUser;theme:'dark'|'light'|'amoled'|'auto';onTheme:(theme:'dark'|'light'|'amoled'|'auto')=>void;onProfile:()=>void;onBack:()=>void;onLogout:()=>Promise<void>}){
  const {locale,t,setLocale}=useI18n();
+ const [canAdmin,setCanAdmin]=useState(false);
  const [part,setPart]=useState(''),[values,setValues]=useState<SettingsValue>(initial),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[devices,setDevices]=useState<number|null>(null),[wallOpen,setWallOpen]=useState(false);
  const queued=useRef<Promise<unknown>>(Promise.resolve()),latest=useRef<SettingsValue>(initial);
  const cacheKey='cloux:product-settings:'+me.id;
+ useEffect(()=>{let active=true;api<{admin:boolean}>('/api/cloux/admin/access').then(r=>{if(active)setCanAdmin(r.admin)}).catch(()=>{});return()=>{active=false}},[me.id]);
  useEffect(()=>{
    try{const cached=localStorage.getItem(cacheKey);if(cached){const merged={...initial,...JSON.parse(cached)};latest.current=merged;setValues(merged)}}catch{}
    let alive=true;
@@ -72,7 +75,7 @@ export function ProductSettings({me,theme,onTheme,onProfile,onBack,onLogout}:{me
  };
  const toggle=(key:keyof SettingsValue,title:string)=> <label className="cx-setting-toggle"><span>{title}</span><input type="checkbox" checked={Boolean(values[key])} onChange={e=>save({[key]:e.target.checked})}/></label>;
  const row=(title:string,id:string,Icon:typeof Settings,detail='')=><button className="cx-setting-row" onClick={()=>setPart(id)} key={id}><Icon size={20}/><span><b>{title}</b>{detail&&<small>{detail}</small>}</span><ChevronRight size={18}/></button>;
- const sectionTitles:Record<string,string>={privacy:t('privacy'),notify:t('notifications'),chats:t('chats'),data:t('data'),devices:t('devices'),language:t('language'),theme:t('appearance'),tools:'CLOUX'};
+ const sectionTitles:Record<string,string>={privacy:t('privacy'),notify:t('notifications'),chats:t('chats'),data:t('data'),devices:t('devices'),language:t('language'),theme:t('appearance'),tools:'CLOUX',admin:'Адмін-панель'};
  if(wallOpen)return <WallpaperStudio onClose={()=>setWallOpen(false)}/>;
  return <section className="cx-settings"><header><button aria-label="Назад" onClick={()=>part?setPart(''):onBack()}><ArrowLeft/></button><h1>{part?sectionTitles[part]:t('settings')}</h1><button aria-label="Відкрити профіль" onClick={onProfile}><Users/></button></header>
  {loading?<><div className="cx-skeleton cx-loading-block"/><div className="cx-skeleton cx-loading-block"/></>:!part?<div>
@@ -80,8 +83,10 @@ export function ProductSettings({me,theme,onTheme,onProfile,onBack,onLogout}:{me
   <div className="cx-settings-group"><h3>{t('account')}</h3><div className="cx-setting-card">{row(t('privacy'),'privacy',Shield)}{row(t('notifications'),'notify',Volume2)}{row(t('devices'),'devices',Monitor)}</div></div>
   <div className="cx-settings-group"><h3>{t('appearance')}</h3><div className="cx-setting-card">{row(t('wallpaper'),'chats',MessageCircle,t('chats'))}{row(t('theme'),'theme',Palette,'AMOLED · CLOUX')}{row(t('language'),'language',Globe,languageOptions.find(x=>x[0]===locale)?.[1]||'')}</div></div>
   <div className="cx-settings-group"><h3>{t('data')}</h3><div className="cx-setting-card">{row(t('data'),'data',Cloud,t('backups'))}{row('Інструменти Cloux • стікери • резервна копія','tools',Smile)}</div></div>
+  {canAdmin&&<div className="cx-settings-group"><div className="cx-setting-card">{row('Адмін-панель · галочки','admin',Shield,'Тільки власнику')}</div></div>}
   <button className="cx-action" onClick={()=>void onLogout()}>Вийти з акаунта</button>
  </div>:<div className="cx-setting-content">
+ {part==='admin'&&canAdmin&&<AdminPanel/>}
  {part==='privacy'&&<><h3>{t('privacy')}</h3><label>Хто бачить мій список друзів<select value={values.friends_visibility} onChange={e=>save({friends_visibility:e.target.value as SettingsValue['friends_visibility']})}><option value="all">Усі користувачі</option><option value="friends">Лише друзі</option><option value="none">Ніхто</option></select></label>{toggle('show_online','Показувати, коли я онлайн')}{toggle('allow_requests','Дозволити запити в друзі')}{toggle('allow_calls','Дозволити вхідні дзвінки')}</>}
  {part==='notify'&&<><h3>{t('notifications')} CLOUX</h3>{toggle('notifications_messages','Нові повідомлення')}{toggle('notifications_calls','Дзвінки')}{toggle('notifications_sound','Звук сповіщень')}{toggle('show_message_preview','Показувати текст повідомлень')}<button className="cx-action" onClick={async()=>{if('Notification'in window){const state=await Notification.requestPermission();setNotice(state==='granted'?'Дозвіл надано':'Сповіщення заборонені або недоступні')}else setNotice('Цей браузер не підтримує системні сповіщення')}}>Дозволити системні сповіщення</button><p className="cx-setting-desc">Правила синхронізуються з акаунтом. Поведінка системних сповіщень залежить від браузера та налаштувань Android/iOS.</p></>}
  {part==='chats'&&<><h3>{t('wallpaper')}</h3><button className="cx-action" onClick={()=>setWallOpen(true)}><ImagePlus size={20}/> Обрати шпалери для всіх чатів</button><p className="cx-setting-desc">Усередині кожного чату також є власний редактор шпалер.</p>{toggle('show_message_preview','Попередній перегляд повідомлень')}</>}
