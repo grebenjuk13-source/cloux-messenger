@@ -63,16 +63,43 @@ def install(app,db,auth,fail,limit):
         return score
     def leaderboard_rows(c):
         people=[dict(x) for x in c.execute("SELECT id,display,username,created FROM users WHERE id!='cloux-system'")]
-        stamp_map={}
+        by_id={x['id']:x for x in people}
+        partners={x['id']:[] for x in people}
+        # Aggregate all accepted friendships once rather than one database query per user.
+        for row in c.execute('SELECT a,b,created FROM cloux_friendships'):
+            if row['a'] in partners and row['b'] in partners:
+                partners[row['a']].append((row['b'],row['created']))
+                partners[row['b']].append((row['a'],row['created']))
+        # One grouped query for all direct-chat activity. Grouping two members
+        # ensures group messages never inflate a private friendship streak.
+        mutual={}
+        activity=c.execute("""SELECT p.user_id a,q.user_id b,m.sender,
+                 CAST(m.created / 86400 AS INTEGER) day
+             FROM chats ch
+             JOIN chat_members p ON p.chat_id=ch.id
+             JOIN chat_members q ON q.chat_id=ch.id AND p.user_id<q.user_id
+             JOIN messages m ON m.chat_id=ch.id
+             WHERE ch.kind='direct' AND m.sender IN (p.user_id,q.user_id)
+             GROUP BY p.user_id,q.user_id,m.sender,day""")
+        for row in activity:
+            key=(row['a'],row['b'])
+            entry=mutual.setdefault(key,[set(),set()])
+            entry[0 if row['sender']==row['a'] else 1].add(row['day'])
+        today=int(time.time())//86400
+        streak={}
+        for key,(a_days,b_days) in mutual.items():
+            shared=a_days.intersection(b_days)
+            start=today if today in shared else today-1
+            score=0
+            while start-score in shared:score+=1
+            streak[key]=score
         for user in people:
-            links=c.execute("""SELECT CASE WHEN a=? THEN b ELSE a END other,created
-               FROM cloux_friendships WHERE a=? OR b=? ORDER BY created ASC""",(user['id'],user['id'],user['id'])).fetchall()
+            links=partners[user['id']]
             user['friends']=len(links)
-            # Earliest reached this total: time of latest accepted friendship.
-            user['reached']=max([x['created'] for x in links],default=user['created'])
-            user['streak']=max((streak_days(c,user['id'],x['other']) for x in links),default=0)
-            stamp_map[user['id']]=user['reached']
+            user['reached']=max((created for _,created in links),default=user['created'])
+            user['streak']=max((streak.get(tuple(sorted((user['id'],other))),0) for other,_ in links),default=0)
         return people
+
     def with_rank(rows,field):
         sorted_rows=sorted(rows,key=lambda x:(-x[field],x['reached'],x['created'],x['username'].casefold()))
         previous=None;rank=0
