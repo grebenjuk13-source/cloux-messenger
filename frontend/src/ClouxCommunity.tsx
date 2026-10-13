@@ -20,6 +20,8 @@ export function TopFriends({me,onOpenUser}:{me:{id:string};onOpenUser:(id:string
  const {t}=useI18n();
  const [mode,setMode]=useState<'friends'|'streak'>('friends'),[data,setData]=useState<Ranking|null>(null),[error,setError]=useState(''),[animate,setAnimate]=useState(false);
  const old=useRef<number|null>(null);
+ const [pinned,setPinned]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem('cloux:pinned-friends:'+me.id)||'[]')}catch{return []}});
+ const togglePin=(uid:string)=>{setPinned(prev=>{const next=prev.includes(uid)?prev.filter(x=>x!==uid):[...prev,uid].slice(0,10);localStorage.setItem('cloux:pinned-friends:'+me.id,JSON.stringify(next));return next})};
  const reload=()=>call<Ranking>('/api/cloux/top?sort='+mode+'&limit_count=100').then(next=>{
   if(mode==='friends'&&next.me){
    try{
@@ -37,6 +39,7 @@ export function TopFriends({me,onOpenUser}:{me:{id:string};onOpenUser:(id:string
  const person=(x:Rank,position?:string)=> <button key={x.id} className={'cx-rank-card '+(x.id===me.id?'cx-is-me':'')} onClick={()=>onOpenUser(x.id)}>
   <span className="cx-rank-pos">{position||formatNumber(x.rank)}</span><span className="cx-rank-photo">{x.display.trim().slice(0,1).toLocaleUpperCase()}</span>
   <span className="cx-rank-identity"><b>{x.display}</b><small>@{x.username} <i>{badge(x)}</i></small></span>
+  {x.id!==me.id&&<span className="cx-pin-friend" role="button" tabIndex={0} aria-label={pinned.includes(x.id)?'Відкріпити друга':'Закріпити друга'} onClick={e=>{e.stopPropagation();togglePin(x.id)}} onKeyDown={e=>{if(e.key==='Enter'){e.stopPropagation();togglePin(x.id)}}}>{pinned.includes(x.id)?'★':'☆'}</span>}
   <span className="cx-rank-score">{formatNumber(mode==='friends'?x.friends:x.streak)}{mode==='streak'?<Flame size={16}/>:<Users size={16}/>}</span>
  </button>;
  return <section className="cx-ranking-page"><header className="cx-rank-header"><Trophy size={25}/><h2>{t('top')}</h2></header>
@@ -46,6 +49,8 @@ export function TopFriends({me,onOpenUser}:{me:{id:string};onOpenUser:(id:string
   </div>
   {error&&<p className="cx-notice" role="alert">{error}</p>}
   {!data?<div className="cx-rank-skeleton" aria-label={t('preview')}/>:<>
+   {pinned.length>0&&<div className="cx-pinned-people"><h3>★ Закріплені друзі</h3>{pinned.map(id=>rows.find(x=>x.id===id)).filter((x):x is Rank=>Boolean(x)).map(x=>person(x))}</div>}
+   {rows.length<2&&<div className="cx-ranking-welcome"><span className="cx-ranking-symbol">✦</span><strong>Твій рейтинг починається тут</strong><p>Додавай справжніх друзів, спілкуйся з ними та спостерігай за своїм місцем.</p></div>}
    <div className="cx-podium">{[top[1],top[0],top[2]].filter(Boolean).map((x,i)=><div className={'cx-podium-slot level-'+x.rank} key={x.id}>{person(x)}<div className="cx-podium-pillar"><b>{formatNumber(x.rank)}</b></div></div>)}</div>
    <h3>{t('leaderboard')}</h3><div className="cx-rank-list">{remaining.map((r,i)=><div className="cx-rank-appear" style={{animationDelay:Math.min(7,i)*35+'ms'}} key={r.id}>{person(r)}</div>)}</div>
    {data.me&&<div className="cx-my-rank"><span>{t('yourPlace')}</span>{person(data.me)}</div>}
