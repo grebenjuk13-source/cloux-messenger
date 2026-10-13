@@ -16,6 +16,7 @@ import {cacheOffline,readOffline} from './cloux-offline';
 import EmojiPicker from './EmojiPicker';
 import CallOverlay from './CallOverlay';
 import EmailWizard from './EmailWizard';
+import './cloux-telegram-dark.css';
 
 const DEFAULT_AVATAR='/assets/cloux-default-avatar.jpg'; // Previously supplied full-size image, never modified by app.
 const KEY='cloux:v5:ui';
