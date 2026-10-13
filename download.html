@@ -15,29 +15,110 @@
 @media(max-width:730px){header{padding-bottom:38px}.actions{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.banner{flex-direction:column;align-items:stretch}.banner .btn{width:100%}.card p{min-height:0}.wrapper{width:calc(100% - 28px)}.section-title{font-size:23px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .release-meta{display:inline-flex;align-items:center;gap:6px;min-height:26px;font-size:11px;line-height:1.5;color:#fff;border:1px solid #e1060070;background:linear-gradient(120deg,#6b071453,#1e101333);padding:5px 10px;border-radius:12px;margin-bottom:5px;font-weight:700;font-variant-numeric:tabular-nums}.release-meta[aria-busy="true"]{opacity:.75}
+
+/* CLOUX 2026: accessible app landing page for first-time and experienced users. */
+:root{--focus:#ff8888}
+:focus-visible{outline:3px solid var(--focus)!important;outline-offset:4px}
+html{scroll-padding-top:20px}
+.wrapper{width:min(1130px,calc(100% - 36px))}
+.hero h1{font-weight:800}
+.hero-logo{background:#000;box-shadow:0 17px 38px #0007;border-radius:26px}
+.card{background:linear-gradient(148deg,#19191c,#111114);border-radius:26px;transition:border-color .2s,transform .2s}
+.card.current{border-color:#e10600}
+.card:hover{border-color:#ffffff4b}
+.btn{border-radius:18px;min-height:55px;font-size:14px}
+.btn.red{background:#e10600;border-color:#e93e3a;box-shadow:0 8px 20px #e106002a}
+.btn.red:hover{background:#ff2a2a}
+.hero p{font-size:clamp(15px,2vw,18px)}
+.choose-device{margin:34px auto 0;background:#111113;border:1px solid #ffffff2d;border-radius:27px;padding:22px;max-width:910px}
+.choose-device h2{font:700 clamp(20px,4vw,29px)/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;letter-spacing:-.04em;margin:0 0 6px}
+.choose-device p{font-size:13px;color:#c3bec3;margin:0 0 18px;line-height:1.65}
+.device-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.device-options a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:92px;border:1px solid #ffffff24;background:#1b1b1f;border-radius:19px;font-size:13px;font-weight:700;transition:transform .18s,border-color .18s;cursor:pointer}
+.device-options a:active{transform:scale(.97)}
+.device-options a.selected{background:#e106001f;border-color:#ee4848}
+.device-options a .device-emoji{font-size:27px}
+.recommended{margin:17px 0 0;padding:14px 16px;background:#241217;border:1px solid #e1060057;border-radius:16px;display:flex;align-items:center;gap:14px;justify-content:space-between}
+.recommended span{font-size:14px;font-weight:650}
+.recommended .btn{min-height:46px;padding:9px 13px;flex:none}
+.why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:23px 0}
+.why article{background:#121214;border:1px solid #ffffff1d;border-radius:20px;padding:17px}
+.why strong{font-size:15px}.why p{font-size:12px;color:#b8b0b8;margin:7px 0 0}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:steps}
+.steps>div{padding:18px;border:1px solid #ffffff24;background:#151518;border-radius:20px}
+.steps>div::before{counter-increment:steps;content:counter(steps);display:grid;place-items:center;width:38px;height:38px;background:#e10600;color:#fff;border-radius:13px;font-weight:800;margin-bottom:11px}
+.steps h3{font-size:16px;margin:0 0 5px}.steps p{font-size:13px;color:#c0b9be;margin:0}
+.faq{margin:20px 0 0}
+.faq details{margin:9px 0;background:#151517;border:1px solid #ffffff26;border-radius:17px;padding:15px 18px}
+.faq summary{font-weight:650;cursor:pointer}
+.faq p{color:#b8b2ba;font-size:13px;margin:11px 0 0}
+.access-control{display:flex;gap:8px;align-items:center;margin-left:auto}
+.access-control button{min-height:44px;min-width:44px;border:1px solid #ffffff30;background:#18181b;border-radius:13px;color:#fff}
+body.easy-read{font-size:18px;line-height:1.7}
+body.easy-read .card p,body.easy-read .subtle,body.easy-read .why p,body.easy-read .steps p,body.easy-read .faq p{font-size:16px}
+body.easy-read .btn{font-size:17px;min-height:58px}
+body.easy-read .device-options a{font-size:15px;min-height:100px}
+body.easy-read .card h3{font-size:24px}
+.notice-privacy{background:#1a1719;border-left:4px solid #e10600;border-radius:14px;padding:16px;font-size:13px;line-height:1.8;color:#d1cbd0;margin:24px 0}
+.notice-privacy strong{color:#fff}
+@media(max-width:760px){header{gap:8px;padding:20px 0 24px}.brand{font-size:23px}.nav-version{font-size:10px;padding:6px 8px}.access-control button{min-width:42px;min-height:42px}.device-options{grid-template-columns:repeat(3,minmax(0,1fr))}.choose-device{padding:17px 12px}.recommended{flex-direction:column;align-items:stretch}.recommended .btn{width:100%}.why,.steps{grid-template-columns:1fr}.wrapper{width:calc(100% - 24px)}.hero h1{font-size:clamp(34px,10vw,60px)}}
+@media(max-width:390px){.device-options{grid-template-columns:repeat(2,minmax(0,1fr))}.brand img{width:34px;height:34px}.brand{font-size:19px}.nav-version{display:none}}
+
 </style></head><body>
 <div class="wrapper">
-<header><div class="brand"><img src="/assets/cloux-default-avatar.jpg" alt="Cloux"> Cloux<b>.</b></div><span class="nav-version" id="nav-version">Перевіряємо версію…</span></header>
+<header><div class="brand"><img src="/assets/cloux-default-avatar.jpg" alt="Cloux"> Cloux<b>.</b></div><div class="access-control"><button id="easy-read" type="button" aria-pressed="false" aria-label="Збільшити текст" title="Збільшити текст">A+</button><span class="nav-version" id="nav-version">Перевіряємо версію…</span></div></header>
 <section class="hero"><img class="hero-logo" src="/assets/cloux-default-avatar.jpg" alt="Логотип Cloux">
 <div class="eyebrow">CLOUX MESSENGER · BLACK / RED</div>
 <h1>Спілкування в<br><span>твоєму стилі.</span></h1>
 <p>Твій Cloux доступний у браузері та як застосунок на різних пристроях. Оновлення, анімації й нові можливості в єдиному чорно-червоному стилі.</p>
 <div class="actions">
 <button class="btn red" id="install-pwa">＋ Встановити (PWA)</button>
-<button class="btn outline" id="download-html" title="HTML-ярлик для входу у справжній Cloux. Для повідомлень потрібен інтернет.">↓ Скачати index.html</button>
+<a class="btn outline" href="#device-title">↓ Обрати свій пристрій</a>
 <a class="btn outline" href="/v5/">↗ Відкрити веб-версію</a>
 </div><div class="live"><a href="/v5/">Справжній Cloux — чати, канали та дзвінки ↗</a></div>
 </section>
+<section class="choose-device" aria-labelledby="device-title">
+<h2 id="device-title">На якому пристрої хочеш користуватися CLOUX?</h2>
+<p>Натисни на свій пристрій — підкажемо найпростіший спосіб. Реєстрація однакова на всіх пристроях.</p>
+<div class="device-options" aria-label="Обрати свій пристрій">
+<a href="#android" data-choice="android"><span class="device-emoji" aria-hidden="true">📱</span>Android</a>
+<a href="#iphone" data-choice="iphone"><span class="device-emoji" aria-hidden="true">🍎</span>iPhone / iPad</a>
+<a href="#windows" data-choice="windows"><span class="device-emoji" aria-hidden="true">🖥️</span>Windows</a>
+<a href="#mac" data-choice="mac"><span class="device-emoji" aria-hidden="true">💻</span>Mac</a>
+<a href="/v5/" data-choice="web"><span class="device-emoji" aria-hidden="true">🌐</span>У браузері</a>
+</div>
+<div class="recommended" role="status" aria-live="polite"><span id="device-recommendation">Вебверсія працює одразу, без встановлення.</span><a class="btn red" id="recommended-link" href="/v5/">↗ Відкрити CLOUX</a></div>
+</section>
+<div class="why" aria-label="Переваги CLOUX">
+<article><strong>💬 Просто спілкуватися</strong><p>Чати, друзі, групи та голосові повідомлення в одному місці.</p></article>
+<article><strong>🎨 Налаштуй під себе</strong><p>Теми, шпалери й велика кількість мов інтерфейсу.</p></article>
+<article><strong>♿ Зручно кожному</strong><p>Великі кнопки, збільшення тексту та зрозумілі підказки.</p></article>
+</div>
 <div class="banner"><div><strong id="version-label">Cloux — завантажуємо дані версії</strong><p id="version-date">Актуальні зміни перевіряються без кешу</p></div><a class="btn red" href="/v5/">Відкрити зараз ↗</a></div>
 <h2 class="section-title">Застосунок для всіх пристроїв</h2><p class="subtle">Обери свою платформу або встанови PWA без окремого файлу.</p>
 <section class="cards" aria-label="Завантаження">
-<article class="card" id="android"><div class="icon">▣</div><h3>Android</h3><div class="release-meta" id="android-release" aria-live="polite">Перевіряємо APK…</div><p>APK Cloux 6.2.0 для Android 8+. Це тестова збірка з debug-підписом: при зміні сертифіката може знадобитися перевстановлення. Справжні чати відкриваються з сервера.</p><a class="btn red" href="/apk">↓ Завантажити Android APK</a></article>
+<article class="card" id="android"><div class="icon">▣</div><h3>Android</h3><div class="release-meta" id="android-release" aria-live="polite">Перевіряємо APK…</div><p>APK CLOUX 6.5.0 для Android 8+. Це тестова збірка з debug-підписом: при зміні сертифіката може знадобитися перевстановлення. Справжні чати відкриваються з сервера.</p><a class="btn red" href="/apk">↓ Завантажити Android APK</a></article>
 <article class="card" id="iphone"><div class="icon">▯</div><h3>iPhone / iPad</h3><div class="release-meta" id="ios-release">PWA · завжди поточна вебверсія</div><p>Відкрий Cloux у Safari та додай на головний екран — отримаєш PWA із власною іконкою без App Store.</p><button class="btn red" id="ios-help">Як встановити на iPhone →</button></article>
 <article class="card" id="windows"><div class="icon">▤</div><h3>Windows</h3><div class="release-meta" id="windows-release" aria-live="polite">Перевіряємо EXE…</div><p>Окремий Windows EXE та можливість встановити вебверсію як програму через Chrome або Edge.</p><a class="btn red" href="/exe">↓ Завантажити Windows EXE</a></article>
 <article class="card" id="mac"><div class="icon">▰</div><h3>macOS</h3><div class="release-meta" id="macos-release" aria-live="polite">Перевіряємо DMG…</div><p>Універсальний DMG для Mac. Вебверсію також можна використовувати в Safari як окремий застосунок.</p><a class="btn red" href="/dmg">↓ Завантажити Mac DMG</a></article>
 </section>
 <div class="help" id="ios-instructions" hidden><b>Встановлення Cloux на iPhone:</b><ol><li>Відкрий цю сторінку в Safari.</li><li>Натисни «Відкрити веб-версію».</li><li>Натисни «Поділитися» й вибери «На початковий екран».</li><li>Підтвердь «Додати».</li></ol></div>
 <div class="help" id="install-instructions" hidden><b>Встановлення PWA:</b> у меню браузера вибери «Встановити застосунок» або «Додати на головний екран». Для iPhone користуйся Safari.</div>
+<h2 class="section-title">Як почати — три прості кроки</h2><p class="subtle">Підходить для першого знайомства з CLOUX.</p>
+<section class="steps">
+<div><h3>Обери свій пристрій</h3><p>Android, iPhone, Windows, Mac або браузер. Якщо не хочеш нічого встановлювати, відкрий CLOUX онлайн.</p></div>
+<div><h3>Увійди або зареєструйся</h3><p>Використовуй свій акаунт. Якщо він уже є, новий створювати не потрібно.</p></div>
+<div><h3>Напиши друзям</h3><p>Знайди людину за іменем користувача, надішли запит у друзі та почни чат.</p></div>
+</section>
+<h2 class="section-title">Питання та відповіді</h2>
+<section class="faq">
+<details><summary>Чи треба платити, щоб спілкуватися?</summary><p>Вебверсія CLOUX відкривається безкоштовно. Мобільні й настільні пакети доступні для завантаження.</p></details>
+<details><summary>Який файл вибрати для Android?</summary><p>Натисни «Завантажити Android APK». Це тестова збірка з debug-підписом. Завантажуй лише з цієї сторінки або з офіційного GitHub CLOUX.</p></details>
+<details><summary>Як встановити на iPhone?</summary><p>Відкрий CLOUX у Safari, натисни «Поділитися» → «На початковий екран». На iPhone використовується вебзастосунок PWA, а не файл APK.</p></details>
+<details><summary>Якщо зміню телефон, чати залишаться?</summary><p>Акаунти та повідомлення використовують сервер. Але поки сервер працює з тимчасовою базою даних, збереження після перезапуску не гарантоване. Важливе краще експортувати.</p></details>
+<details><summary>Що робити, якщо застосунок не встановлюється?</summary><p>Скористайся кнопкою «Відкрити вебверсію». Вона працює на сучасних телефонах і комп’ютерах, якщо є інтернет.</p></details>
+</section>
+<div class="notice-privacy"><strong>Безпека даних.</strong> CLOUX наразі працює на сервері з тимчасовим сховищем. Не зберігай тут єдину копію важливих повідомлень чи файлів. Ми не обіцяємо їх збереження після перезапуску сервера.</div>
 <h2 class="section-title">Що нового</h2><p class="subtle">Автоматично завантажується з version.json.</p>
 <section class="changelog" aria-label="Історія змін"><h3 id="changelog-header">Останні зміни</h3><ul id="changelog-list"><li>Зачекай…</li></ul></section>
 <div class="info"><b>Два режими:</b> «Веб-версія» — справжні Cloux акаунти й серверні чати. Завантажений index.html — лише HTML-ярлик, який відкриває <b>реальний CLOUX онлайн</b>. Для повного застосунку з повідомленнями потрібен сервер та інтернет. Задля приватності браузер не записує паролі в демо. На поточному безкоштовному сервері база даних тимчасова; до підключення постійного сховища повідомлення та сесії можуть втратитися після рестарту.</div>
@@ -51,6 +132,27 @@ const fail=message=>{const b=$('download-html');b.textContent='↓ Скачат�
 const ua=navigator.userAgent;
 const target=/android/i.test(ua)?'android':/iphone|ipad|ipod/i.test(ua)?'iphone':/macintosh|mac os/i.test(ua)?'mac':/windows/i.test(ua)?'windows':null;
 if(target)$(target).classList.add('current');
+
+const displaySize=()=>{const state=document.body.classList.toggle('easy-read');$('easy-read').setAttribute('aria-pressed',String(state));$('easy-read').textContent=state?'A−':'A+';try{localStorage.setItem('cloux:easy-read',state?'1':'0')}catch{}};
+$('easy-read').onclick=displaySize;
+try{if(localStorage.getItem('cloux:easy-read')==='1'){document.body.classList.add('easy-read');$('easy-read').setAttribute('aria-pressed','true');$('easy-read').textContent='A−'}}catch{}
+const recommendations={
+ android:{text:'Для Android найзручніше встановити CLOUX APK. Або відкрий його в браузері.',label:'Завантажити Android APK',url:'/apk'},
+ iphone:{text:'На iPhone відкрий CLOUX у Safari та додай на початковий екран.',label:'Відкрити для iPhone',url:'/v5/'},
+ windows:{text:'Для Windows є окрема EXE-програма й вебверсія.',label:'Завантажити Windows',url:'/exe'},
+ mac:{text:'Для Mac є DMG і вебверсія у Safari.',label:'Завантажити для Mac',url:'/dmg'},
+ web:{text:'У браузері CLOUX запускається одразу без встановлення.',label:'Відкрити CLOUX',url:'/v5/'}
+};
+function recommend(choice){
+ const result=recommendations[choice]||recommendations.web;
+ $('device-recommendation').textContent=result.text;
+ $('recommended-link').textContent='↗ '+result.label;
+ $('recommended-link').href=result.url;
+ document.querySelectorAll('[data-choice]').forEach(el=>el.classList.toggle('selected',el.dataset.choice===choice));
+}
+recommend(target||'web');
+document.querySelectorAll('[data-choice]').forEach(el=>el.addEventListener('click',()=>recommend(el.dataset.choice)));
+
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferred=event});
 $('install-pwa').onclick=async()=>{
  if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;return}
