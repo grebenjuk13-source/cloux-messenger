@@ -40,11 +40,7 @@ await page.route('**/api/**', async route=>{
 });
 await page.goto('http://127.0.0.1:4173/v5/',{waitUntil:'networkidle'});
 await page.getByRole('heading',{name:'Приєднатися до Cloux'}).waitFor();
-await page.getByRole('combobox',{name:'Обрати мову'}).selectOption('ar');
-assert.equal(await page.locator('html').getAttribute('dir'),'rtl','Arabic direction');
-await page.getByRole('combobox',{name:'اختر اللغة'}).selectOption('en');
-assert.equal(await page.locator('html').getAttribute('lang'),'en','English language');
-await page.getByRole('combobox',{name:'Choose language'}).selectOption('uk');
+assert.equal(await page.getByRole('combobox',{name:'Обрати мову'}).count(),0,'Language selector is only in settings');
 await page.getByRole('button',{name:/^Увійти/}).first().click();
 await page.getByRole('heading',{name:'Увійти до Cloux'}).waitFor();
 assert.equal(await page.getByRole('button',{name:'Зареєструватися',exact:true}).count(),1);
