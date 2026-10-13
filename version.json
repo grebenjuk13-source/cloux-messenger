@@ -1,15 +1,16 @@
 {
-  "version": "6.6.0",
+  "version": "6.6.1",
   "date": "2026-10-13",
   "channel": "stable",
   "web": "/v5/",
   "preview": "/studio/",
   "changelog": [
-    "CLOUX 6.6.0: спрощена реєстрація та вхід, більше зручності на мобільних пристроях",
-    "Новий профіль з банером, аватаром, позивним, друзями та власними подарунками",
-    "Адмін-галочки захищені перевіркою власника на сервері; потрібна конфігурація ID власника",
-    "Нові збірки Android APK, Windows EXE, Mac DMG; iPhone/iPad працюють як PWA через Safari",
-    "Важливо: сховище акаунтів і чатів на Render наразі тимчасове"
+    "CLOUX 6.6.1: більш зручні налаштування з пошуком, аватаром та простим режимом",
+    "Компактний банер профілю, темно-синій стиль Cloudlight та збільшені кнопки",
+    "Покращений екран особистих дзвінків з індикатором якості і спробою перепідключення",
+    "Нові APK, EXE і DMG із актуальним інтерфейсом; iPhone/iPad використовують Safari PWA",
+    "Групові дзвінки, CallKit/ConnectionService, наскрізне шифрування поки не реалізовані",
+    "Увага: сховище акаунтів і повідомлень на Render є тимчасовим"
   ],
   "packages": {
     "android": "/apk",
@@ -20,28 +21,28 @@
   },
   "platforms": {
     "android": {
-      "version": "6.6.0",
+      "version": "6.6.1",
       "type": "APK (тестовий debug-підпис)",
       "file": "Cloux-Android.apk",
       "release": "cloux-android",
       "minimum": "Android 8+"
     },
     "windows": {
-      "version": "6.6.0",
+      "version": "6.6.1",
       "type": "EXE",
       "file": "Cloux.exe",
       "release": "cloux-windows",
       "minimum": "Windows 10/11 x64"
     },
     "macos": {
-      "version": "6.6.0",
+      "version": "6.6.1",
       "type": "DMG (не нотаризований)",
       "file": "Cloux-macOS.dmg",
       "release": "cloux-macos",
       "minimum": "macOS 13+"
     },
     "ios": {
-      "version": "6.6.0",
+      "version": "6.6.1",
       "type": "PWA через Safari",
       "minimum": "iPhone / iPad",
       "release": null
