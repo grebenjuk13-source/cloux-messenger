@@ -121,7 +121,15 @@ function ChatRoom({chat,me,prefs,onBack,startWith}:{chat:Chat,me:User,prefs:Pref
   if(id==='pin'){await post('/api/cloux/chat/'+encodeURIComponent(chat.id)+'/pin/'+m.id,{});void loadPins();return}
   if(id==='unpin'){await api('/api/cloux/chat/'+encodeURIComponent(chat.id)+'/pin/'+m.id,{method:'DELETE'});void loadPins();return}
   if(id==='edit'){const value=prompt('Редагувати повідомлення',m.text);if(value?.trim())await patch('/api/messages/'+m.id,{text:value.trim()})}
-  if(id==='delete'){if(confirm('Видалити повідомлення?'))await api('/api/messages/'+m.id,{method:'DELETE'})}
+  if(id==='delete'){
+   const mine=m.sender===me.id;
+   const choice=window.prompt(mine?'Видалити повідомлення:\\n1 — тільки для мене\\n2 — для всіх':'Видалити повідомлення:\\n1 — тільки для мене','1');
+   if(choice===null)return;
+   if(choice!=='1'&&choice!=='2'){setError('Обери 1 або 2');return}
+   if(choice==='2'&&!mine){setError('Видалити для всіх може тільки автор');return}
+   await api('/api/messages/'+m.id+(choice==='1'?'/mine':''),{method:'DELETE'});
+   setMessages(prev=>prev.filter(x=>x.id!==m.id));
+  }
   if(id==='react'){await post('/api/messages/'+m.id+'/reactions',{emoji});vibrateChat()}
   await load();
   const r=await api<{reactions:Record<string,Record<string,{count:number;me:boolean}>>}>('/api/chats/'+encodeURIComponent(chat.id)+'/reactions').catch(()=>null);
