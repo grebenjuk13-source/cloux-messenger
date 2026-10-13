@@ -52,6 +52,7 @@ jobs:
           FILE="Cloux-Android.apk"
           if gh release view cloux-android >/dev/null 2>&1; then
             gh release upload cloux-android "$FILE" --clobber
+            gh release edit cloux-android --title "Cloux Android 6.6.0" --notes "Cloux 6.6.0 для Android 8+. Тестова debug APK."
             gh release delete-asset cloux-android app-debug.apk --yes || true
             gh release edit cloux-android --title "Cloux Android 6.6.0" --notes "Cloux 6.6.0 для Android 8+. Наявна збірка APK — debug, для тестування. При оновленні Android може вимагати видалити стару APK, якщо сертифікати збірок відрізняються. Повноцінне безперервне оновлення потребує постійного ключа підпису."
           else
