@@ -99,3 +99,32 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(170,164,255,.1
 @media(prefers-reduced-motion:reduce){
   *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+/* Match the same glass language when the user chooses Light mode. */
+:root[data-theme=light]{--ios-glass:rgba(255,255,255,.76);--ios-glass-strong:rgba(255,255,255,.94);--ios-stroke:rgba(42,44,56,.09);--ios-shadow:0 16px 40px rgba(47,49,70,.09;color-scheme:light}
+:root[data-theme=light] body,:root[data-theme=light] #root,:root[data-theme=light] .app-shell,:root[data-theme=light] .app-content,:root[data-theme=light] .chat-room,:root[data-theme=light] .content-screen,:root[data-theme=light] .settings-view{background:#f3f3f8!important;color:#252631!important}
+:root[data-theme=light] .app-shell{background:radial-gradient(ellipse at 10% 0%,rgba(170,164,255,.18),transparent 36%),radial-gradient(ellipse at 100% 15%,rgba(255,164,180,.19),transparent 34%),#f3f3f8!important}
+:root[data-theme=light] .chat-sidebar{background:rgba(249,249,252,.84)!important;border-color:rgba(40,40,55,.08)!important}
+:root[data-theme=light] .chat-header,:root[data-theme=light] .chat-top,:root[data-theme=light] .composer,:root[data-theme=light] .send-box{background:rgba(255,255,255,.78)!important;border-color:rgba(40,40,55,.09)!important}
+:root[data-theme=light] .liquid-nav{background:rgba(255,255,255,.76)!important;border-color:rgba(55,53,76,.13)!important;box-shadow:0 16px 42px rgba(55,53,76,.14),inset 0 1px #fff!important}
+:root[data-theme=light] .liquid-nav button{color:#777586!important}
+:root[data-theme=light] .liquid-nav button.active{color:#302d40!important;background:linear-gradient(135deg,rgba(255,82,109,.14),rgba(170,164,255,.18))!important}
+:root[data-theme=light] #root .cx-settings,:root[data-theme=light] #root .cx-wallpaper-studio{background:radial-gradient(ellipse at 85% 0%,rgba(170,164,255,.17),transparent 35%),#f3f3f8!important;color:#262633!important}
+:root[data-theme=light] #root .cx-settings>header{background:rgba(250,250,253,.78);border-color:rgba(48,46,68,.08);box-shadow:0 8px 26px rgba(38,36,60,.08)}
+:root[data-theme=light] #root .cx-settings>header h1,:root[data-theme=light] #root .cx-setting-content>h3,:root[data-theme=light] #root .cx-settings-hero strong{color:#242431!important}
+:root[data-theme=light] #root .cx-settings>header button{background:rgba(255,255,255,.75);border-color:rgba(48,46,68,.08);color:#625f73}
+:root[data-theme=light] #root .cx-settings-hero{background:linear-gradient(130deg,rgba(255,217,224,.64),rgba(226,222,255,.75) 58%,rgba(206,241,232,.58))!important;border-color:rgba(70,62,96,.10)!important;box-shadow:0 15px 38px rgba(48,42,71,.08),inset 0 1px #ffffffd9!important}
+:root[data-theme=light] #root .cx-settings-hero small{color:#696777!important}
+:root[data-theme=light] #root .cx-settings-search{background:rgba(255,255,255,.75)!important;border-color:rgba(48,46,68,.08)!important;color:#777486!important}
+:root[data-theme=light] #root .cx-settings-search input,:root[data-theme=light] #root .cx-settings .cx-setting-row,:root[data-theme=light] #root .cx-setting-content>label:not(.cx-setting-toggle),:root[data-theme=light] #root .cx-settings .cx-setting-toggle{color:#292936!important}
+:root[data-theme=light] #root .cx-settings-search input::placeholder,:root[data-theme=light] #root .cx-settings-group h3,:root[data-theme=light] #root .cx-settings .cx-setting-row small,:root[data-theme=light] #root .cx-setting-desc{color:#777587!important}
+:root[data-theme=light] #root .cx-simple-switch,:root[data-theme=light] #root .cx-settings .cx-setting-card,:root[data-theme=light] #root .cx-setting-content>label:not(.cx-setting-toggle),:root[data-theme=light] #root .cx-settings .cx-setting-toggle{background:rgba(255,255,255,.76)!important;border-color:rgba(48,46,68,.08)!important;box-shadow:0 10px 26px rgba(43,41,65,.055),inset 0 1px #fff!important}
+:root[data-theme=light] #root .cx-settings .cx-setting-row{border-bottom-color:rgba(48,46,68,.07)!important}
+:root[data-theme=light] #root .cx-settings .cx-setting-row>svg:last-child{color:#9997a6!important}
+:root[data-theme=light] #root .cx-settings .cx-action,:root[data-theme=light] #root .cx-wall-tabs button,:root[data-theme=light] #root .cx-language-item{background:rgba(255,255,255,.77)!important;border-color:rgba(48,46,68,.09)!important;color:#343341!important}
+:root[data-theme=light] #root .cx-wall-tabs button.cx-selected,:root[data-theme=light] #root .cx-language-item.chosen{background:linear-gradient(130deg,rgba(255,128,149,.24),rgba(170,164,255,.27))!important;color:#302d40!important}
+:root[data-theme=light] #root .cx-setting-content select{background:rgba(255,255,255,.84)!important;border-color:rgba(48,46,68,.12)!important;color:#302f3a!important}
+:root[data-theme=light] #root .cx-settings input[type=text],:root[data-theme=light] #root .cx-settings input:not([type]),:root[data-theme=light] #root .cx-settings textarea{background:rgba(255,255,255,.8)!important;border-color:rgba(48,46,68,.11)!important;color:#282733!important}
+:root[data-theme=light] #root .cx-setting-toggle input[type=checkbox],:root[data-theme=light] #root .cx-simple-switch input[type=checkbox]{background:#c9c8d1!important;box-shadow:inset 0 1px 3px rgba(0,0,0,.12)!important}
+:root[data-theme=light] .call-quick button,:root[data-theme=light] .call-log,:root[data-theme=light] .server-row,:root[data-theme=light] .server-member,:root[data-theme=light] .leaderboard-row{background:rgba(255,255,255,.76)!important;border-color:rgba(48,46,68,.09)!important;color:#282733!important}
+:root[data-theme=light] .call-quick button b,:root[data-theme=light] .call-log b,:root[data-theme=light] .server-row b,:root[data-theme=light] .leaderboard-row b{color:#282733}
