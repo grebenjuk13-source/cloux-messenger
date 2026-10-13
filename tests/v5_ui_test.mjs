@@ -65,7 +65,7 @@ await page.locator('.cx-settings-group').first().waitFor();
 const cardBg=await page.locator('.cx-setting-card').first().evaluate(e=>getComputedStyle(e).backgroundImage);
 assert.ok(cardBg.includes('gradient'),'Settings cards use the product gradient');
 await page.screenshot({path:'cloux-v5-mobile-settings.png',fullPage:true});
-await page.getByRole('button',{name:/Тема та кольори/}).click();
+await page.getByRole('button',{name:/^Тема/}).click();
 await page.getByRole('button',{name:'AMOLED',exact:true}).click();
 assert.equal(await page.locator('html').getAttribute('data-theme'),'amoled');
 await page.getByRole('button',{name:'Чати',exact:true}).click();
