@@ -101,7 +101,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(170,164,255,.1
 }
 
 /* Match the same glass language when the user chooses Light mode. */
-:root[data-theme=light]{--ios-glass:rgba(255,255,255,.76);--ios-glass-strong:rgba(255,255,255,.94);--ios-stroke:rgba(42,44,56,.09);--ios-shadow:0 16px 40px rgba(47,49,70,.09;color-scheme:light}
+:root[data-theme=light]{--ios-glass:rgba(255,255,255,.76);--ios-glass-strong:rgba(255,255,255,.94);--ios-stroke:rgba(42,44,56,.09);--ios-shadow:0 16px 40px rgba(47,49,70,.09);color-scheme:light}
 :root[data-theme=light] body,:root[data-theme=light] #root,:root[data-theme=light] .app-shell,:root[data-theme=light] .app-content,:root[data-theme=light] .chat-room,:root[data-theme=light] .content-screen,:root[data-theme=light] .settings-view{background:#f3f3f8!important;color:#252631!important}
 :root[data-theme=light] .app-shell{background:radial-gradient(ellipse at 10% 0%,rgba(170,164,255,.18),transparent 36%),radial-gradient(ellipse at 100% 15%,rgba(255,164,180,.19),transparent 34%),#f3f3f8!important}
 :root[data-theme=light] .chat-sidebar{background:rgba(249,249,252,.84)!important;border-color:rgba(40,40,55,.08)!important}
