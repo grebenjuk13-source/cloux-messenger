@@ -27,3 +27,22 @@
 .cloux-call-controls button{min-width:0}
 .cloux-call-panel{padding-top:calc(20px + env(safe-area-inset-top,0px));max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
 @media(max-width:600px){.cloux-call-controls{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Cloudlight calling • polish on top of the existing live WebRTC controls */
+.cloux-call-overlay{background:rgba(7,9,20,.87)!important;backdrop-filter:blur(26px)!important;-webkit-backdrop-filter:blur(26px)!important;padding:calc(env(safe-area-inset-top,0px) + 14px) 12px calc(env(safe-area-inset-bottom,0px) + 14px)!important}
+.cloux-call-panel{border:1px solid #ffffff2a!important;background:radial-gradient(ellipse at 50% 15%,#303d67 0,#181b2b 40%,#11131e 100%)!important;border-radius:30px!important;box-shadow:0 30px 90px #000c!important}
+.cloux-call-heading{padding-top:10px}
+.cloux-call-heading button,.cloux-call-controls button{min-width:55px!important;min-height:55px!important;transition:transform .22s cubic-bezier(.2,1.5,.4,1),background-color .22s!important}
+.cloux-call-controls button:active{transform:scale(.94)}
+.cloux-call-badge{background:#8b9cff25!important;border:1px solid #8b9cff5a!important;color:#ced6ff!important;border-radius:100px!important}
+.cloux-call-stage{border-radius:27px!important;background:radial-gradient(ellipse at 50% 50%,#33375b,#121420 72%)!important;overflow:hidden}
+.cloux-call-placeholder{color:#cdd0ec!important}
+.cloux-call-stage.speaking:before{border-color:#8b9cff!important}
+.cloux-call-stage.reconnecting{filter:saturate(.7)}
+.cloux-call-clock{font-variant-numeric:tabular-nums}
+.cloux-signal{display:flex;align-items:flex-end;justify-content:center;gap:4px;height:27px;margin:6px auto 10px;color:#c9cce6}
+.cloux-signal span{align-self:center;font-size:11px;margin-right:6px}
+.cloux-signal i{width:5px;border-radius:6px;background:#525a78;display:block}
+.cloux-signal i.good{background:#8b9cff;box-shadow:0 0 8px #8b9cff45}
+@media(max-width:760px){.cloux-call-panel{border-radius:27px!important}.cloux-call-controls{gap:7px!important}.cloux-call-controls button{min-width:56px!important}}
+@media(prefers-reduced-motion:reduce){.cloux-call-controls button{transition:none!important}}
