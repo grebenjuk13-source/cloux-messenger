@@ -25,7 +25,7 @@ class ProductSettings(BaseModel):
     notifications_messages: bool=True
     notifications_calls: bool=True
     notifications_sound: bool=True
-    language: Literal['uk']='uk'
+    language: Literal['uk','en','pl','de','fr','es','it','pt','tr','ru','cs','ro','nl','sv','ja','ko','zh-CN','ar','hi']='uk'
     backup_interval: Literal['off','daily','weekly']='off'
     profile_accent: str='#E11D2E'
     banner_gradient: str='linear-gradient(120deg,#390c1b,#08090e)'
