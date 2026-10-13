@@ -1,8 +1,9 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {ArrowLeft,Archive,Check,ChevronRight,Cloud,Download,Globe,ImagePlus,Lock,Monitor,Moon,Palette,RefreshCw,Settings,Shield,Smile,Upload,Users,Volume2,X,MessageCircle,Search} from 'lucide-react';
 import {ProfileScreen,WallpaperStudio,type ClientUser} from './ClouxProduct';
+import {languageOptions,useI18n,hasStoredLocale,type Locale} from './i18n';
 
-type SettingsValue={friends_visibility:'all'|'friends'|'none';show_online:boolean;allow_requests:boolean;allow_calls:boolean;show_message_preview:boolean;notifications_messages:boolean;notifications_calls:boolean;notifications_sound:boolean;language:'uk';backup_interval:'off'|'daily'|'weekly';profile_accent:string;banner_gradient:string;status_icon:string;banner_video:boolean};
+type SettingsValue={friends_visibility:'all'|'friends'|'none';show_online:boolean;allow_requests:boolean;allow_calls:boolean;show_message_preview:boolean;notifications_messages:boolean;notifications_calls:boolean;notifications_sound:boolean;language:Locale;backup_interval:'off'|'daily'|'weekly';profile_accent:string;banner_gradient:string;status_icon:string;banner_video:boolean};
 const initial:SettingsValue={friends_visibility:'all',show_online:true,allow_requests:true,allow_calls:true,show_message_preview:true,notifications_messages:true,notifications_calls:true,notifications_sound:true,language:'uk',backup_interval:'off',profile_accent:'#E11D2E',banner_gradient:'linear-gradient(120deg,#390c1b,#08090e)',status_icon:'✨',banner_video:false};
 type Backup={id:number;created:number;bytes:number};
 async function api<T>(url:string,method='GET',data?:unknown):Promise<T>{
@@ -53,30 +54,31 @@ function BackupManager({onSchedule,interval}:{onSchedule:(v:'off'|'daily'|'weekl
  </div>;
 }
 export function ProductSettings({me,theme,onTheme,onProfile,onBack,onLogout}:{me:ClientUser;theme:'dark'|'light'|'amoled'|'auto';onTheme:(theme:'dark'|'light'|'amoled'|'auto')=>void;onProfile:()=>void;onBack:()=>void;onLogout:()=>Promise<void>}){
+ const {locale,t,setLocale}=useI18n();
  const [part,setPart]=useState(''),[values,setValues]=useState<SettingsValue>(initial),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[devices,setDevices]=useState<number|null>(null),[wallOpen,setWallOpen]=useState(false);
  const queued=useRef<Promise<unknown>>(Promise.resolve()),latest=useRef<SettingsValue>(initial);
  const cacheKey='cloux:product-settings:'+me.id;
  useEffect(()=>{
    try{const cached=localStorage.getItem(cacheKey);if(cached){const merged={...initial,...JSON.parse(cached)};latest.current=merged;setValues(merged)}}catch{}
    let alive=true;
-   api<{settings:SettingsValue}>('/api/cloux/settings').then(r=>{if(alive){const merged={...initial,...r.settings};latest.current=merged;setValues(merged);localStorage.setItem(cacheKey,JSON.stringify(merged))}})
+   api<{settings:SettingsValue}>('/api/cloux/settings').then(r=>{if(alive){const merged={...initial,...r.settings};latest.current=merged;setValues(merged);localStorage.setItem(cacheKey,JSON.stringify(merged));if(!hasStoredLocale()&&merged.language)setLocale(merged.language,false)}})
    .catch(e=>{if(alive)setNotice('Сервер недоступний: '+e.message)}).finally(()=>{if(alive)setLoading(false)});
    return()=>{alive=false};
  },[me.id]);
  const save=(change:Partial<SettingsValue>)=>{
-   const updated={...latest.current,...change};latest.current=updated;setValues(updated);document.dispatchEvent(new CustomEvent('cloux:product-settings',{detail:updated}));
+   const updated={...latest.current,...change};latest.current=updated;setValues(updated);if(change.language)setLocale(change.language);document.dispatchEvent(new CustomEvent('cloux:product-settings',{detail:updated}));
    try{localStorage.setItem(cacheKey,JSON.stringify(updated))}catch{}
    queued.current=queued.current.catch(()=>{}).then(async()=>{await api('/api/cloux/settings','PUT',updated);setNotice('')}).catch(e=>setNotice('Збережено на пристрої, але сервер не підтвердив: '+e.message));
  };
  const toggle=(key:keyof SettingsValue,title:string)=> <label className="cx-setting-toggle"><span>{title}</span><input type="checkbox" checked={Boolean(values[key])} onChange={e=>save({[key]:e.target.checked})}/></label>;
  const row=(title:string,id:string,Icon:typeof Settings,detail='')=><button className="cx-setting-row" onClick={()=>setPart(id)} key={id}><Icon size={20}/><span><b>{title}</b>{detail&&<small>{detail}</small>}</span><ChevronRight size={18}/></button>;
- const sectionTitles:Record<string,string>={privacy:'Конфіденційність',notify:'Сповіщення',chats:'Чати й шпалери',data:'Дані та пам’ять',devices:'Пристрої',language:'Мова',theme:'Оформлення',tools:'Інструменти Cloux'};
+ const sectionTitles:Record<string,string>={privacy:t('privacy'),notify:t('notifications'),chats:t('chats'),data:t('data'),devices:t('devices'),language:t('language'),theme:t('appearance'),tools:'CLOUX'};
  if(wallOpen)return <WallpaperStudio onClose={()=>setWallOpen(false)}/>;
- return <section className="cx-settings"><header><button aria-label="Назад" onClick={()=>part?setPart(''):onBack()}><ArrowLeft/></button><h1>{part?sectionTitles[part]:'Налаштування'}</h1><button aria-label="Відкрити профіль" onClick={onProfile}><Users/></button></header>
+ return <section className="cx-settings"><header><button aria-label="Назад" onClick={()=>part?setPart(''):onBack()}><ArrowLeft/></button><h1>{part?sectionTitles[part]:t('settings')}</h1><button aria-label="Відкрити профіль" onClick={onProfile}><Users/></button></header>
  {loading?<><div className="cx-skeleton cx-loading-block"/><div className="cx-skeleton cx-loading-block"/></>:!part?<div>
   <button className="cx-setting-row cx-setting-card" onClick={onProfile}><img className="cx-avatar" style={{width:64,height:64}} src={'/api/profile/'+encodeURIComponent(me.id)+'/media/avatar'} onError={e=>e.currentTarget.src='/assets/cloux-default-avatar.jpg'} alt="Аватар"/><span><b>{me.display}</b><small>@{me.username} · перейти до профілю</small></span><ChevronRight/></button>
-  <div className="cx-settings-group"><h3>Акаунт</h3><div className="cx-setting-card">{row('Конфіденційність і безпека','privacy',Shield)}{row('Сповіщення','notify',Volume2)}{row('Пристрої','devices',Monitor)}</div></div>
-  <div className="cx-settings-group"><h3>Зовнішній вигляд</h3><div className="cx-setting-card">{row('Чати й шпалери','chats',MessageCircle,'Окремі кольори для світлої й темної теми')}{row('Тема та кольори','theme',Palette,'Чорно-червоний, AMOLED та інші')}{row('Мова','language',Globe,'Українська')}</div></div>
+  <div className="cx-settings-group"><h3>Акаунт</h3><div className="cx-setting-card">{row(t('privacy'),'privacy',Shield)}{row(t('notifications'),'notify',Volume2)}{row(t('devices'),'devices',Monitor)}</div></div>
+  <div className="cx-settings-group"><h3>Зовнішній вигляд</h3><div className="cx-setting-card">{row('Чати й шпалери','chats',MessageCircle,'Окремі кольори для світлої й темної теми')}{row('Тема та кольори','theme',Palette,'Чорно-червоний, AMOLED та інші')}{row(t('language'),'language',Globe,languageOptions.find(x=>x[0]===locale)?.[1]||'')}</div></div>
   <div className="cx-settings-group"><h3>Дані</h3><div className="cx-setting-card">{row('Дані та пам’ять','data',Cloud,'Експорт, резервні копії та відновлення')}{row('Інструменти Cloux • стікери • резервна копія','tools',Smile)}</div></div>
   <button className="cx-action" onClick={()=>void onLogout()}>Вийти з акаунта</button>
  </div>:<div className="cx-setting-content">
@@ -85,7 +87,7 @@ export function ProductSettings({me,theme,onTheme,onProfile,onBack,onLogout}:{me
  {part==='chats'&&<><h3>Шпалери</h3><button className="cx-action" onClick={()=>setWallOpen(true)}><ImagePlus size={20}/> Обрати шпалери для всіх чатів</button><p className="cx-setting-desc">Усередині кожного чату також є власний редактор шпалер.</p>{toggle('show_message_preview','Попередній перегляд повідомлень')}</>}
  {part==='theme'&&<><h3>Режим інтерфейсу</h3><div className="cx-wall-tabs">{(['dark','light','amoled','auto'] as const).map(x=><button key={x} className={theme===x?'cx-selected':''} onClick={()=>onTheme(x)}>{({dark:'Темна',light:'Світла',amoled:'AMOLED',auto:'Авто'} as Record<string,string>)[x]}</button>)}</div><h3>Персоналізація</h3><button className="cx-action" onClick={()=>document.dispatchEvent(new CustomEvent('cloux:open-themes'))}><Palette size={20}/> Обрати дизайнерську тему CLOUX</button><p className="cx-setting-desc">Зміни застосовуються негайно. Теми зберігаються в профілі інтерфейсу.</p></>}
  {part==='devices'&&<><h3>Сеанси акаунта</h3><button className="cx-action" onClick={()=>api<{sessions:number}>('/api/devices').then(r=>setDevices(r.sessions)).catch(e=>setNotice(e.message))}><RefreshCw size={18}/> Перевірити сеанси</button>{devices!==null&&<p>Активних сеансів: {devices}</p>}<button className="cx-action" onClick={async()=>{if(!confirm('Завершити інші сеанси акаунта?'))return;try{await api('/api/devices/revoke-others','POST');setDevices(1);setNotice('Інші сеанси завершено')}catch(e){setNotice(e instanceof Error?e.message:'Помилка')}}}><Lock size={18}/> Завершити інші сеанси</button><p className="cx-setting-desc">Сервер наразі зберігає кількість сесій, без назв пристроїв.</p></>}
- {part==='language'&&<><h3>Мова</h3><button className="cx-action" onClick={()=>save({language:'uk'})}><Check size={18}/> 🇺🇦 Українська</button><p className="cx-setting-desc">Інші переклади CLOUX поки не випущені.</p></>}
+ {part==='language'&&<><h3>{t('chooseLanguage')}</h3><div className="cx-language-list" role="radiogroup" aria-label={t('language')}>{languageOptions.map(([code,label,flag])=><button key={code} type="button" role="radio" aria-checked={locale===code} className={'cx-language-item '+(locale===code?'chosen':'')} onClick={()=>save({language:code})}><span>{flag} {label}</span>{locale===code&&<Check size={19}/>}</button>)}</div><p className="cx-setting-desc">{t('systemLanguage')}: {navigator.language}</p></>}
  {part==='data'&&<BackupManager interval={values.backup_interval} onSchedule={backup_interval=>save({backup_interval})}/>}
  {part==='tools'&&<><h3>Інструменти та стікери</h3><button className="cx-action" onClick={()=>document.dispatchEvent(new CustomEvent('cloux:open-tools'))}><Smile size={18}/> Відкрити інструменти CLOUX</button><button className="cx-action" onClick={()=>setPart('data')}><Cloud size={18}/> Резервні копії</button></>}
  </div>}
