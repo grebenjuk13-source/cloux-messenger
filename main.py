@@ -49,6 +49,12 @@ with db() as c:
       id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL REFERENCES chats(id),
       sender TEXT NOT NULL REFERENCES users(id), text TEXT NOT NULL, created INTEGER NOT NULL);
     CREATE INDEX IF NOT EXISTS messages_by_chat ON messages(chat_id,id);
+    CREATE TABLE IF NOT EXISTS cloux_hidden_messages(
+      uid TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+      hidden_at INTEGER NOT NULL,
+      PRIMARY KEY(uid,message_id));
+    CREATE INDEX IF NOT EXISTS cloux_hidden_by_uid ON cloux_hidden_messages(uid,message_id);
     """)
 
 class Login(BaseModel):
@@ -266,8 +272,10 @@ def messages(chat_id: str, request: Request, after: int = 0):
               (SELECT substr(m2.text,1,140) FROM messages m2 WHERE m2.id=m.reply_to) reply_text,
               (SELECT u2.display FROM messages m2 JOIN users u2 ON u2.id=m2.sender WHERE m2.id=m.reply_to) reply_author
               FROM messages m
-            JOIN users u ON u.id=m.sender WHERE m.chat_id=? AND m.id>? ORDER BY m.id ASC LIMIT 200""",
-            (chat_id,max(after,0))).fetchall()
+            JOIN users u ON u.id=m.sender WHERE m.chat_id=? AND m.id>?
+            AND NOT EXISTS (SELECT 1 FROM cloux_hidden_messages h WHERE h.uid=? AND h.message_id=m.id)
+            ORDER BY m.id ASC LIMIT 200""",
+            (chat_id,max(after,0),user['id'])).fetchall()
     return {"messages":[dict(x) for x in rows]}
 
 @app.post("/api/chats/{chat_id}/messages")
