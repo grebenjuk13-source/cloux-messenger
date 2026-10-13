@@ -12,3 +12,20 @@
 .mail-auth input:focus{outline:2px solid color-mix(in srgb,var(--accent),transparent 45%);outline-offset:1px}
 .mail-card .primary:disabled{opacity:.64;cursor:wait}
 @media(prefers-reduced-motion:reduce){.mail-card{transition:none}}
+
+/* The supplied cloud bitmap is deliberately untouched. Only its separate backing is black. */
+.mail-auth{background:#070708!important}
+.cloux-cloud-frame{display:grid;place-items:center;overflow:hidden;background:#000!important;border:1px solid rgba(255,255,255,.09);border-radius:28px;isolation:isolate;box-shadow:0 20px 50px #0008;animation:cloux-cloud-enter .38s cubic-bezier(.17,1.45,.32,1) both}
+.cloux-cloud-frame img{display:block;object-fit:contain;max-width:100%;max-height:100%;animation:cloux-original-cloud .36s .07s cubic-bezier(.17,1.4,.3,1) both}
+.mail-auth .auth-side .cloux-cloud-frame{width:126px;height:126px;margin:0 0 20px}
+.mail-auth .auth-side .cloux-cloud-frame .auth-logo{width:100%;height:100%;border:0;box-shadow:none!important;background:transparent!important}
+.mail-mobile-cloud{display:none}
+.cloux-login-language{display:flex!important;align-items:center;justify-content:flex-end;gap:10px;color:#bcb6be!important;margin:0 0 11px!important}
+.cloux-login-language select{background:#161416;color:#fff;border:1px solid #ffffff29;border-radius:13px;padding:10px 12px;max-width:65%;min-height:44px;font:inherit}
+.mail-card{background:rgba(255,255,255,.06)!important;border-radius:28px;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)}
+.mail-auth .primary{background:#e10600!important;box-shadow:none!important;min-height:48px}
+.mail-auth .primary:active{background:#ff2a2a!important;transform:scale(.97)}
+@keyframes cloux-cloud-enter{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes cloux-original-cloud{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){.mail-mobile-cloud{display:grid;width:92px;height:92px;margin:0 auto 15px}.mail-mobile-cloud img{width:100%;height:100%}.mail-auth .auth-card{padding:23px 19px 25px}}
+@media(prefers-reduced-motion:reduce){.cloux-cloud-frame,.cloux-cloud-frame img{animation:none!important}}
