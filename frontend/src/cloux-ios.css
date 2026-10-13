@@ -178,3 +178,11 @@ button:active{transform:scale(.985)}
   .liquid-nav{backdrop-filter:blur(16px) saturate(140%)!important;-webkit-backdrop-filter:blur(16px) saturate(140%)!important}
   #root .cx-settings>header{backdrop-filter:blur(10px) saturate(130%);-webkit-backdrop-filter:blur(10px) saturate(130%)}
 }
+
+/* Keep frosted effects on small surfaces only and shorten feedback animations. */
+.chat-sidebar{backdrop-filter:blur(12px) saturate(125%);-webkit-backdrop-filter:blur(12px) saturate(125%)}
+.chat-header,.chat-top,.composer,.send-box{backdrop-filter:blur(12px) saturate(130%)!important;-webkit-backdrop-filter:blur(12px) saturate(130%)!important}
+.liquid-nav{backdrop-filter:blur(16px) saturate(140%)!important;-webkit-backdrop-filter:blur(16px) saturate(140%)!important}
+.call-quick button,.call-log,.server-row,.server-member,.leaderboard-row{backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%)}
+#root .cx-setting-toggle input[type=checkbox],#root .cx-simple-switch input[type=checkbox]{transition:background .16s ease,box-shadow .16s ease!important}
+#root .cx-setting-toggle input[type=checkbox]::before,#root .cx-simple-switch input[type=checkbox]::before{transition:transform .16s cubic-bezier(.2,.9,.25,1.15)}
