@@ -291,8 +291,12 @@ def install(app,db,auth,member,fail,limit,data_dir):
                 a,b=sorted((u['id'],uid))
                 c.execute('INSERT OR IGNORE INTO cloux_friendships(a,b,created) VALUES(?,?,?)',(a,b,int(time.time())))
                 c.execute('DELETE FROM cloux_friend_requests WHERE (sender=? AND recipient=?) OR (sender=? AND recipient=?)',(uid,u['id'],u['id'],uid))
+                if getattr(app.state,'cloux_record_event',None):
+                    app.state.cloux_record_event(c,uid,'friend',u['id'])
+                    app.state.cloux_record_event(c,u['id'],'friend',uid)
                 return {'ok':True,'relation':'friend'}
-            c.execute('INSERT OR IGNORE INTO cloux_friend_requests(sender,recipient,created) VALUES(?,?,?)',(u['id'],uid,int(time.time())))
+            cur=c.execute('INSERT OR IGNORE INTO cloux_friend_requests(sender,recipient,created) VALUES(?,?,?)',(u['id'],uid,int(time.time())))
+            if cur.rowcount and getattr(app.state,'cloux_record_event',None):app.state.cloux_record_event(c,uid,'request',u['id'])
         return {'ok':True,'relation':'outgoing'}
 
     @app.post('/api/cloux/friends/{uid}/accept')
@@ -303,6 +307,9 @@ def install(app,db,auth,member,fail,limit,data_dir):
             a,b=sorted((u['id'],uid))
             c.execute('INSERT OR IGNORE INTO cloux_friendships(a,b,created) VALUES(?,?,?)',(a,b,int(time.time())))
             c.execute('DELETE FROM cloux_friend_requests WHERE (sender=? AND recipient=?) OR (sender=? AND recipient=?)',(uid,u['id'],u['id'],uid))
+            if getattr(app.state,'cloux_record_event',None):
+                app.state.cloux_record_event(c,uid,'friend',u['id'])
+                app.state.cloux_record_event(c,u['id'],'friend',uid)
         return {'ok':True,'relation':'friend'}
 
     @app.delete('/api/cloux/friends/{uid}')
