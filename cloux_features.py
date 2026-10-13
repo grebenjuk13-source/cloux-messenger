@@ -225,6 +225,22 @@ def install(app, db, auth, fail, hash_password, check_password, member, limit):
         __import__("cloux_realtime").hub.emit(m["chat_id"],"message_updated",message_id=mid)
         return {"ok":True}
 
+    @app.delete("/api/messages/{mid}/mine")
+    def hide_message_for_me(mid: int, request: Request):
+        """Account-local deletion: never modifies the other participants' history."""
+        me=auth(request)
+        with db() as c:
+            msg=c.execute("SELECT chat_id FROM messages WHERE id=?",(mid,)).fetchone()
+            if not msg:fail("Повідомлення не знайдено.",404)
+            if not member(c,me["id"],msg["chat_id"]):fail("Немає доступу.",403)
+            c.execute("""CREATE TABLE IF NOT EXISTS cloux_hidden_messages(
+                uid TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+                hidden_at INTEGER NOT NULL,
+                PRIMARY KEY(uid,message_id))""")
+            c.execute("INSERT OR IGNORE INTO cloux_hidden_messages(uid,message_id,hidden_at) VALUES(?,?,?)",(me["id"],mid,int(time.time())))
+        return {"ok":True,"scope":"mine","id":mid}
+
     @app.delete("/api/messages/{mid}")
     def delete_message(mid: int, request: Request):
         me=auth(request)
