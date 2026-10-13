@@ -29,3 +29,20 @@
 @keyframes cloux-original-cloud{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:760px){.mail-mobile-cloud{display:grid;width:92px;height:92px;margin:0 auto 15px}.mail-mobile-cloud img{width:100%;height:100%}.mail-auth .auth-card{padding:23px 19px 25px}}
 @media(prefers-reduced-motion:reduce){.cloux-cloud-frame,.cloux-cloud-frame img{animation:none!important}}
+
+/* CLOUX sign-in: compact, contrast-safe, refined native mobile layout */
+.mail-auth .mail-card{max-width:510px;background:linear-gradient(150deg,#19171bfa,#111014f5)!important;border:1px solid #ffffff24!important;box-shadow:0 22px 80px #0009,inset 0 1px #ffffff1d!important;padding:clamp(20px,4vw,34px)!important}
+.mail-auth .mail-card h2{font-size:clamp(29px,6vw,40px)!important;line-height:1.16!important;font-weight:750!important;color:#f8f5f7!important;margin:8px 0 22px!important;letter-spacing:-.035em!important}
+.mail-auth .mail-card form{display:grid;gap:13px!important}
+.mail-auth .mail-card form>label{font-size:12px!important;font-weight:650!important;color:#ded8dd!important;display:grid;gap:7px!important;margin:0!important}
+.mail-auth .mail-card input{width:100%;min-height:51px!important;font-size:15px!important;line-height:1.3!important;color:#fff!important;border-radius:15px!important;border:1px solid #ffffff29!important;background:#242228!important;box-shadow:inset 0 1px #ffffff08!important;font-weight:480!important;padding:12px 15px!important}
+.mail-auth .mail-card input::placeholder{font-weight:440!important;color:#aaa2ab!important;opacity:.85!important}
+.mail-auth .mail-card input:focus{border-color:#e86b79!important;box-shadow:0 0 0 3px #e86b7930!important;outline:none!important}
+.mail-auth .mail-card .mail-pw input{padding-right:54px!important}
+.mail-auth .mail-card .primary{margin-top:9px!important;min-height:53px!important;font-size:15px!important;font-weight:740!important;box-shadow:0 9px 28px #e106002a!important}
+.mail-auth .mail-card .auth-foot{font-size:12px!important;margin:18px 0 0!important}
+.mail-auth .mail-card .auth-switch{font-weight:700!important}
+.mail-auth .cloux-cloud-frame{border-radius:23px!important}
+.mail-auth .auth-glow{opacity:.55!important}
+@media(max-width:760px){.mail-auth .auth-layout{padding:12px!important}.mail-auth .mail-card{border-radius:26px!important;padding:22px 20px 25px!important}.mail-auth .mail-mobile-cloud{height:76px!important;width:76px!important;margin-bottom:13px!important}.mail-auth .mail-card form{gap:11px!important}.mail-auth .mail-card h2{font-size:31px!important;margin-bottom:16px!important}}
+@media(prefers-reduced-motion:reduce){.mail-auth *{animation-duration:.01ms!important;transition-duration:.01ms!important}}
