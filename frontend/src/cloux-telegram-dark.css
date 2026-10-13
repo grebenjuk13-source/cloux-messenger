@@ -1,0 +1,73 @@
+/* CLOUX Dark Blue — Telegram-inspired, original CLOUX styling */
+:root{--tg-bg:#0e0e0e;--tg-bg-secondary:#1c1c1c;--tg-bg-tertiary:#242424;--tg-surface:#1c1c1c;--tg-bubble-out:#2b5278;--tg-bubble-in:#212121;--tg-accent:#3390ec;--tg-accent-hover:#2a7bc8;--tg-text:#fff;--tg-text-secondary:#aaa;--tg-text-hint:#82888e;--tg-divider:rgba(255,255,255,.09);--tg-online:#4fae4e;--tg-danger:#e53935;--tg-font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif}
+#root .cx-profile-screen,#root .cx-settings,#root .cx-wallpaper-studio{color:var(--tg-text)!important;background:var(--tg-bg)!important;font-family:var(--tg-font)!important;overflow-x:hidden}
+#root .cx-profile-screen * ,#root .cx-settings *{box-sizing:border-box}
+#root .cx-profile-banner{height:200px!important;min-height:200px!important;max-height:200px!important;position:relative;background-size:cover;background-position:center;border:0!important}
+#root .cx-profile-banner:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 30%,#0e0e0eea);pointer-events:none;z-index:0!important}
+#root .cx-banner-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#root .cx-profile-bar{position:absolute!important;top:calc(10px + env(safe-area-inset-top,0px))!important;left:12px!important;right:12px!important;min-height:44px!important;padding:0!important;background:transparent!important;border:0!important;display:flex;justify-content:space-between;align-items:center;z-index:4}
+#root .cx-profile-top-right{display:flex;gap:7px}
+#root .cx-profile-bar button{height:44px!important;width:44px!important;min-height:44px!important;min-width:44px!important;display:grid;place-items:center;border:0!important;border-radius:50%!important;background:#0009!important;color:#fff!important;padding:0!important}
+#root .cx-profile-avatar{position:absolute!important;bottom:-46px!important;left:16px!important;right:auto!important;width:92px!important;height:92px!important;min-height:92px!important;padding:0!important;border:4px solid var(--tg-bg)!important;border-radius:50%!important;background:#2a2a2a!important;box-shadow:none!important;z-index:2}
+#root .cx-profile-avatar .cx-avatar{width:100%!important;height:100%!important;object-fit:cover;border-radius:50%;border:0!important}
+#root .cx-avatar-add{position:absolute!important;right:-2px!important;bottom:0!important;height:32px!important;width:32px!important;min-height:32px!important;min-width:32px!important;border:3px solid var(--tg-bg)!important;border-radius:50%!important;display:grid;place-items:center;background:var(--tg-accent)!important;color:#fff!important}
+#root .cx-profile-details{padding:60px 16px calc(105px + env(safe-area-inset-bottom,0px))!important;width:100%;max-width:900px;margin:0 auto}
+#root .cx-profile-details h1{font:650 clamp(23px,5vw,29px)/1.24 var(--tg-font)!important;letter-spacing:-.02em!important;max-width:100%!important;margin:0 0 5px!important;overflow-wrap:anywhere}
+#root .cx-profile-details h1 span{font-size:.62em!important;vertical-align:baseline!important;margin-left:4px}
+#root .cx-handle{font-size:15px!important;color:var(--tg-text-secondary)!important;margin:0 0 12px!important}
+#root .cx-bio{font-size:15px!important;line-height:1.55!important;color:#f2f2f2!important}
+#root .cx-status{font-size:14px!important;color:var(--tg-text-secondary)!important}
+#root .cx-online{color:var(--tg-online)!important}
+#root .cx-friends-count{min-height:48px!important;display:flex;align-items:center;gap:8px;padding:10px 0!important;border:0!important;background:transparent!important}
+#root .cx-friends-count b{font-size:16px!important}#root .cx-friends-count span{font-size:14px;color:var(--tg-text-secondary)!important}
+#root .cx-profile-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important;overflow:visible!important;margin:14px 0 18px!important}
+#root .cx-profile-actions button{flex:1 1 135px!important;min-height:47px!important;max-width:100%;padding:10px 12px!important;border:0!important;border-radius:12px!important;background:var(--tg-bg-tertiary)!important;color:#fff!important;font:550 14px var(--tg-font)!important;box-shadow:none!important}
+#root .cx-profile-actions .cx-primary,#root .cx-edit-modal .cx-primary{background:var(--tg-accent)!important;color:#fff!important;box-shadow:none!important;border:0!important}
+#root .cx-profile-stats{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,105px),1fr))!important;gap:8px!important}
+#root .cx-profile-stats>div{background:var(--tg-bg-secondary)!important;border:1px solid var(--tg-divider)!important;border-radius:13px!important;padding:13px!important;min-height:78px!important}
+#root .cx-profile-stats b{font:650 21px var(--tg-font)!important;white-space:normal!important}
+#root .cx-profile-stats small{font-size:12px!important;color:var(--tg-text-secondary)!important}
+#root .cx-profile-special>label,#root .cx-profile-special>button{background:var(--tg-bg-tertiary)!important;border:0!important;border-radius:12px!important;color:#fff!important;min-height:45px!important}
+#root .cx-subsection{background:transparent!important;border:0!important;padding:0!important;border-radius:0!important;margin:20px 0!important;overflow:visible!important}
+#root .cx-subsection h3{font:550 13px var(--tg-font)!important;letter-spacing:.05em;text-transform:uppercase;color:var(--tg-text-secondary)!important;margin-bottom:8px!important}
+#root .cx-person-row,#root .cx-person-stack button{min-height:55px;padding:11px 12px!important;border-bottom:1px solid var(--tg-divider)!important}
+#root .cx-person-stack{background:var(--tg-surface)!important;border-radius:13px!important;overflow:hidden}
+#root .cx-person-row small{color:var(--tg-text-hint)!important}
+#root .cx-search{background:var(--tg-bg-tertiary)!important;border:0!important;border-radius:12px!important;min-height:44px!important}
+#root .cx-profile-menu{top:52px;right:0;border:1px solid var(--tg-divider)!important;border-radius:15px!important;background:#222!important;box-shadow:0 12px 35px #0009;z-index:10}
+#root .cx-settings{padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(115px + env(safe-area-inset-bottom,0px))!important}
+#root .cx-settings>header{padding:0!important;background:transparent!important;border:0!important;min-height:52px!important;margin-bottom:18px!important}
+#root .cx-settings h1,#root .cx-wallpaper-studio h2{font:650 22px var(--tg-font)!important;letter-spacing:-.02em!important}
+#root .cx-settings>header button{background:var(--tg-bg-tertiary)!important;border:0!important;border-radius:50%!important;min-width:44px!important;min-height:44px!important}
+#root .cx-settings-hero strong{color:#fff}#root .cx-settings-hero small{color:var(--tg-text-secondary)!important}
+#root .cx-settings-group{margin:19px 0!important}
+#root .cx-settings-group h3{font-size:12px!important;font-weight:550!important;color:var(--tg-text-secondary)!important}
+#root .cx-settings .cx-setting-card{background:var(--tg-surface)!important;border:0!important;border-radius:14px!important;box-shadow:none!important}
+#root .cx-settings .cx-setting-row{min-height:55px!important;gap:13px!important;padding:11px 13px!important;background:transparent!important;border-bottom:1px solid var(--tg-divider)!important}
+#root .cx-settings .cx-setting-row:last-child{border-bottom:0!important}
+#root .cx-settings .cx-setting-row>svg:first-child{color:var(--tg-accent)!important;background:transparent!important;width:23px!important;height:23px!important;padding:0!important;border-radius:0!important}
+#root .cx-settings .cx-setting-row b{font-size:15px;font-weight:550}
+#root .cx-settings .cx-setting-row small{font-size:12px;color:var(--tg-text-hint)}
+#root .cx-settings .cx-action{background:var(--tg-bg-tertiary)!important;border:0!important;border-radius:12px!important;min-height:46px!important}
+#root .cx-settings-search,#root .cx-simple-switch{background:var(--tg-bg-tertiary)!important;border:0!important;border-radius:13px!important}
+#root .cx-settings .cx-setting-content select{background:var(--tg-bg-secondary)!important;color:#fff!important;border:1px solid var(--tg-divider)!important}
+#root .cx-edit-modal{background:var(--tg-bg-secondary)!important;border:0!important;border-radius:18px 18px 0 0!important}
+#root .cx-edit-modal h2{font:650 20px var(--tg-font)!important}
+#root .cx-edit-modal input,#root .cx-edit-modal textarea{background:var(--tg-bg)!important;border:1px solid var(--tg-divider)!important;border-radius:11px!important;color:#fff!important}
+#root .chat-room .chat-header.glass,#root .chat-room .composer.glass{background:rgba(28,28,28,.95)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;box-shadow:none!important;border-color:var(--tg-divider)!important}
+#root .chat-room .bubble{border-radius:13px!important;max-width:min(82vw,440px)!important;padding:8px 11px!important;font:15px/1.45 var(--tg-font)!important;box-shadow:none!important}
+#root .chat-room .msg-line.own .bubble{background:var(--tg-bubble-out)!important;border-bottom-right-radius:4px!important}
+#root .chat-room .msg-line.other .bubble{background:var(--tg-bubble-in)!important;border-bottom-left-radius:4px!important}
+#root .chat-room .cx-grouped.own .bubble{border-top-right-radius:4px!important}
+#root .chat-room .cx-grouped.other .bubble{border-top-left-radius:4px!important}
+#root .chat-room .msg-actions.glass{background:#282828f5!important;border:1px solid var(--tg-divider)!important;border-radius:14px!important}
+#root .liquid-nav{background:rgba(28,28,28,.95)!important;backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;border:1px solid var(--tg-divider)!important;box-shadow:none!important}
+#root .liquid-nav button.active{background:#3390ec20!important;color:#73b6ff!important}
+#root .liquid-nav button.active .nav-orb{color:#73b6ff!important}
+#root .cx-preview-messages div{background:var(--tg-bubble-in)!important;border:0!important;border-radius:13px 13px 13px 4px!important}
+#root .cx-preview-messages .cx-preview-own{background:var(--tg-bubble-out)!important;border-radius:13px 13px 4px 13px!important}
+#root .cx-range input,#root .cx-check input{accent-color:var(--tg-accent)!important}
+#root .cx-wall-tabs button{background:var(--tg-bg-tertiary)!important;border:0!important;border-radius:12px!important}
+#root .cx-selected{outline-color:var(--tg-accent)!important}
+@media(max-width:520px){#root .cx-profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}#root .cx-profile-actions button{flex:1 1 calc(50% - 8px)!important}#root .cx-profile-details{padding-left:16px!important;padding-right:16px!important}#root .cx-profile-banner{height:175px!important;min-height:175px!important;max-height:175px!important}}
+@media(prefers-reduced-motion:reduce){#root .cx-profile-screen *,#root .cx-settings *,#root .chat-room *{animation-duration:.01ms!important;transition-duration:.01ms!important}}
