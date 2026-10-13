@@ -1,15 +1,15 @@
 {
-  "version": "6.5.3",
+  "version": "6.6.0",
   "date": "2026-10-13",
   "channel": "stable",
   "web": "/v5/",
   "preview": "/studio/",
   "changelog": [
-    "Сайт завантаження: чотири авторські колірні теми — Аврора, Рубін, Океан і Сутінки",
-    "Напівпрозорі скляні картки та оновлені градієнти для телефону й комп’ютера",
-    "Приклад чату тепер лише для перегляду: без можливості писати чи надсилати повідомлення",
-    "Зрозумілі варіанти завантаження Android, iPhone, Windows і Mac",
-    "Інсталятори лишаються 6.5.0; серверне сховище поки тимчасове"
+    "CLOUX 6.6.0: спрощена реєстрація та вхід, більше зручності на мобільних пристроях",
+    "Новий профіль з банером, аватаром, позивним, друзями та власними подарунками",
+    "Адмін-галочки захищені перевіркою власника на сервері; потрібна конфігурація ID власника",
+    "Нові збірки Android APK, Windows EXE, Mac DMG; iPhone/iPad працюють як PWA через Safari",
+    "Важливо: сховище акаунтів і чатів на Render наразі тимчасове"
   ],
   "packages": {
     "android": "/apk",
@@ -20,28 +20,28 @@
   },
   "platforms": {
     "android": {
-      "version": "6.5.0",
+      "version": "6.6.0",
       "type": "APK (тестовий debug-підпис)",
       "file": "Cloux-Android.apk",
       "release": "cloux-android",
       "minimum": "Android 8+"
     },
     "windows": {
-      "version": "6.5.0",
+      "version": "6.6.0",
       "type": "EXE",
       "file": "Cloux.exe",
       "release": "cloux-windows",
       "minimum": "Windows 10/11 x64"
     },
     "macos": {
-      "version": "6.5.0",
+      "version": "6.6.0",
       "type": "DMG (не нотаризований)",
       "file": "Cloux-macOS.dmg",
       "release": "cloux-macos",
       "minimum": "macOS 13+"
     },
     "ios": {
-      "version": "6.5.0",
+      "version": "6.6.0",
       "type": "PWA через Safari",
       "minimum": "iPhone / iPad",
       "release": null
