@@ -224,3 +224,5 @@
 @keyframes cx-receive-in{from{transform:translateX(-10px) scale(.98);opacity:.6}to{transform:none;opacity:1}}
 @media(max-width:760px){.cx-date-divider{font-size:10px}.cx-profile-stats{grid-template-columns:repeat(2,1fr)}.cx-scroll-bottom{bottom:calc(125px + env(safe-area-inset-bottom))}}
 @media(prefers-reduced-motion:reduce){#root .chat-entry,#root .msg-line.own,#root .msg-line.other{animation:none!important}#root .liquid-nav button{transition:none!important}.cx-scroll-bottom{scroll-behavior:auto}}
+
+.cx-pinned-banner{display:flex;align-items:center;gap:11px;width:100%;height:47px;border:0;border-bottom:1px solid #ffffff29;background:#111013e9;backdrop-filter:blur(18px);color:#eee;text-align:start;padding:0 17px;position:relative;z-index:4;font-size:13px}.cx-pinned-banner b{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.cx-pinned-banner:active{background:#27171c}
