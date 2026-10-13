@@ -240,12 +240,14 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
         if not valid_emoji or any(ord(ch)<32 for ch in data.emoji):
             fail('Оберіть емодзі, а не текст.')
         with db() as c:
-            row=c.execute('SELECT chat_id FROM messages WHERE id=?',(mid,)).fetchone()
+            row=c.execute('SELECT chat_id,sender FROM messages WHERE id=?',(mid,)).fetchone()
             if not row:fail('Повідомлення не знайдено.',404)
             if not member(c,me['id'],row['chat_id']):fail('Немає доступу.',403)
             old=c.execute('SELECT 1 FROM cloux_reactions WHERE message_id=? AND uid=? AND emoji=?',(mid,me['id'],data.emoji)).fetchone()
             if old:c.execute('DELETE FROM cloux_reactions WHERE message_id=? AND uid=? AND emoji=?',(mid,me['id'],data.emoji))
             else:c.execute('INSERT INTO cloux_reactions(message_id,uid,emoji) VALUES(?,?,?)',(mid,me['id'],data.emoji))
+            if not old and row['sender']!=me['id'] and getattr(app.state,'cloux_record_event',None):
+                app.state.cloux_record_event(c,row['sender'],'reaction',me['id'],str(mid))
         __import__("cloux_realtime").hub.emit(row['chat_id'],'reactions_updated',message_id=mid)
         return {'ok':True,'added':not bool(old)}
 
