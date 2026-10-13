@@ -366,6 +366,9 @@ cloux_social.install(app,db,auth,member,fail,limit,DATA,BASE)
 import cloux_product
 cloux_product.install(app,db,auth,member,fail,limit,DATA)
 
+import cloux_experience
+cloux_experience.install(app,db,auth,fail,limit)
+
 @app.get("/modern")
 def modern_ui():
     return FileResponse(BASE/"modern.html",media_type="text/html",headers={"Cache-Control":"no-store"})
