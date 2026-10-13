@@ -32,6 +32,11 @@ def install(app,db,auth,fail,limit):
            kind TEXT NOT NULL,actor TEXT REFERENCES users(id),
            ref TEXT,created INTEGER NOT NULL);
         CREATE INDEX IF NOT EXISTS cloux_events_user ON cloux_events(uid,id DESC);
+        CREATE TABLE IF NOT EXISTS cloux_pinned_messages(
+          chat_id TEXT NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+          message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+          pinned_by TEXT NOT NULL REFERENCES users(id), created INTEGER NOT NULL,
+          PRIMARY KEY(chat_id,message_id));
         """)
     def friend(c,a,b):
         if a==b:return True
@@ -139,6 +144,30 @@ def install(app,db,auth,fail,limit):
         with db() as c:
             cur=c.execute('DELETE FROM cloux_stories WHERE id=? AND uid=?',(story_id,user['id']))
             if not cur.rowcount:fail('Історію не знайдено.',404)
+        return {'ok':True}
+
+    @app.get('/api/cloux/chat/{chat_id}/pins')
+    def pinned_messages(chat_id:str,request:Request):
+        u=auth(request)
+        with db() as c:
+            if not c.execute('SELECT 1 FROM chat_members WHERE chat_id=? AND user_id=?',(chat_id,u['id'])).fetchone():fail('Доступ заборонено.',403)
+            rows=c.execute("""SELECT m.id,m.sender,m.text,m.created FROM cloux_pinned_messages p
+               JOIN messages m ON m.id=p.message_id WHERE p.chat_id=? ORDER BY p.created DESC LIMIT 30""",(chat_id,)).fetchall()
+        return {'pinned':[dict(x) for x in rows]}
+    @app.post('/api/cloux/chat/{chat_id}/pin/{message_id}')
+    def pin_message(chat_id:str,message_id:int,request:Request):
+        u=auth(request);limit(request,60,60)
+        with db() as c:
+            if not c.execute('SELECT 1 FROM chat_members WHERE chat_id=? AND user_id=?',(chat_id,u['id'])).fetchone():fail('Доступ заборонено.',403)
+            if not c.execute('SELECT 1 FROM messages WHERE id=? AND chat_id=?',(message_id,chat_id)).fetchone():fail('Повідомлення не знайдено.',404)
+            c.execute('INSERT OR IGNORE INTO cloux_pinned_messages(chat_id,message_id,pinned_by,created) VALUES(?,?,?,?)',(chat_id,message_id,u['id'],int(time.time())))
+        return {'ok':True}
+    @app.delete('/api/cloux/chat/{chat_id}/pin/{message_id}')
+    def unpin_message(chat_id:str,message_id:int,request:Request):
+        u=auth(request)
+        with db() as c:
+            if not c.execute('SELECT 1 FROM chat_members WHERE chat_id=? AND user_id=?',(chat_id,u['id'])).fetchone():fail('Доступ заборонено.',403)
+            c.execute('DELETE FROM cloux_pinned_messages WHERE chat_id=? AND message_id=?',(chat_id,message_id))
         return {'ok':True}
 
     @app.get('/api/cloux/notifications')
