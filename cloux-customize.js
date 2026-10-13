@@ -9,11 +9,10 @@ const read=(k,fall='')=>{try{return localStorage.getItem('cloux:custom:'+k)||fal
 const write=(k,v)=>{try{localStorage.setItem('cloux:custom:'+k,String(v))}catch{}};
 let modal=null,stream=null,source=null,image=null,kind='avatar',zoom=1,offsetX=0,offsetY=0,angle=0,flipped=false,filters={brightness:100,contrast:100,saturation:100,blur:0,dim:0},history=[],redoStack=[],activeId='',cachedAvatar='',cachedBanner='',updateTimer=0;
 function foot(){
- let el=$('.cloux-legal-footer:not(.cloux-settings-legal)');
- if(!el){el=document.createElement('footer');el.className='cloux-legal-footer';el.setAttribute('aria-label','Власник Cloux та авторські права');el.innerHTML=LEGAL;document.body.append(el)}
- const about=Array.from(document.querySelectorAll('.settings-view h3')).find(el=>el.textContent.trim()==='Cloux Messenger');
- if(about&&!$('.cloux-settings-legal')){const info=document.createElement('div');info.className='cloux-settings-legal cloux-legal-footer';info.innerHTML=LEGAL;about.parentElement.append(info)}
+ // Legal attribution remains in project metadata, not as a fixed overlay.
+ document.querySelectorAll('.cloux-legal-footer').forEach(el=>el.remove());
 }
+
 function updateTheme(name,position){
  const theme=themes.find(t=>t[0]===name);if(!theme)return;
  if(position&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
