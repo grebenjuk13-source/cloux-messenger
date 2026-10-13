@@ -1,330 +1,39 @@
 <!doctype html>
-<html lang="uk"><head>
+<html lang="uk">
+<head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="author" content="Ільяс"><meta name="copyright" content="© 2026 CLOUX"><meta name="theme-color" content="#000000"><meta name="description" content="Офіційне завантаження Cloux — Android, Windows, macOS, iPhone, PWA та веб">
-<link rel="icon" href="/assets/cloux-default-avatar.jpg" type="image/jpeg"><link rel="apple-touch-icon" href="/assets/cloux-default-avatar.jpg">
-<link rel="manifest" href="/manifest.json?v=6.6.1"><link rel="stylesheet" href="/cloux-customize.css?v=6.6.1"><title>Завантажити CLOUX — офіційний сайт</title>
+<meta name="theme-color" content="#111527"><meta name="description" content="CLOUX — месенджер для спілкування у твоєму стилі. Завантажуй для Android, Windows, Mac або встановлюй через Safari на iPhone.">
+<meta name="author" content="CLOUX"><title>CLOUX — твоє спілкування, твій простір</title>
+<link rel="icon" href="/assets/cloux-default-avatar.jpg"><link rel="apple-touch-icon" href="/assets/cloux-default-avatar.jpg">
 <style>
-:root{color-scheme:dark;--bg:#0a0a0a;--panel:#16161a;--red:#e10600;--hot:#ff1a1a;--dark:#2a0006;--text:#fff;--text-dim:rgba(255,255,255,.65);--border:#ffffff24}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 25% 6%,#a3001237,transparent 48%),radial-gradient(ellipse at 95% 75%,#a0000824,transparent 50%),var(--bg);color:var(--text);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}a{color:inherit;text-decoration:none}button{font:inherit;color:#fff;cursor:pointer}button:disabled{opacity:.55;cursor:wait}
-.wrapper{width:min(1080px,calc(100% - 36px));margin:auto;padding:0 0 65px}header{display:flex;align-items:center;gap:13px;padding:28px 0 60px}.brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:25px;letter-spacing:-1px}.brand img{width:42px;height:42px;object-fit:cover;border-radius:14px;border:1px solid #ffffff45}.brand b{color:var(--hot)}.nav-version{margin-left:auto;color:var(--text-dim);font-size:12px;border:1px solid var(--border);padding:8px 13px;border-radius:40px}
-.hero{text-align:center;max-width:780px;margin:auto}.hero-logo{width:110px;height:110px;object-fit:cover;border-radius:28px;border:1px solid #ffffff4c;box-shadow:0 18px 68px #d3001f70}.eyebrow{display:inline-block;margin:22px 0 0;padding:8px 15px;border:1px solid #ff57576b;background:#a500101a;border-radius:30px;color:var(--text);font-size:11px;font-weight:800;letter-spacing:.14em}.hero h1{font-size:clamp(39px,8.5vw,78px);line-height:1.06;letter-spacing:-.06em;margin:18px 0}.hero h1 span{background:linear-gradient(110deg,#ff4646,#bc020c);background-clip:text;-webkit-background-clip:text;color:transparent}.hero p{font-size:15px;line-height:1.75;color:var(--text-dim);margin:12px auto 26px;max-width:650px}
-.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:880px;margin:30px auto 0}.btn{min-height:55px;padding:13px 17px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;font-size:13px;font-weight:800;background:var(--panel);border:1px solid var(--border);transition:transform .15s,box-shadow .22s,background .2s;text-decoration:none}.btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px #0006}.btn:active{transform:scale(.98)}.btn.red{background:linear-gradient(125deg,var(--hot),#8b0007);box-shadow:0 7px 32px #e1060059;border-color:#ff7b7b61}.btn.outline{background:#ffffff0b}.btn svg{flex:none}
-.section-title{font-size:26px;letter-spacing:-.04em;margin:50px 0 8px}.subtle{color:var(--text-dim);font-size:13px;margin:0 0 20px}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{border-radius:22px;border:1px solid var(--border);background:linear-gradient(135deg,#2c1015a8,#16161ae9 72%);box-shadow:inset 0 1px #ffffff1c,0 12px 35px #0003;padding:24px}.card h3{margin:0 0 8px;font-size:21px}.card p{color:var(--text-dim);font-size:13px;line-height:1.7;min-height:66px}.card .icon{font-size:29px;margin-bottom:12px}.card .btn{margin-top:17px}.card.current{border-color:#f54b4b7c;box-shadow:0 0 0 1px #e1060052,0 18px 40px #0004}.banner{margin:30px auto 0;padding:17px 20px;border:1px solid #ff595951;border-radius:19px;background:linear-gradient(115deg,#6c00083e,#120c10);display:flex;align-items:center;justify-content:space-between;gap:15px}.banner strong{display:block}.banner p{font-size:12px;color:var(--text-dim);margin:2px 0 0}.banner .btn{width:auto;white-space:nowrap}.changelog{background:#150e11;border:1px solid #ff34343b;padding:19px 23px;border-radius:20px;margin-top:19px}.changelog h3{margin:0 0 12px;font-size:17px}.changelog ul{margin:0;padding-left:20px}.changelog li{margin:6px 0;color:#fff;font-size:13px}.info{font-size:12px;color:var(--text-dim);border:1px solid var(--border);border-radius:15px;padding:17px 19px;line-height:1.8;margin-top:32px}.info b{color:var(--text)}.footer{border-top:1px solid var(--border);display:flex;gap:10px;justify-content:space-between;margin-top:33px;padding-top:20px;font-size:12px;color:var(--text-dim)}.footer a{text-decoration:underline;text-decoration-color:var(--red)}.help{background:#ffffff09;border:1px solid var(--border);border-radius:17px;padding:14px 18px;margin:14px 0;color:var(--text);font-size:13px;line-height:1.7}.help[hidden]{display:none}.help ol{margin:6px 0;padding-left:20px}.live{display:flex;gap:9px;justify-content:center;margin-top:22px;font-size:12px;color:var(--text-dim)}.live a{text-decoration:underline;text-decoration-color:var(--hot)}
-@media(max-width:730px){header{padding-bottom:38px}.actions{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.banner{flex-direction:column;align-items:stretch}.banner .btn{width:100%}.card p{min-height:0}.wrapper{width:calc(100% - 28px)}.section-title{font-size:23px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-.release-meta{display:inline-flex;align-items:center;gap:6px;min-height:26px;font-size:11px;line-height:1.5;color:#fff;border:1px solid #e1060070;background:linear-gradient(120deg,#6b071453,#1e101333);padding:5px 10px;border-radius:12px;margin-bottom:5px;font-weight:700;font-variant-numeric:tabular-nums}.release-meta[aria-busy="true"]{opacity:.75}
-
-/* CLOUX 2026: accessible app landing page for first-time and experienced users. */
-:root{--focus:#ff8888}
-:focus-visible{outline:3px solid var(--focus)!important;outline-offset:4px}
-html{scroll-padding-top:20px}
-.wrapper{width:min(1130px,calc(100% - 36px))}
-.hero h1{font-weight:800}
-.hero-logo{background:#000;box-shadow:0 17px 38px #0007;border-radius:26px}
-.card{background:linear-gradient(148deg,#19191c,#111114);border-radius:26px;transition:border-color .2s,transform .2s}
-.card.current{border-color:#e10600}
-.card:hover{border-color:#ffffff4b}
-.btn{border-radius:18px;min-height:55px;font-size:14px}
-.btn.red{background:#e10600;border-color:#e93e3a;box-shadow:0 8px 20px #e106002a}
-.btn.red:hover{background:#ff2a2a}
-.hero p{font-size:clamp(15px,2vw,18px)}
-.choose-device{margin:34px auto 0;background:#111113;border:1px solid #ffffff2d;border-radius:27px;padding:22px;max-width:910px}
-.choose-device h2{font:700 clamp(20px,4vw,29px)/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;letter-spacing:-.04em;margin:0 0 6px}
-.choose-device p{font-size:13px;color:#c3bec3;margin:0 0 18px;line-height:1.65}
-.device-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
-.device-options a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:92px;border:1px solid #ffffff24;background:#1b1b1f;border-radius:19px;font-size:13px;font-weight:700;transition:transform .18s,border-color .18s;cursor:pointer}
-.device-options a:active{transform:scale(.97)}
-.device-options a.selected{background:#e106001f;border-color:#ee4848}
-.device-options a .device-emoji{font-size:27px}
-.recommended{margin:17px 0 0;padding:14px 16px;background:#241217;border:1px solid #e1060057;border-radius:16px;display:flex;align-items:center;gap:14px;justify-content:space-between}
-.recommended span{font-size:14px;font-weight:650}
-.recommended .btn{min-height:46px;padding:9px 13px;flex:none}
-.why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:23px 0}
-.why article{background:#121214;border:1px solid #ffffff1d;border-radius:20px;padding:17px}
-.why strong{font-size:15px}.why p{font-size:12px;color:#b8b0b8;margin:7px 0 0}
-.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:steps}
-.steps>div{padding:18px;border:1px solid #ffffff24;background:#151518;border-radius:20px}
-.steps>div::before{counter-increment:steps;content:counter(steps);display:grid;place-items:center;width:38px;height:38px;background:#e10600;color:#fff;border-radius:13px;font-weight:800;margin-bottom:11px}
-.steps h3{font-size:16px;margin:0 0 5px}.steps p{font-size:13px;color:#c0b9be;margin:0}
-.faq{margin:20px 0 0}
-.faq details{margin:9px 0;background:#151517;border:1px solid #ffffff26;border-radius:17px;padding:15px 18px}
-.faq summary{font-weight:650;cursor:pointer}
-.faq p{color:#b8b2ba;font-size:13px;margin:11px 0 0}
-.access-control{display:flex;gap:8px;align-items:center;margin-left:auto}
-.access-control button{min-height:44px;min-width:44px;border:1px solid #ffffff30;background:#18181b;border-radius:13px;color:#fff}
-body.easy-read{font-size:18px;line-height:1.7}
-body.easy-read .card p,body.easy-read .subtle,body.easy-read .why p,body.easy-read .steps p,body.easy-read .faq p{font-size:16px}
-body.easy-read .btn{font-size:17px;min-height:58px}
-body.easy-read .device-options a{font-size:15px;min-height:100px}
-body.easy-read .card h3{font-size:24px}
-.notice-privacy{background:#1a1719;border-left:4px solid #e10600;border-radius:14px;padding:16px;font-size:13px;line-height:1.8;color:#d1cbd0;margin:24px 0}
-.notice-privacy strong{color:#fff}
-@media(max-width:760px){header{gap:8px;padding:20px 0 24px}.brand{font-size:23px}.nav-version{font-size:10px;padding:6px 8px}.access-control button{min-width:42px;min-height:42px}.device-options{grid-template-columns:repeat(3,minmax(0,1fr))}.choose-device{padding:17px 12px}.recommended{flex-direction:column;align-items:stretch}.recommended .btn{width:100%}.why,.steps{grid-template-columns:1fr}.wrapper{width:calc(100% - 24px)}.hero h1{font-size:clamp(34px,10vw,60px)}}
-@media(max-width:390px){.device-options{grid-template-columns:repeat(2,minmax(0,1fr))}.brand img{width:34px;height:34px}.brand{font-size:19px}.nav-version{display:none}}
-
-</style><style id="cloux-premium-styles">
-.device-illustration,.platform-icon{display:grid;place-items:center;color:#f5f1f2;background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.025));border:1px solid #ffffff39;box-shadow:inset 0 1px #ffffff21,0 8px 26px #0006;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:19px;width:60px;height:60px}
-.platform-icon{width:64px;height:64px;margin-bottom:14px}.device-svg{filter:drop-shadow(0 2px 9px #fff2)}.device-options a{min-height:126px;background:linear-gradient(155deg,#252127cf,#151518e6);backdrop-filter:blur(24px);border-radius:23px;box-shadow:inset 0 1px #ffffff18}
-.device-options a:hover,.device-options a.selected{transform:translateY(-3px);border-color:#e10600a8}.device-options a.selected .device-illustration{color:#fff;background:linear-gradient(145deg,#8f161b,#251016)}
-.conversation-showcase{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,400px);gap:clamp(25px,5vw,75px);align-items:center;margin:58px auto 28px;max-width:1040px}
-.showcase-copy h2{font-size:clamp(36px,5.5vw,67px);letter-spacing:-.055em;line-height:1.1;margin:20px 0 16px}.showcase-copy h2 em{font-style:normal;color:#ff6663}.showcase-copy p{font-size:16px;color:#c8c1c5;max-width:430px}.showcase-copy .btn{max-width:280px;margin-top:20px}.showcase-features{display:flex;flex-wrap:wrap;gap:9px;margin:22px 0}.showcase-features span{padding:8px 11px;border:1px solid #ffffff26;background:#ffffff0c;border-radius:40px;font-size:12px}
-.phone-frame{padding:9px;border-radius:46px;background:linear-gradient(140deg,#7a6a73,#131017 30%,#1a1820 75%,#68636d);box-shadow:0 35px 90px #000d,0 0 55px #d9091523;transform:rotate(1deg)}
-.phone-glass{height:600px;max-height:75dvh;background:linear-gradient(155deg,#0d0b13,#1b0b12 65%,#080b10);border:2px solid #000;border-radius:38px;overflow:hidden;position:relative;display:flex;flex-direction:column}
-.phone-island{height:21px;width:87px;background:#000;position:absolute;left:50%;top:9px;transform:translateX(-50%);z-index:2;border-radius:30px}
-.phone-top{display:flex;align-items:center;gap:10px;padding:40px 16px 12px;background:#ffffff0d;backdrop-filter:blur(18px);border-bottom:1px solid #ffffff21}
-.mock-back{color:#ff7575;font-size:32px;line-height:1}.mock-avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:linear-gradient(145deg,#df1627,#460b19);font-weight:850}.mock-contact{flex:1;display:flex;flex-direction:column;line-height:1.3}.mock-contact b{font-size:15px}.mock-contact small{font-size:11px;color:#bcafb8}.mock-contact i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#6ae8ab}.mock-video{font-size:25px;color:#d1c4cc}
-.mock-chat-area{flex:1;overflow:auto;display:flex;flex-direction:column;gap:13px;padding:17px 15px;background-image:radial-gradient(#fff2 1px,transparent 1.5px),linear-gradient(140deg,#0f0e14,#32141d 58%,#0d0c13);background-size:33px 33px,cover;scrollbar-width:thin}
-.mock-date{align-self:center;padding:5px 11px;border-radius:30px;font-size:10px;background:#0d0a10b8;border:1px solid #ffffff22}
-.mock-bubble{max-width:82%;display:flex;flex-direction:column;gap:5px;padding:10px 12px;border-radius:17px;font-size:12px;line-height:1.5;position:relative;animation:mock-pop .3s cubic-bezier(.2,1.4,.35,1) both}.mock-bubble.incoming{align-self:flex-start;background:#2b272eea;border-bottom-left-radius:5px}.mock-bubble.outgoing{align-self:flex-end;background:linear-gradient(130deg,#e10600,#911920);border-bottom-right-radius:5px}.mock-bubble small{align-self:flex-end;color:#ffffffad;font-size:9px}.mock-react{position:absolute;bottom:-15px;right:5px;border:1px solid #ffffff3a;background:#251820;border-radius:50%;width:29px;height:29px;font-size:17px}.mock-react.active{background:#741724}
-
-.mock-compose{display:flex;gap:10px;align-items:center;padding:11px 12px;background:#171219;backdrop-filter:blur(20px);border-top:1px solid #ffffff1f}.mock-compose input{flex:1;min-width:0;border:1px solid #ffffff28;background:#ffffff0c;border-radius:23px;padding:12px 15px;color:#fff;outline:none}.mock-compose input:focus{border-color:#fa5454}.mock-compose button{display:grid;place-items:center;border:0;border-radius:50%;width:42px;height:42px;background:#e10600;font-size:20px}
-.mock-home-bar{height:17px;background:#171219;position:relative}.mock-home-bar:after{content:"";position:absolute;width:97px;height:4px;background:#fff;border-radius:9px;left:50%;bottom:6px;transform:translateX(-50%)}
-#mock-entries{display:contents}
-@keyframes mock-pop{from{opacity:0;transform:translateY(7px) scale(.97)}to{opacity:1;transform:none}}}
-@media(max-width:760px){.conversation-showcase{grid-template-columns:1fr;justify-items:center;margin-top:38px}.showcase-copy{text-align:center}.showcase-copy .btn{margin:20px auto 0}.showcase-features{justify-content:center}.phone-frame{width:min(100%,390px);transform:none}.phone-glass{height:530px}.device-options a{min-height:120px}}
-@media(prefers-reduced-motion:reduce){.mock-bubble,.mock-voice.playing .mock-waves i{animation:none!important}}
-</style><style id="cloux-final-simplify">
-.device-options{grid-template-columns:repeat(4,minmax(0,1fr))}
-@media(max-width:760px){.device-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.conversation-showcase .mock-chat-area{background-color:#100d12}
-.showcase-features span{background:rgba(255,255,255,.07);backdrop-filter:blur(14px)}
-.choose-device{box-shadow:0 18px 60px #0006,inset 0 1px #ffffff1c}
-.device-options a{transition:transform .22s cubic-bezier(.2,1.3,.3,1),border-color .2s}
-.mock-bubble{box-shadow:0 6px 20px #0003}
-</style><style id="cloux-multicolor-design">
-:root{--clx-a:#8d79f5;--clx-b:#56d6e9;--clx-hot:#b496fc;--clx-fg:#f2f2fa;--clx-glass:rgba(30,29,44,.65);--clx-soft:rgba(141,121,245,.16)}
-body{background:radial-gradient(ellipse 60% 38% at 90% 8%,color-mix(in srgb,var(--clx-b) 18%,transparent),transparent 85%),radial-gradient(ellipse 75% 36% at 1% 29%,color-mix(in srgb,var(--clx-a) 16%,transparent),transparent 85%),#07080c!important;color:var(--clx-fg)}
-body[data-visual-theme="ruby"]{--clx-a:#e95b72;--clx-b:#b47da4;--clx-hot:#f5849c;--clx-glass:rgba(47,24,39,.62);--clx-soft:#e95b721c}
-body[data-visual-theme="ocean"]{--clx-a:#4699e3;--clx-b:#54dbce;--clx-hot:#7bdce7;--clx-glass:rgba(15,40,51,.62);--clx-soft:#46b6dd20}
-body[data-visual-theme="gold"]{--clx-a:#dfa958;--clx-b:#f18e88;--clx-hot:#f3c888;--clx-glass:rgba(45,34,33,.65);--clx-soft:#ebaa6323}
-.hero h1 span,.showcase-copy h2 em{color:var(--clx-hot)!important}
-.hero{position:relative;isolation:isolate}.hero::before{content:"";position:absolute;width:min(80vw,530px);height:290px;z-index:-1;left:50%;top:20px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,var(--clx-soft),transparent 70%);filter:blur(45px);pointer-events:none}
-.hero-logo{border:1px solid #ffffff30!important;box-shadow:0 16px 55px #0009,0 0 70px var(--clx-soft)!important}
-.btn.red,.mock-compose button,.device-options a.selected,.mock-voice button{background:linear-gradient(135deg,var(--clx-a),var(--clx-b))!important;border-color:#ffffff30!important;color:#08080c!important;box-shadow:0 12px 32px var(--clx-soft)!important}
-.btn.red:hover{filter:brightness(1.12)}
-.choose-device,.card,.why article,.steps>div,.faq details,.phone-top{background:var(--clx-glass)!important;backdrop-filter:blur(26px) saturate(150%)!important;-webkit-backdrop-filter:blur(26px) saturate(150%)!important;border-color:#ffffff24!important}
-.card:hover,.device-options a:hover,.device-options a.selected{border-color:var(--clx-a)!important}
-.device-illustration{background:linear-gradient(155deg,var(--clx-soft),#ffffff0a)!important}
-.device-options a.selected{color:#fff!important;background:var(--clx-soft)!important;border:1px solid var(--clx-a)!important}
-.device-options a.selected .device-illustration{background:linear-gradient(135deg,var(--clx-a),var(--clx-b))!important;color:#090b11!important}
-.recommended{background:var(--clx-soft)!important;border-color:var(--clx-a)!important}
-.phone-frame{background:linear-gradient(145deg,var(--clx-a),#34323d 42%,#15141d 80%,var(--clx-b))!important;box-shadow:0 34px 90px #000c,0 0 60px var(--clx-soft)!important}
-.phone-glass{background:#0c0d13!important}
-.mock-chat-area{background-image:radial-gradient(#ffffff17 1px,transparent 1.8px),radial-gradient(ellipse at 80% 20%,var(--clx-soft),transparent 55%),linear-gradient(145deg,#0d1019,#1a1725)!important}
-.mock-bubble.outgoing{background:linear-gradient(125deg,var(--clx-a),color-mix(in srgb,var(--clx-a) 60%,#181624))!important;color:#fff!important}
-.mock-avatar{background:linear-gradient(145deg,var(--clx-a),var(--clx-b))!important;color:#0b0d14!important}
-.mock-contact i{background:var(--clx-b)!important}
-.mock-react.active{background:var(--clx-soft)!important}
-.mock-readonly{justify-content:center;gap:10px;color:#c9c6d6;font-size:12px;min-height:68px;letter-spacing:.02em;background:rgba(255,255,255,.055)!important}
-.mock-lock-icon{font-size:20px;color:var(--clx-hot)}.mock-lock-tag{padding:4px 7px;font-size:9px;letter-spacing:.13em;border:1px solid #ffffff30;border-radius:20px}
-.cloux-appearance{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:fit-content;max-width:100%;margin:20px auto 8px;padding:12px 15px;border:1px solid #ffffff2a;border-radius:24px;background:rgba(255,255,255,.055);backdrop-filter:blur(23px)}
-.appearance-text{display:flex;gap:8px;align-items:center;font-size:12px;color:#c8c3d3;font-weight:650}.appearance-dot{width:8px;height:8px;background:var(--clx-hot);border-radius:50%;box-shadow:0 0 0 4px var(--clx-soft)}
-.appearance-options{display:flex;align-items:center;gap:8px}
-.appearance-options button{border:1px solid #ffffff36;background:transparent;padding:4px;border-radius:50%;height:40px;width:40px;display:grid;place-items:center;cursor:pointer;transition:transform .2s,border-color .2s}
-.appearance-options button[aria-pressed="true"]{border:2px solid var(--clx-hot);box-shadow:0 0 0 2px var(--clx-soft)}
-.appearance-options button:active{transform:scale(.94)}
-.theme-swatch{width:27px;height:27px;border-radius:50%;display:block}.theme-swatch.aurora{background:linear-gradient(140deg,#8d79f5,#56d6e9)}.theme-swatch.ruby{background:linear-gradient(140deg,#e95b72,#b47da4)}.theme-swatch.ocean{background:linear-gradient(140deg,#4699e3,#54dbce)}.theme-swatch.gold{background:linear-gradient(140deg,#dfa958,#f18e88)}
-.appearance-name{font-size:12px;color:var(--clx-hot);font-weight:700;min-width:59px}
-@media(max-width:550px){.cloux-appearance{gap:8px;padding:10px 12px}.appearance-text{width:100%;justify-content:center}.phone-frame{max-width:360px}}
-@media(prefers-reduced-motion:reduce){.appearance-options button{transition:none}}
-</style><style id="cloux-hide-update-banner">#update-banner,[id="update-banner"]{display:none!important;visibility:hidden!important}</style>
-<style id="cloux-chat-preview-accessibility">
-/* Spacious, accessible chat artwork: appearance-only; no inputs or reactions. */
-.phone-glass .mock-chat-area{gap:17px!important;padding:24px 19px 21px!important}
-.phone-glass .mock-bubble{font-size:clamp(15px,2vw,17px)!important;line-height:1.55!important;max-width:91%!important;padding:15px 18px!important;border-radius:22px!important;gap:8px!important;letter-spacing:.005em}
-.phone-glass .mock-bubble.incoming{border-bottom-left-radius:7px!important}
-.phone-glass .mock-bubble.outgoing{border-bottom-right-radius:7px!important}
-.phone-glass .mock-bubble small{font-size:11px!important}
-.phone-glass .mock-date{font-size:12px!important;padding:7px 14px!important}
-.phone-glass .mock-readonly{min-height:63px!important}
-.phone-glass .mock-react{display:none!important}
-@media(max-width:760px){.phone-glass .mock-bubble{font-size:15px!important}.phone-glass .mock-chat-area{padding:18px 14px!important}.phone-glass{height:570px!important}}
-</style></head><body>
-<div class="wrapper">
-<header><div class="brand"><img src="/assets/cloux-default-avatar.jpg" alt="Cloux"> Cloux<b>.</b></div><div class="access-control"><button id="easy-read" type="button" aria-pressed="false" aria-label="Збільшити текст" title="Збільшити текст">A+</button><span class="nav-version" id="nav-version">Перевіряємо версію…</span></div></header>
-<section class="hero"><img class="hero-logo" src="/assets/cloux-default-avatar.jpg" alt="Логотип Cloux">
-<div class="eyebrow">CLOUX MESSENGER · YOUR SPACE</div>
-<h1>Спілкування, яке<br><span>відчувається твоїм.</span></h1>
-<p>Завантаж CLOUX на свій телефон або комп’ютер. Чати, друзі й налаштування — у стильному та зрозумілому застосунку.</p>
-<div class="actions">
-<button class="btn red" id="install-pwa">＋ Встановити (PWA)</button>
-<a class="btn outline" href="#device-title">↓ Обрати свій пристрій</a>
-
-</div>
-</section>
-<div class="cloux-appearance" aria-label="Оформлення сайту">
- <div class="appearance-text"><span class="appearance-dot"></span><span>Обери настрій</span></div>
- <div class="appearance-options" role="group" aria-label="Колірне оформлення">
-  <button type="button" data-visual-theme="aurora" aria-label="Аврора, фіолетово-блакитний" title="Аврора"><span class="theme-swatch aurora"></span></button>
-  <button type="button" data-visual-theme="ruby" aria-label="Рубін, червоно-бордовий" title="Рубін"><span class="theme-swatch ruby"></span></button>
-  <button type="button" data-visual-theme="ocean" aria-label="Океан, синьо-бірюзовий" title="Океан"><span class="theme-swatch ocean"></span></button>
-  <button type="button" data-visual-theme="gold" aria-label="Сутінки, золотисто-помаранчевий" title="Сутінки"><span class="theme-swatch gold"></span></button>
- </div><span id="current-appearance" class="appearance-name">Аврора</span>
-</div>
-<section class="conversation-showcase" aria-labelledby="conversation-title">
-<div class="showcase-copy"><span class="eyebrow">ПОГЛЯНЬ, ЯК ЦЕ ПРАЦЮЄ</span><h2 id="conversation-title">Твоя розмова.<br><em>Твій CLOUX.</em></h2><p>Подивись на оформлення повідомлень і реакції. Це лише демонстрація: тут не можна писати чи надсилати повідомлення. Для спілкування встанови CLOUX.</p>
-<div class="showcase-features"><span>✓ Зручні чати</span><span>✓ Реакції</span><span>✓ Особисті чати</span><span>✓ Власні теми</span></div>
-<a class="btn red" href="#device-title">↓ Завантажити CLOUX</a></div>
-<div class="phone-frame" aria-label="Інтерактивний приклад переписки CLOUX"><div class="phone-glass"><div class="phone-island" aria-hidden="true"></div>
-<div class="phone-top"><span class="mock-back">‹</span><span class="mock-avatar">C</span><span class="mock-contact"><b>Cloux</b><small>у мережі <i></i></small></span><span class="mock-video" aria-hidden="true">◉</span></div>
-<div class="mock-chat-area" id="mock-chat-area"><span class="mock-date">Сьогодні</span>
-<div class="mock-bubble incoming"><span>Привіт! 👋<br>Ласкаво просимо у CLOUX.</span><small>12:41</small></div>
-<div class="mock-bubble outgoing"><span>Ого, який красивий чат! ❤️</span><small>12:42 ✓✓</small></div>
-<div class="mock-bubble incoming"><span>Тут можна спілкуватися, реагувати на повідомлення й змінювати шпалери ✨</span><small>12:42</small></div>
-</div>
-<div class="mock-compose mock-readonly" role="note" aria-label="Демонстрація без можливості писати"><span class="mock-lock-icon" aria-hidden="true">✦</span><span>Це приклад оформлення чату</span><span class="mock-lock-tag">ДЕМО</span></div>
-<div class="mock-home-bar"></div></div></div></section>
-<section class="choose-device" aria-labelledby="device-title">
-<h2 id="device-title">На якому пристрої хочеш користуватися CLOUX?</h2>
-<p>Обери телефон або комп’ютер. Ми одразу покажемо, який файл потрібен та як його встановити.</p>
-<div class="device-options" aria-label="Обрати свій пристрій">
-<a href="#android" data-choice="android"><span class="device-illustration"><svg class="device-svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="9" width="26" height="22" rx="6"/><path d="M9 9l-3-5m21 5 3-5M12 18v5m12-5v5M5 16H2m29 0h3"/><circle cx="13" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="23" cy="14" r="1" fill="currentColor" stroke="none"/></svg></span>Android</a>
-<a href="#iphone" data-choice="iphone"><span class="device-illustration"><svg class="device-svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="18" height="32" rx="6"/><path d="M15 5h6m-5 25h4"/></svg></span>iPhone / iPad</a>
-<a href="#windows" data-choice="windows"><span class="device-illustration"><svg class="device-svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l13-2v12H3zM19 5l14-2v15H19zM3 21h13v10L3 29zm16 0h14v13l-14-2z"/></svg></span>Windows</a>
-<a href="#mac" data-choice="mac"><span class="device-illustration"><svg class="device-svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="30" height="21" rx="3"/><path d="M13 27l-2 4h14l-2-4M8 32h20"/></svg></span>Mac</a>
-</div>
-<div class="recommended" role="status" aria-live="polite"><span id="device-recommendation">Вибери свій пристрій вище, щоб отримати правильне завантаження.</span><a class="btn red" id="recommended-link" href="#android">↓ Обрати пристрій</a></div>
-</section>
-<div class="why" aria-label="Переваги CLOUX">
-<article><strong>Чати без зайвого</strong><p>Особисті розмови, друзі й групи в одному застосунку.</p></article>
-<article><strong>🎨 Налаштуй під себе</strong><p>Теми, шпалери й велика кількість мов інтерфейсу.</p></article>
-<article><strong>♿ Зручно кожному</strong><p>Великі кнопки, збільшення тексту та зрозумілі підказки.</p></article>
-</div>
-<div class="banner"><div><strong id="version-label">Cloux — завантажуємо дані версії</strong><p id="version-date">Актуальні зміни перевіряються без кешу</p></div><a class="btn red" href="#device-title">↓ Завантажити</a></div>
-<h2 class="section-title">Застосунок для всіх пристроїв</h2><p class="subtle">Обери свою платформу. Для iPhone доступне встановлення на головний екран через Safari.</p>
-<section class="cards" aria-label="Завантаження">
-<article class="card" id="android"><div class="icon platform-icon"><svg class="device-svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="9" width="26" height="22" rx="6"/><path d="M9 9l-3-5m21 5 3-5M12 18v5m12-5v5M5 16H2m29 0h3"/><circle cx="13" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="23" cy="14" r="1" fill="currentColor" stroke="none"/></svg></div><h3>Android</h3><div class="release-meta" id="android-release" aria-live="polite">Перевіряємо APK…</div><p>APK CLOUX 6.6.1 для Android 8+. Це тестова збірка з debug-підписом: при зміні сертифіката може знадобитися перевстановлення. Справжні чати відкриваються з сервера.</p><a class="btn red" href="/apk">↓ Завантажити Android APK</a></article>
-<article class="card" id="iphone"><div class="icon platform-icon"><svg class="device-svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="18" height="32" rx="6"/><path d="M15 5h6m-5 25h4"/></svg></div><h3>iPhone / iPad</h3><div class="release-meta" id="ios-release">PWA · завжди поточна вебверсія</div><p>Відкрий Cloux у Safari та додай на головний екран — отримаєш PWA із власною іконкою без App Store.</p><button class="btn red" id="ios-help">Як встановити на iPhone →</button></article>
-<article class="card" id="windows"><div class="icon platform-icon"><svg class="device-svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l13-2v12H3zM19 5l14-2v15H19zM3 21h13v10L3 29zm16 0h14v13l-14-2z"/></svg></div><h3>Windows</h3><div class="release-meta" id="windows-release" aria-live="polite">Перевіряємо EXE…</div><p>Окремий Windows EXE та можливість встановити вебверсію як програму через Chrome або Edge.</p><a class="btn red" href="/exe">↓ Завантажити Windows EXE</a></article>
-<article class="card" id="mac"><div class="icon platform-icon"><svg class="device-svg" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="30" height="21" rx="3"/><path d="M13 27l-2 4h14l-2-4M8 32h20"/></svg></div><h3>macOS</h3><div class="release-meta" id="macos-release" aria-live="polite">Перевіряємо DMG…</div><p>Універсальний DMG для Mac. Вебверсію також можна використовувати в Safari як окремий застосунок.</p><a class="btn red" href="/dmg">↓ Завантажити Mac DMG</a></article>
-</section>
-<div class="help" id="ios-instructions" hidden><b>Встановлення Cloux на iPhone:</b><ol><li>Відкрий цю сторінку в Safari.</li><li>Натисни «Відкрити веб-версію».</li><li>Натисни «Поділитися» й вибери «На початковий екран».</li><li>Підтвердь «Додати».</li></ol></div>
-<div class="help" id="install-instructions" hidden><b>Встановлення PWA:</b> у меню браузера вибери «Встановити застосунок» або «Додати на головний екран». Для iPhone користуйся Safari.</div>
-<h2 class="section-title">Як почати — три прості кроки</h2><p class="subtle">Підходить для першого знайомства з CLOUX.</p>
-<section class="steps">
-<div><h3>Обери свій пристрій</h3><p>Android, iPhone, Windows, Mac або браузер. Якщо не хочеш нічого встановлювати, відкрий CLOUX онлайн.</p></div>
-<div><h3>Увійди або зареєструйся</h3><p>Використовуй свій акаунт. Якщо він уже є, новий створювати не потрібно.</p></div>
-<div><h3>Напиши друзям</h3><p>Знайди людину за іменем користувача, надішли запит у друзі та почни чат.</p></div>
-</section>
-<h2 class="section-title">Питання та відповіді</h2>
-<section class="faq">
-<details><summary>Чи треба платити, щоб спілкуватися?</summary><p>CLOUX можна завантажити для Android, Windows і Mac. Для iPhone є встановлення на головний екран через Safari.</p></details>
-<details><summary>Який файл вибрати для Android?</summary><p>Натисни «Завантажити Android APK». Це тестова збірка з debug-підписом. Завантажуй лише з цієї сторінки або з офіційного GitHub CLOUX.</p></details>
-<details><summary>Як встановити на iPhone?</summary><p>Відкрий CLOUX у Safari, натисни «Поділитися» → «На початковий екран». На iPhone використовується вебзастосунок PWA, а не файл APK.</p></details>
-<details><summary>Якщо зміню телефон, чати залишаться?</summary><p>Акаунти та повідомлення використовують сервер. Але поки сервер працює з тимчасовою базою даних, збереження після перезапуску не гарантоване. Важливе краще експортувати.</p></details>
-<details><summary>Що робити, якщо встановлення не вдалося?</summary><p>Переконайся, що вибрав правильну платформу. На iPhone використовуй Safari й опцію «На початковий екран». На комп’ютері перевір тип системи: Windows або Mac.</p></details>
-</section>
-<div class="notice-privacy"><strong>Безпека даних.</strong> CLOUX наразі працює на сервері з тимчасовим сховищем. Не зберігай тут єдину копію важливих повідомлень чи файлів. Ми не обіцяємо їх збереження після перезапуску сервера.</div>
-<h2 class="section-title">Що нового</h2><p class="subtle">Автоматично завантажується з version.json.</p>
-<section class="changelog" aria-label="Історія змін"><h3 id="changelog-header">Останні зміни</h3><ul id="changelog-list"><li>Зачекай…</li></ul></section>
-<div class="info"><b>Два режими:</b> «Веб-версія» — справжні Cloux акаунти й серверні чати. Завантажений index.html — лише HTML-ярлик, який відкриває <b>реальний CLOUX онлайн</b>. Для повного застосунку з повідомленнями потрібен сервер та інтернет. Задля приватності браузер не записує паролі в демо. На поточному безкоштовному сервері база даних тимчасова; до підключення постійного сховища повідомлення та сесії можуть втратитися після рестарту.</div>
-<div class="footer"><a href="https://github.com/grebenjuk13-source/cloux-messenger" target="_blank" rel="noopener noreferrer">Вихідний код ↗</a></div>
-</div>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;--a:#91a6ff;--b:#8ce9d9;--glow:rgba(145,166,255,.22);--bg:#101321;--surface:#20253a;--ink:#f7f8ff;--muted:#adb5d0}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:100px}body{margin:0;background:var(--bg);color:var(--ink);overflow-x:hidden;transition:background .55s,color .4s}button,a{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}button:focus-visible,a:focus-visible{outline:3px solid var(--a);outline-offset:4px}::selection{background:var(--a);color:#121627}
+body:before{content:"";position:fixed;inset:-30% -10%;background:radial-gradient(ellipse at 83% 17%,var(--glow),transparent 40%),radial-gradient(ellipse at 15% 65%,rgba(101,217,214,.08),transparent 35%);pointer-events:none;z-index:-1}
+.shell{max-width:1180px;margin:auto;padding:0 24px}
+header{position:sticky;top:0;z-index:40;background:rgba(15,19,30,.78);backdrop-filter:blur(28px) saturate(155%);-webkit-backdrop-filter:blur(28px) saturate(155%);border-bottom:1px solid #ffffff13}
+.nav{height:83px;display:flex;align-items:center;justify-content:space-between;gap:22px}.brand{display:flex;gap:12px;align-items:center;font-weight:850;letter-spacing:-.055em;font-size:25px}.brand img{width:39px;height:39px;object-fit:cover;border-radius:14px}.links{display:flex;gap:28px;color:#c4c9d7;font-size:14px}.links a:hover{color:var(--a)}.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:52px;padding:0 21px;border-radius:17px;background:#ffffff0e;border:1px solid #ffffff24;font-weight:700;transition:transform .28s cubic-bezier(.2,1.4,.4,1),background .25s,border-color .25s}.btn:hover{transform:translateY(-3px);border-color:#ffffff66}.btn.primary{background:linear-gradient(125deg,var(--a),var(--b));color:#101522;border-color:transparent;box-shadow:0 12px 35px var(--glow)}.btn.small{min-height:43px;padding:0 16px;font-size:13px}
+.hero{min-height:650px;display:grid;grid-template-columns:1.04fr .96fr;align-items:center;gap:25px;padding-top:68px;padding-bottom:95px}.eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--a);font-weight:750;letter-spacing:.13em;text-transform:uppercase;font-size:11px}.eyebrow:before{content:"";width:9px;height:9px;background:var(--b);border-radius:50%;box-shadow:0 0 14px var(--b)}h1{font-size:clamp(48px,6.8vw,89px);line-height:1.055;letter-spacing:-.075em;margin:20px 0 21px;font-weight:820}h1 em{font-style:normal;background:linear-gradient(120deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}.lead{color:#bcc6da;line-height:1.8;font-size:17px;max-width:560px}.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:29px}.hero-note{font-size:12px;color:#929cb7;margin-top:19px}
+.phone-wrap{position:relative;max-width:405px;margin:auto;width:100%;filter:drop-shadow(0 30px 70px #0009)}.phone-wrap:before{content:"";position:absolute;inset:13% -12%;background:radial-gradient(var(--glow),transparent 70%);filter:blur(32px)}.phone{position:relative;aspect-ratio:.56;border:9px solid #292c3b;border-radius:57px;background:#151a2b;box-shadow:inset 0 0 0 2px #ffffff1d,0 30px 90px #000a;overflow:hidden}.island{width:100px;height:27px;background:#090b13;border-radius:20px;position:absolute;top:9px;left:50%;transform:translateX(-50%);z-index:2}.phone-top{display:flex;justify-content:space-between;align-items:center;padding:57px 22px 20px;background:linear-gradient(120deg,#27345688,#22263a)}.phone-top b{font-size:21px;letter-spacing:-.04em}.phone-top span{font-size:12px;color:#aab7d7}.phone-search{margin:0 19px;background:#ffffff12;color:#9ca8c8;border-radius:14px;padding:13px;font-size:12px}.chat-list{padding:18px;display:grid;gap:10px}.chat{display:flex;align-items:center;gap:13px;padding:13px;background:#ffffff0b;border:1px solid #ffffff0d;border-radius:19px}.avatar{flex:0 0 48px;height:48px;border-radius:16px;background:linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center;color:#141b2d;font-size:21px;font-weight:800}.chat:nth-child(2) .avatar{background:linear-gradient(135deg,#e1a2d9,#a4a8fc)}.chat:nth-child(3) .avatar{background:linear-gradient(135deg,#86dcca,#83baf5)}.chat-info{flex:1;min-width:0}.chat-info strong{display:block;font-size:13px}.chat-info small{display:block;font-size:11px;color:#a9b4ca;margin-top:5px}.chat-time{font-size:10px;color:#9aa6c2;align-self:flex-start}.phone-bottom{position:absolute;bottom:13px;left:16px;right:16px;display:flex;justify-content:space-around;padding:12px 4px;background:#ffffff12;border:1px solid #ffffff1c;border-radius:24px;backdrop-filter:blur(18px);font-size:10px;text-align:center;color:#abb6d4}.phone-bottom b{color:var(--a)}
+.section{padding-top:90px;padding-bottom:80px}.section-title{font-size:clamp(32px,4vw,53px);letter-spacing:-.058em;line-height:1.12;margin:13px 0 15px}.section-desc{color:#b6bfd2;font-size:15px;line-height:1.8;max-width:650px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:30px}.tile{min-height:220px;padding:27px;border:1px solid #ffffff15;background:linear-gradient(150deg,#ffffff10,#ffffff05);border-radius:29px;transition:transform .3s,border-color .3s;box-shadow:inset 0 1px #ffffff0a}.tile:hover{transform:translateY(-5px);border-color:#ffffff45}.symbol{display:grid;place-items:center;width:55px;height:55px;background:linear-gradient(140deg,var(--glow),#ffffff13);border:1px solid #ffffff2a;border-radius:17px;color:var(--a);font-size:26px;margin-bottom:23px}.tile h3{font-size:18px;margin:0 0 9px}.tile p{font-size:13px;line-height:1.75;color:#aeb9cf;margin:0}.band{margin-top:35px;background:linear-gradient(125deg,#ffffff12,#ffffff05);border:1px solid #ffffff24;border-radius:34px;padding:35px;display:flex;align-items:center;justify-content:space-between;gap:20px}.band h3{margin:0 0 8px;font-size:25px;letter-spacing:-.04em}.band p{margin:0;color:#b8c2d7;font-size:13px}
+.theme-board{display:flex;flex-wrap:wrap;gap:10px;margin-top:27px}.theme{display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 16px;border-radius:18px;border:1px solid #ffffff25;background:#ffffff09;color:#e8eaf4;font-size:13px;font-weight:680;transition:.3s}.theme:before{content:"";width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--swatch-a),var(--swatch-b));box-shadow:0 0 15px var(--swatch-a)}.theme[aria-pressed=true]{border-color:var(--a);background:var(--glow)}.theme:hover{transform:translateY(-2px)}
+.platforms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:31px}.platform{background:linear-gradient(145deg,#ffffff12,#ffffff04);border:1px solid #ffffff22;border-radius:27px;padding:22px;display:flex;flex-direction:column;min-height:223px}.platform .os{font-size:32px;margin-bottom:22px}.platform h3{font-size:20px;margin:0 0 6px}.platform p{font-size:12px;color:#b4bed3;line-height:1.55;flex:1}.platform .btn{width:100%;margin-top:16px;font-size:12px;padding:0 8px;min-height:48px}
+details{padding:22px 25px;border:1px solid #ffffff20;background:#ffffff08;border-radius:22px;margin-top:12px}summary{font-size:15px;font-weight:710;cursor:pointer}details p{color:#afbad0;line-height:1.7;font-size:13px}footer{border-top:1px solid #ffffff1a;padding:37px 0;color:#aab5ca;font-size:12px}.footer{display:flex;justify-content:space-between;gap:17px;flex-wrap:wrap}.footer a{color:var(--a)}.disclaimer{font-size:12px;color:#9ca9c1;line-height:1.7;margin-top:20px}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .65s,transform .65s}.reveal.visible{opacity:1;transform:none}
+@media(max-width:900px){.hero{grid-template-columns:1fr;text-align:center;gap:45px;padding-top:70px}.lead{margin:auto}.hero-cta{justify-content:center}.phone-wrap{width:min(360px,100%)}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.platforms{grid-template-columns:repeat(2,minmax(0,1fr))}.links{display:none}}
+@media(max-width:560px){.shell{padding-left:17px;padding-right:17px}.nav{height:73px}.brand{font-size:22px}.hero{padding-top:50px;padding-bottom:55px;min-height:unset}h1{font-size:clamp(44px,12vw,66px)}.lead{font-size:15px}.phone-wrap{max-width:315px}.phone{border-radius:48px}.section{padding-top:57px;padding-bottom:48px}.grid{grid-template-columns:1fr}.tile{min-height:unset}.platforms{grid-template-columns:1fr}.platform{min-height:190px}.band{flex-direction:column;align-items:flex-start}.theme{min-width:0}.footer{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}*,*:before,*:after{animation:none!important;transition:none!important}}
+</style></head>
+<body data-theme="indigo">
+<header><div class="shell nav"><a class="brand" href="#start"><img src="/assets/cloux-default-avatar.jpg" alt="CLOUX"><span>Cloux<span style="color:var(--a)">.</span></span></a><nav class="links" aria-label="Навігація"><a href="#benefits">Переваги</a><a href="#features">Можливості</a><a href="#appearance">Теми</a><a href="#download">Завантажити</a></nav><a class="btn small primary" href="#download">Отримати CLOUX ↗</a></div></header>
+<main>
+<section class="shell hero" id="start"><div><span class="eyebrow">Твій цифровий простір</span><h1>Ближче до<br><em>своїх людей.</em></h1><p class="lead">Cloux — сучасний месенджер, у якому розмови, спільноти та власний стиль поєднуються в одному комфортному просторі.</p><div class="hero-cta"><a class="btn primary" href="#download">↓ Завантажити Cloux</a><a class="btn" href="/v5/">Відкрити месенджер ↗</a></div><p class="hero-note">Android · iPhone / iPad · Windows · Mac</p></div>
+<div class="phone-wrap" aria-label="Ілюстрація інтерфейсу CLOUX"><div class="phone"><div class="island"></div><div class="phone-top"><b>Повідомлення</b><span>✦ CLOUX</span></div><div class="phone-search">⌕ &nbsp; Знайти людину або чат</div><div class="chat-list"><div class="chat"><div class="avatar">✦</div><div class="chat-info"><strong>Нотатки</strong><small>Важливе завжди поряд</small></div><span class="chat-time">12:42</span></div><div class="chat"><div class="avatar">C</div><div class="chat-info"><strong>Новини Cloux</strong><small>Останнє зі світу CLOUX</small></div><span class="chat-time">11:10</span></div><div class="chat"><div class="avatar">☁</div><div class="chat-info"><strong>Твій простір</strong><small>Спілкування у твоєму стилі</small></div><span class="chat-time">09:35</span></div></div><div class="phone-bottom"><b>◉<br>Чати</b><span>♧<br>Спільноти</span><span>✧<br>Друзі</span><span>☎<br>Дзвінки</span><span>◌<br>Профіль</span></div></div></div></section>
+<section class="shell section reveal" id="benefits"><span class="eyebrow">Чому Cloux</span><h2 class="section-title">Менше шуму. Більше близькості.</h2><p class="section-desc">Ми створюємо простий і приємний простір для спілкування — без зайвої складності та з увагою до деталей.</p><div class="grid"><article class="tile"><div class="symbol">☁</div><h3>Особистий простір</h3><p>Профіль, кольори, оформлення чатів і деталі, які можна підлаштувати під себе.</p></article><article class="tile"><div class="symbol">✧</div><h3>Зрозуміло з першого разу</h3><p>Читабельні екрани, зручні кнопки та мінімум зайвих кроків.</p></article><article class="tile"><div class="symbol">↗</div><h3>Спілкування без меж</h3><p>Вебзастосунок і доступні пакети для популярних пристроїв.</p></article></div></section>
+<section class="shell section reveal" id="features"><span class="eyebrow">Можливості</span><h2 class="section-title">Знайоме спілкування.<br>Нові відчуття.</h2><div class="grid"><article class="tile"><div class="symbol">✉</div><h3>Особисті чати</h3><p>Повідомлення, відповіді, реакції та збережені нотатки.</p></article><article class="tile"><div class="symbol">☎</div><h3>Дзвінки</h3><p>Особисті голосові та відеорозмови через інтернет, де це підтримується.</p></article><article class="tile"><div class="symbol">♧</div><h3>Спільноти</h3><p>Місце для груп, каналів і людей зі спільними інтересами.</p></article><article class="tile"><div class="symbol">☺</div><h3>Стікери й реакції</h3><p>Більше способів передати емоції в розмові.</p></article><article class="tile"><div class="symbol">✿</div><h3>Профілі та подарунки</h3><p>Банери, аватари, друзі та подарунки від інших користувачів.</p></article><article class="tile"><div class="symbol">◐</div><h3>Теми та шпалери</h3><p>Змінюй вигляд застосунку під свій настрій.</p></article></div><p class="disclaimer">Деякі розширені функції ще розробляються. Повноцінні секретні чати з наскрізним шифруванням та групові відеодзвінки поки недоступні.</p></section>
+<section class="shell section reveal" id="appearance"><span class="eyebrow">Твій колір</span><h2 class="section-title">Один Cloux. Вісім настроїв.</h2><p class="section-desc">Вибери колір сайту — зміняться світіння, кнопки, акценти й відтінки оформлення. Твій вибір збережеться на цьому пристрої.</p><div class="theme-board" role="group" aria-label="Кольорова тема сайту" id="themes"></div></section>
+<section class="shell section reveal" id="download"><span class="eyebrow">Завантажити Cloux</span><h2 class="section-title">Там, де тобі зручно.</h2><p class="section-desc">Обери свій пристрій. На iPhone Cloux встановлюється через Safari, а для Android, Windows і Mac доступні окремі файли.</p><div class="platforms"><article class="platform"><div class="os">◉</div><h3>iPhone / iPad</h3><p>Вебзастосунок через Safari. «Поділитися» → «На початковий екран».</p><a class="btn primary" href="/v5/">Відкрити в Safari ↗</a></article><article class="platform"><div class="os">▣</div><h3>Android</h3><p>APK для Android 8+. Збірка з тестовим підписом.</p><a class="btn primary" href="https://github.com/grebenjuk13-source/cloux-messenger/releases/download/cloux-android/Cloux-Android.apk">Завантажити APK ↓</a></article><article class="platform"><div class="os">▦</div><h3>Windows</h3><p>Програма для комп’ютера з Windows 10/11.</p><a class="btn primary" href="https://github.com/grebenjuk13-source/cloux-messenger/releases/download/cloux-windows/Cloux.exe">Завантажити EXE ↓</a></article><article class="platform"><div class="os">⌘</div><h3>Mac</h3><p>Збірка для macOS 13+. Поки без нотаризації Apple.</p><a class="btn primary" href="https://github.com/grebenjuk13-source/cloux-messenger/releases/download/cloux-macos/Cloux-macOS.dmg">Завантажити DMG ↓</a></article></div><div class="band"><div><h3>Месенджер завжди поряд.</h3><p>Не хочеш нічого встановлювати? Відкрий Cloux просто в браузері.</p></div><a class="btn primary" href="/v5/">Відкрити онлайн ↗</a></div></section>
+<section class="shell section reveal" id="faq"><span class="eyebrow">Просто про важливе</span><h2 class="section-title">Трохи більше про Cloux.</h2><details><summary>Чи можна користуватися Cloux на iPhone?</summary><p>Так. Відкрий Cloux у Safari, натисни «Поділитися» і додай його на початковий екран. Окремого застосунку з App Store наразі немає.</p></details><details><summary>Чи можна встановити Cloux на Android?</summary><p>Так, доступний APK. Це тестова збірка: під час майбутньої зміни сертифіката може знадобитися перевстановлення.</p></details><details><summary>Чи гарантовано зберігаються всі повідомлення?</summary><p>Поки що ні: серверне сховище CLOUX проходить удосконалення, тому дані можуть втратитися після перезапуску сервера. Не використовуй його для єдиної копії важливої інформації.</p></details></section>
+</main><footer><div class="shell footer"><span>© 2026 CLOUX · Незалежний месенджер</span><span><a href="/privacy">Конфіденційність</a> · <a href="/v5/">Відкрити Cloux</a> · <a href="#start">Нагору ↑</a></span></div></footer>
 <script>
-(()=>{
-let deferred=null;
-const $=id=>document.getElementById(id);
-const fail=message=>{const b=$('download-html');b.textContent='↓ Скачати index.html';b.disabled=false;alert(message)};
-const ua=navigator.userAgent;
-const target=/android/i.test(ua)?'android':/iphone|ipad|ipod/i.test(ua)?'iphone':/macintosh|mac os/i.test(ua)?'mac':/windows/i.test(ua)?'windows':null;
-if(target)$(target).classList.add('current');
-
-const displaySize=()=>{const state=document.body.classList.toggle('easy-read');$('easy-read').setAttribute('aria-pressed',String(state));$('easy-read').textContent=state?'A−':'A+';try{localStorage.setItem('cloux:easy-read',state?'1':'0')}catch{}};
-$('easy-read').onclick=displaySize;
-try{if(localStorage.getItem('cloux:easy-read')==='1'){document.body.classList.add('easy-read');$('easy-read').setAttribute('aria-pressed','true');$('easy-read').textContent='A−'}}catch{}
-const recommendations={
- android:{text:'Android: натисни кнопку та встанови файл CLOUX APK.',label:'Завантажити Android APK',url:'/apk'},
- iphone:{text:'На iPhone відкрий CLOUX у Safari та додай на початковий екран.',label:'Відкрити для iPhone',url:'/v5/'},
- windows:{text:'Windows: завантаж CLOUX EXE та відкрий файл.',label:'Завантажити Windows',url:'/exe'},
- mac:{text:'Mac: завантаж CLOUX DMG та встанови застосунок.',label:'Завантажити для Mac',url:'/dmg'}
-};
-function recommend(choice){
- const result=recommendations[choice]||recommendations.web;
- $('device-recommendation').textContent=result.text;
- $('recommended-link').textContent='↗ '+result.label;
- $('recommended-link').href=result.url;
- document.querySelectorAll('[data-choice]').forEach(el=>el.classList.toggle('selected',el.dataset.choice===choice));
-}
-recommend(target||'android');
-document.querySelectorAll('[data-choice]').forEach(el=>el.addEventListener('click',()=>recommend(el.dataset.choice)));
-
-window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferred=event});
-$('install-pwa').onclick=async()=>{
- if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;return}
- if(/iphone|ipad|ipod/i.test(ua)){$('ios-instructions').hidden=false;$('ios-instructions').scrollIntoView({behavior:'smooth'});return}
- $('install-instructions').hidden=false;$('install-instructions').scrollIntoView({behavior:'smooth'});
-};
-$('ios-help').onclick=()=>{$('ios-instructions').hidden=false;$('ios-instructions').scrollIntoView({behavior:'smooth'})};
-async function loadVersion(){
- try{
-  const res=await fetch('version.json?'+Date.now(),{cache:'no-store'});
-  if(!res.ok)throw Error('Проблема мережі');
-  const d=await res.json();
-  $('nav-version').textContent='v'+d.version;
-  $('version-label').textContent='Cloux v'+d.version+' · '+(d.channel==='stable'?'Стабільна версія':'Оновлення');
-  $('version-date').textContent='Оновлено: '+d.date;
-  $('changelog-header').textContent='Оновлення '+d.version;
-  $('changelog-list').replaceChildren(...(Array.isArray(d.changelog)?d.changelog:[]).map(s=>{const li=document.createElement('li');li.textContent=String(s);return li}));
-  await checkPlatformReleases(d);
- }catch{
-  $('nav-version').textContent='Cloux';
-  $('version-label').textContent='Cloux — немає даних про останню версію';
-  $('version-date').textContent='Спробуй оновити сторінку';
-  $('changelog-list').innerHTML='<li>Не вдалося завантажити changelog</li>';
- }
-}
-void loadVersion();
-
-/* Every platform shows the ACTUALLY published GitHub Release asset, rather than a guessed timestamp.
- * The server's /apk, /exe and /dmg routes remain the stable download links.
- */
-async function checkPlatformReleases(meta){
- const configured={
-  android:{tag:'cloux-android',file:'Cloux-Android.apk',element:'android-release'},
-  windows:{tag:'cloux-windows',file:'Cloux.exe',element:'windows-release'},
-  macos:{tag:'cloux-macos',file:'Cloux-macOS.dmg',element:'macos-release'}
- };
- await Promise.all(Object.entries(configured).map(async ([platform,item])=>{
-  const node=$(item.element);node.setAttribute('aria-busy','true');
-  try{
-   const r=await fetch('https://api.github.com/repos/grebenjuk13-source/cloux-messenger/releases/tags/'+item.tag,
-    {cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
-   if(!r.ok)throw Error('Немає відповіді GitHub');
-   const release=await r.json();
-   const asset=(release.assets||[]).find(x=>x.name===item.file);
-   if(!asset||asset.size<1000)throw Error('Файл не опубліковано');
-   const title=release.name||'';
-   const versionInRelease=title.match(/(\d+\.\d+\.\d+)/);
-   const version=versionInRelease?versionInRelease[1]:meta?.platforms?.[platform]?.version||'';
-   const published=new Date(asset.updated_at);
-   const date=Number.isNaN(published.getTime())?'':published.toLocaleDateString('uk-UA',{day:'2-digit',month:'2-digit',year:'numeric'});
-   const mb=(asset.size/1024/1024).toFixed(1);
-   node.textContent='v'+version+' · '+mb+' МБ'+(date?' · '+date:'');
-  }catch{
-   node.textContent='Завантажити останню опубліковану збірку ↗';
-  }finally{node.removeAttribute('aria-busy')}
- }));
-}
-
-})();
-</script>
-<script defer src="/cloux-customize.js?v=6.6.1"></script>
-
-<script id="cloux-theme-selector">
-(()=>{
- const variants={aurora:'Аврора',ruby:'Рубін',ocean:'Океан',gold:'Сутінки'};
- const choose=(name)=>{
-  if(!variants[name])name='aurora';
-  document.body.dataset.visualTheme=name;
-  document.querySelectorAll('[data-visual-theme]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.visualTheme===name)));
-  const label=document.getElementById('current-appearance');if(label)label.textContent=variants[name];
-  try{localStorage.setItem('cloux:website-theme',name)}catch{}
- };
- let stored='aurora';try{stored=localStorage.getItem('cloux:website-theme')||'aurora'}catch{}
- choose(stored);
- document.querySelectorAll('[data-visual-theme]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.visualTheme)));
-})();
-</script>
-</body></html>
+(()=>{'use strict';const themes={indigo:['Глибокий синій','#91a6ff','#8ce9d9','#101321'],violet:['Бузковий','#be9cff','#84c7ff','#171225'],graphite:['Графіт','#b6c1da','#dfe4ef','#14161c'],mint:['М’ята','#8ce6c4','#a2dcf0','#10201f'],emerald:['Смарагд','#83d5a0','#b9e6a0','#101d17'],burgundy:['Бордо','#ee9db2','#d6a8f0','#24111b'],ruby:['Рубін','#ff899a','#ffa58d','#231419'],ocean:['Океан','#77c1ff','#85e3e6','#101c2b']};const host=document.getElementById('themes');let current='indigo';try{current=localStorage.getItem('cloux:landing:theme')||current}catch{}if(!(current in themes))current='indigo';function choose(id){const t=themes[id];if(!t)return;document.documentElement.style.setProperty('--a',t[1]);document.documentElement.style.setProperty('--b',t[2]);document.documentElement.style.setProperty('--bg',t[3]);document.documentElement.style.setProperty('--glow',t[1]+'38');document.body.dataset.theme=id;host.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.theme===id)));try{localStorage.setItem('cloux:landing:theme',id)}catch{}}Object.entries(themes).forEach(([id,t])=>{const b=document.createElement('button');b.className='theme';b.type='button';b.dataset.theme=id;b.textContent=t[0];b.style.setProperty('--swatch-a',t[1]);b.style.setProperty('--swatch-b',t[2]);b.addEventListener('click',()=>choose(id));host.append(b)});choose(current);const el=document.querySelectorAll('.reveal');if('IntersectionObserver'in window&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const o=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target)}}),{threshold:.08});el.forEach(x=>o.observe(x))}else el.forEach(x=>x.classList.add('visible'))})();
+</script></body></html>
