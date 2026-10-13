@@ -82,12 +82,12 @@ export function Stories({me}:{me:{id:string;display:string}}){
 }
 export function NotificationCenter({me,onOpenUser}:{me:{id:string};onOpenUser:(id:string)=>void}){
  const {t}=useI18n();
- const [open,setOpen]=useState(false),[feed,setFeed]=useState<EventRow[]>([]),[requests,setRequests]=useState<FriendRequest[]>([]),[notice,setNotice]=useState(''),[rankEvents,setRankEvents]=useState<number[]>([]);
- const reload=()=>call<{events:EventRow[];requests:FriendRequest[]}>('/api/cloux/notifications').then(x=>{setFeed(x.events);setRequests(x.requests)}).catch(e=>setNotice(e.message));
+ const [open,setOpen]=useState(false),[feed,setFeed]=useState<EventRow[]>([]),[requests,setRequests]=useState<FriendRequest[]>([]),[notice,setNotice]=useState(''),[unread,setUnread]=useState(0),[rankEvents,setRankEvents]=useState<number[]>([]);
+ const reload=()=>call<{events:EventRow[];requests:FriendRequest[];unread_count:number}>('/api/cloux/notifications').then(x=>{setFeed(x.events);setRequests(x.requests);setUnread(x.unread_count||0)}).catch(e=>setNotice(e.message));
  useEffect(()=>{void reload();const i=window.setInterval(reload,30000);const update=(e:Event)=>{setRankEvents(v=>[(e as CustomEvent<{rank:number}>).detail.rank,...v].slice(0,5));void reload()};window.addEventListener('cloux:rank-passed',update);document.addEventListener('cloux:friends-changed',reload);return()=>{window.clearInterval(i);window.removeEventListener('cloux:rank-passed',update);document.removeEventListener('cloux:friends-changed',reload)}},[me.id]);
- const badge=feed.filter(x=>x.kind==='friend'||x.kind==='request'||x.kind==='reaction').length+requests.length;
+ const badge=unread+requests.length;
  const accept=async(uid:string)=>{try{await call('/api/cloux/friends/'+uid+'/accept','POST');vibrate();document.dispatchEvent(new Event('cloux:friends-changed'));await reload()}catch(e){setNotice(e instanceof Error?e.message:t('noConnection'))}};
- return <><button className="cx-bell-button" aria-label={t('notificationCenter')} onClick={()=>{setOpen(true);void reload()}}><Bell size={22}/>{badge>0&&<span className="cx-bell-badge">{badge>99?'99+':badge}</span>}</button>
+ return <><button className="cx-bell-button" aria-label={t('notificationCenter')} onClick={()=>{setOpen(true);setUnread(0);void call('/api/cloux/notifications/read','POST').then(reload).catch(()=>reload())}}><Bell size={22}/>{badge>0&&<span className="cx-bell-badge">{badge>99?'99+':badge}</span>}</button>
  {open&&<div className="cx-notification-overlay" onClick={()=>setOpen(false)}><section className="cx-notification-sheet" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('notificationCenter')}><header><h2>{t('notificationCenter')}</h2><button onClick={()=>setOpen(false)} aria-label={t('close')}><X/></button></header>
   {notice&&<p role="alert">{notice}</p>}
   {rankEvents.map((rank,i)=><article className="cx-notice-item" key={'rank'+i}><Trophy/><span><b>{t('rankingUp')}</b><small>{t('yourPlace')}: {formatNumber(rank)}</small></span></article>)}
