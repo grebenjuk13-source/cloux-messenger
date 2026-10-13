@@ -129,6 +129,17 @@ body[data-visual-theme="gold"]{--clx-a:#dfa958;--clx-b:#f18e88;--clx-hot:#f3c888
 .appearance-name{font-size:12px;color:var(--clx-hot);font-weight:700;min-width:59px}
 @media(max-width:550px){.cloux-appearance{gap:8px;padding:10px 12px}.appearance-text{width:100%;justify-content:center}.phone-frame{max-width:360px}}
 @media(prefers-reduced-motion:reduce){.appearance-options button{transition:none}}
+</style><style id="cloux-chat-preview-accessibility">
+/* Spacious, accessible chat artwork: appearance-only; no inputs or reactions. */
+.phone-glass .mock-chat-area{gap:17px!important;padding:24px 19px 21px!important}
+.phone-glass .mock-bubble{font-size:clamp(15px,2vw,17px)!important;line-height:1.55!important;max-width:91%!important;padding:15px 18px!important;border-radius:22px!important;gap:8px!important;letter-spacing:.005em}
+.phone-glass .mock-bubble.incoming{border-bottom-left-radius:7px!important}
+.phone-glass .mock-bubble.outgoing{border-bottom-right-radius:7px!important}
+.phone-glass .mock-bubble small{font-size:11px!important}
+.phone-glass .mock-date{font-size:12px!important;padding:7px 14px!important}
+.phone-glass .mock-readonly{min-height:63px!important}
+.phone-glass .mock-react{display:none!important}
+@media(max-width:760px){.phone-glass .mock-bubble{font-size:15px!important}.phone-glass .mock-chat-area{padding:18px 14px!important}.phone-glass{height:570px!important}}
 </style></head><body>
 <div class="wrapper">
 <header><div class="brand"><img src="/assets/cloux-default-avatar.jpg" alt="Cloux"> Cloux<b>.</b></div><div class="access-control"><button id="easy-read" type="button" aria-pressed="false" aria-label="Збільшити текст" title="Збільшити текст">A+</button><span class="nav-version" id="nav-version">Перевіряємо версію…</span></div></header>
@@ -160,7 +171,7 @@ body[data-visual-theme="gold"]{--clx-a:#dfa958;--clx-b:#f18e88;--clx-hot:#f3c888
 <div class="mock-chat-area" id="mock-chat-area"><span class="mock-date">Сьогодні</span>
 <div class="mock-bubble incoming"><span>Привіт! 👋<br>Ласкаво просимо у CLOUX.</span><small>12:41</small></div>
 <div class="mock-bubble outgoing"><span>Ого, який красивий чат! ❤️</span><small>12:42 ✓✓</small></div>
-<div class="mock-bubble incoming"><span>Тут можна спілкуватися, реагувати на повідомлення й змінювати шпалери ✨</span><small>12:42</small><button class="mock-react" id="mock-reaction" type="button" aria-label="Поставити реакцію ❤️" aria-pressed="false">♡</button></div>
+<div class="mock-bubble incoming"><span>Тут можна спілкуватися, реагувати на повідомлення й змінювати шпалери ✨</span><small>12:42</small></div>
 </div>
 <div class="mock-compose mock-readonly" role="note" aria-label="Демонстрація без можливості писати"><span class="mock-lock-icon" aria-hidden="true">✦</span><span>Це приклад оформлення чату</span><span class="mock-lock-tag">ДЕМО</span></div>
 <div class="mock-home-bar"></div></div></div></section>
@@ -298,13 +309,8 @@ async function checkPlatformReleases(meta){
 
 })();
 </script>
-<script defer src="/cloux-customize.js?v=6.5.0"></script><script defer src="/cloux-updates.js?v=6.5.0"></script>
-<script id="cloux-preview-script">
-(()=>{
-const reaction=document.getElementById('mock-reaction');
-if(reaction)reaction.addEventListener('click',()=>{const active=reaction.classList.toggle('active');reaction.textContent=active?'❤️':'♡';reaction.setAttribute('aria-pressed',String(active))});
-})();
-</script>
+<script defer src="/cloux-customize.js?v=6.5.0"></script>
+
 <script id="cloux-theme-selector">
 (()=>{
  const variants={aurora:'Аврора',ruby:'Рубін',ocean:'Океан',gold:'Сутінки'};
