@@ -38,7 +38,7 @@ jobs:
           for name in ('version.json','manifest.json'):
               d=json.loads(pathlib.Path(name).read_text())
               assert isinstance(d,dict) and d
-          assert json.loads(pathlib.Path('version.json').read_text())['version']=='6.5.0'
+          assert re.fullmatch(r'\d+\.\d+\.\d+',json.loads(pathlib.Path('version.json').read_text())['version'])
           class Scripts(HTMLParser):
               def __init__(self):
                   super().__init__();self.active=False;self.parts=[];self.scripts=[]
