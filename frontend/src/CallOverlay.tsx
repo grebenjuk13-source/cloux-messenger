@@ -9,13 +9,14 @@ export default function CallOverlay({chatId,title,mode,onClose}:Props){
  const [status,setStatus]=useState('Підключаємося…'),[talking,setTalking]=useState(false);
  const [muted,setMuted]=useState(false),[deafened,setDeafened]=useState(false),[seconds,setSeconds]=useState(0),[cameraOff,setCameraOff]=useState(mode!=='video');
  const [sharing,setSharing]=useState(false),[peerOnline,setPeerOnline]=useState(false);
- const [full,setFull]=useState(false);
+ const [full,setFull]=useState(false),[signal,setSignal]=useState<number|null>(null),[reconnecting,setReconnecting]=useState(false);
  const localRef=useRef<HTMLVideoElement>(null),remoteRef=useRef<HTMLVideoElement>(null);
  const socketRef=useRef<WebSocket|null>(null),pcRef=useRef<RTCPeerConnection|null>(null);
  const streamRef=useRef<MediaStream|null>(null),shareRef=useRef<MediaStream|null>(null);
  const queued=useRef<RTCIceCandidateInit[]>([]);
  const stopping=useRef(false),startedAt=useRef(Date.now()),audioCtxRef=useRef<AudioContext|null>(null),rafRef=useRef(0);
  useEffect(()=>{const id=window.setInterval(()=>setSeconds(Math.floor((Date.now()-startedAt.current)/1000)),1000);return()=>clearInterval(id)},[]);
+ useEffect(()=>{let live=true;const id=window.setInterval(async()=>{const pc=pcRef.current;if(!pc||pc.connectionState!=='connected')return;try{let RTT:number|undefined;const report=await pc.getStats();report.forEach(stat=>{if(stat.type==='candidate-pair'&&stat.state==='succeeded'&&typeof stat.currentRoundTripTime==='number')RTT=stat.currentRoundTripTime});if(live&&RTT!==undefined)setSignal(RTT<.12?4:RTT<.25?3:RTT<.5?2:1)}catch{}},4000);return()=>{live=false;window.clearInterval(id)}},[]);
  function finish(){window.dispatchEvent(new CustomEvent('cloux:call-log',{detail:{chatId,title,mode,at:Date.now(),duration:seconds,result:peerOnline?'Дзвінок завершено':'Без з’єднання'}}));onClose()}
  const clock=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
 
@@ -36,9 +37,9 @@ export default function CallOverlay({chatId,title,mode,onClose}:Props){
     pc.onicecandidate=e=>{if(e.candidate&&ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'ice',candidate:e.candidate.toJSON()}))};
     pc.onconnectionstatechange=()=>{
      if(stopping.current)return;
-     if(pc!.connectionState==='connected'){setPeerOnline(true);setStatus('На зв’язку')}
-     if(pc!.connectionState==='failed'){setStatus('З’єднання не вдалося. Можливо, у цій мережі потрібен TURN-сервер.')}
-     if(pc!.connectionState==='disconnected'){setPeerOnline(false);setStatus('Зв’язок перервано')}
+     if(pc!.connectionState==='connected'){setPeerOnline(true);setReconnecting(false);setStatus('На зв’язку')}
+     if(pc!.connectionState==='failed'){setReconnecting(true);setStatus('Перепідключення…');try{pc!.restartIce();if(pc!.signalingState==='stable'&&ws?.readyState===WebSocket.OPEN){void pc!.createOffer({iceRestart:true}).then(async offer=>{await pc!.setLocalDescription(offer);ws!.send(JSON.stringify({type:'offer',sdp:pc!.localDescription?.toJSON()}))}).catch(()=>setStatus('Не вдалося відновити дзвінок'))}}catch{setStatus('Не вдалося відновити дзвінок')}}
+     if(pc!.connectionState==='disconnected'){setPeerOnline(false);setReconnecting(true);setStatus('Перепідключення…')}
     };
     const proto=location.protocol==='https:'?'wss:':'ws:';
     ws=new WebSocket(proto+'//'+location.host+'/ws/calls/'+encodeURIComponent(chatId));
@@ -136,8 +137,8 @@ export default function CallOverlay({chatId,title,mode,onClose}:Props){
  return <div className="cloux-call-overlay" role="dialog" aria-modal="true" aria-label={'Дзвінок із '+title}>
   <div className="cloux-call-panel">
    <div className="cloux-call-heading"><div className="cloux-call-badge">CLOUX · CALL</div><button aria-label={full?"Згорнути дзвінок":"На весь екран"} onClick={()=>{if(document.fullscreenElement){void document.exitFullscreen().catch(()=>{});setFull(false)}else{void document.querySelector('.cloux-call-panel')?.requestFullscreen?.().then(()=>setFull(true)).catch(()=>{})}}}><Maximize2 size={18}/></button></div>
-   <h2>{title}</h2><div className="cloux-call-clock">{clock}</div><p className="cloux-call-status"><span className={peerOnline?'connected':''}/>{status}</p>
-   <div className={'cloux-call-stage '+(talking?'speaking':'')}><video ref={remoteRef} playsInline autoPlay muted={deafened} className="cloux-remote" />
+   <h2>{title}</h2><div className="cloux-call-clock">{clock}</div>{peerOnline&&<div className="cloux-signal" aria-label={signal===null?'Перевірка якості зв’язку':'Якість зв’язку '+signal+' з 4'}><span>Зв’язок</span>{[1,2,3,4].map(x=><i key={x} className={signal!==null&&signal>=x?'good':''} style={{height:6+x*4}}/>)}</div>}<p className="cloux-call-status"><span className={peerOnline?'connected':''}/>{status}</p>
+   <div className={'cloux-call-stage '+(talking?'speaking ':'')+(reconnecting?'reconnecting':'')}><video ref={remoteRef} playsInline autoPlay muted={deafened} className="cloux-remote" />
     <div className="cloux-call-placeholder"><Users size={54}/><span>{peerOnline?'Учасник дзвінка':'Очікування співрозмовника'}</span></div>
     <video ref={localRef} playsInline autoPlay muted className="cloux-local"/>
    </div>
