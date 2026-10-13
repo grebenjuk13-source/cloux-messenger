@@ -380,6 +380,9 @@ cloux_experience.install(app,db,auth,fail,limit)
 import cloux_identity
 cloux_identity.install(app,db,auth,fail,limit)
 
+import cloux_sync
+cloux_sync.install(app,db,auth,fail)
+
 @app.get("/modern")
 def modern_ui():
     return FileResponse(BASE/"modern.html",media_type="text/html",headers={"Cache-Control":"no-store"})
