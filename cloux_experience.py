@@ -32,6 +32,7 @@ def install(app,db,auth,fail,limit):
            kind TEXT NOT NULL,actor TEXT REFERENCES users(id),
            ref TEXT,created INTEGER NOT NULL);
         CREATE INDEX IF NOT EXISTS cloux_events_user ON cloux_events(uid,id DESC);
+        CREATE TABLE IF NOT EXISTS cloux_event_seen(uid TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE, last_id INTEGER NOT NULL DEFAULT 0);
         CREATE TABLE IF NOT EXISTS cloux_pinned_messages(
           chat_id TEXT NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
           message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
@@ -207,11 +208,22 @@ def install(app,db,auth,fail,limit):
                     n.actor actor_id
                 FROM cloux_events n LEFT JOIN users u ON u.id=n.actor
                 WHERE n.uid=? ORDER BY n.id DESC LIMIT 60""",(user['id'],)).fetchall()
+            cursor=c.execute('SELECT last_id FROM cloux_event_seen WHERE uid=?',(user['id'],)).fetchone()
+            seen_id=cursor['last_id'] if cursor else 0
             requests=c.execute("""SELECT r.sender id,u.display,u.username,r.created
                   FROM cloux_friend_requests r JOIN users u ON u.id=r.sender
                   WHERE r.recipient=? ORDER BY r.created DESC LIMIT 25""",(user['id'],)).fetchall()
-        return {'events':[dict(r) for r in events],
+        return {'events':[{**dict(r),'unread':r['id']>seen_id} for r in events],
+                'unread_count':sum(1 for r in events if r['id']>seen_id),
                 'requests':[dict(r) for r in requests]}
+
+    @app.post('/api/cloux/notifications/read')
+    def read_notifications(request:Request):
+        user=auth(request)
+        with db() as c:
+            row=c.execute('SELECT COALESCE(MAX(id),0) latest FROM cloux_events WHERE uid=?',(user['id'],)).fetchone()
+            c.execute('INSERT INTO cloux_event_seen(uid,last_id) VALUES(?,?) ON CONFLICT(uid) DO UPDATE SET last_id=MAX(last_id,excluded.last_id)',(user['id'],row['latest']))
+        return {'ok':True,'last_id':row['latest']}
 
     def record(c,uid,kind,actor,ref=''):
         c.execute('INSERT INTO cloux_events(uid,kind,actor,ref,created) VALUES(?,?,?,?,?)',
