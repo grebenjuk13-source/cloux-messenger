@@ -3,6 +3,7 @@ import {ArrowLeft,Check,ChevronRight,ImagePlus,Lock,Menu,Pencil,Palette,Plus,Sea
 import {wallpapers} from './design';
 import './cloux-product.css';
 import {formatNumber,useI18n} from './i18n';
+import {VerifiedMark,GiftGallery} from './ClouxIdentityUI';
 
 const DEFAULT_AVATAR='/assets/cloux-default-avatar.jpg';
 type Person={id:string;display:string;username:string;photo_version?:number;online?:boolean};
@@ -81,7 +82,7 @@ export function ProfileScreen({me,uid,onSettings,onMessage,onOpenUser,onBack}:{m
    </div>
    <div className="cx-profile-avatar" style={{borderColor:profile.accent}}><Avatar person={{...profile,photo_version:(profile.photo_version||0)+version}} size={164}/>{self&&<button className="cx-avatar-add" onClick={()=>document.dispatchEvent(new CustomEvent('cloux:open-editor',{detail:{kind:'avatar'}}))} aria-label="Змінити фото профілю"><Plus/></button>}</div>
   </div>
-  <div className="cx-profile-details"><h1>{profile.display} <span title="Статус">{profile.status_icon}</span></h1><p className="cx-handle">@{profile.username}{profile.online&&<span className="cx-online"> · онлайн</span>}</p>
+  <div className="cx-profile-details cx-profile-identity"><h1>{profile.display} <VerifiedMark uid={uid}/> <span title="Статус">{profile.status_icon}</span></h1><p className="cx-handle">@{profile.username}{profile.online&&<span className="cx-online"> · онлайн</span>}</p>
    {profile.bio&&<p className="cx-bio">{profile.bio}</p>}{profile.status&&<p className="cx-status">{profile.status}</p>}
    <button className="cx-friends-count" onClick={()=>{if(!profile.friends_visible){setError('Людина приховала список друзів.');return}setList(!list)}}><b>{profile.friends_count}</b> <span>{t('friends')}</span> <ChevronRight size={18}/></button>
    {stats&&<div className="cx-profile-stats"><div><b>{formatNumber(profile.friends_count)}</b><small>{t('friends')}</small></div><div><b>#{formatNumber(stats.rank)}</b><small>{t('yourPlace')}</small></div><div><b>{formatNumber(stats.streak)} 🔥</b><small>{t('streak')}</small></div>{self&&<div><b>{formatNumber(stats.chats)}</b><small>{t('chats')}</small></div>}</div>}
@@ -92,6 +93,7 @@ export function ProfileScreen({me,uid,onSettings,onMessage,onOpenUser,onBack}:{m
    {!self&&profile.mutual.length>0&&<div className="cx-subsection"><h3>{t('mutualFriends')} · {formatNumber(profile.mutual.length)}</h3><div className="cx-person-stack">{profile.mutual.map(u=><button key={u.id} onClick={()=>onOpenUser(u.id)}><Avatar person={u} size={39}/><span>{u.display}</span></button>)}</div></div>}
    {self&&requests.incoming.length>0&&<div className="cx-subsection"><h3>Запити в друзі · {requests.incoming.length}</h3>{requests.incoming.map(u=><div className="cx-person-row" key={u.id}><Avatar person={u}/><span><b>{u.display}</b><small>@{u.username}</small></span><button className="cx-primary" onClick={async()=>{await request('/api/cloux/friends/'+encodeURIComponent(u.id)+'/accept','POST');setVersion(v=>v+1);await reload()}} >{t('accept')}</button><button onClick={async()=>{await request('/api/cloux/friends/'+encodeURIComponent(u.id),'DELETE');setVersion(v=>v+1)}}>Відхилити</button></div>)}</div>}
    {list&&<div className="cx-subsection"><h3>Друзі {profile.display}</h3><div className="cx-search"><Search size={17}/><input aria-label="Пошук друзів" placeholder="Пошук друзів…" value={q} onChange={e=>setQ(e.target.value)}/><select aria-label="Сортування" value={sort} onChange={e=>setSort(e.target.value as 'name'|'online')}><option value="name">За ім’ям</option><option value="online">Онлайн</option></select></div>{friends.length?friends.map(u=><button className="cx-person-row" key={u.id} onClick={()=>onOpenUser(u.id)}><Avatar person={u}/><span><b>{u.display}</b><small>@{u.username} {u.online?'· онлайн':''}</small></span><ChevronRight size={18}/></button>):<p className="cx-muted">Друзів не знайдено.</p>}</div>}
+   <GiftGallery uid={uid} self={self} isFriend={profile.friendship==='friend'}/>
    <RequestNotice message={error}/>
   </div>
   {friendSearch&&<div className="cx-modal-shade"><div className="cx-edit-modal" role="dialog" aria-modal="true" aria-label="Додати друзів"><header><h2>Знайти друзів</h2><button aria-label="Закрити" onClick={()=>setFriendSearch(false)}><X/></button></header><label>Ім'я або @username<input autoFocus placeholder="Пошук у Cloux" value={friendQuery} onChange={e=>setFriendQuery(e.target.value)}/></label>{people.map(u=><button className="cx-person-row" key={u.id} onClick={()=>{setFriendSearch(false);onOpenUser(u.id)}}><Avatar person={u}/><span><b>{u.display}</b><small>@{u.username}</small></span><ChevronRight/></button>)}{people.length===0&&<p className="cx-muted">Користувачів не знайдено.</p>}</div></div>}
