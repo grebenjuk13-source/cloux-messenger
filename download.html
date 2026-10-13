@@ -248,7 +248,15 @@ async function checkPlatformReleases(meta){
 
 if($('download-html'))$('download-html').onclick=()=>{
  const root='https://cloux-messenger.onrender.com/v5/';
- const html=['<!doctype html>','<html lang="uk"><head><meta charset="utf-8">','<meta name="viewport" content="width=device-width,initial-scale=1">','<meta name="author" content="Ільяс">','<meta name="copyright" content="© 2026 CLOUX">','<title>CLOUX — відкрити месенджер</title>','<style>body{background:#09090a;color:#fff;font:16px system-ui;padding:32px}a{color:#fff;text-decoration-color:#e10600}</style>','</head><body><h1>CLOUX</h1><p>Відкрий свій реальний акаунт Cloux. Для синхронізації повідомлень потрібен інтернет.</p><a href="'+root+'">Відкрити CLOUX →</a><script id="cloux-preview-script">
+ const html=['<!doctype html>','<html lang="uk"><head><meta charset="utf-8">','<meta name="viewport" content="width=device-width,initial-scale=1">','<meta name="author" content="Ільяс">','<meta name="copyright" content="© 2026 CLOUX">','<title>CLOUX — відкрити месенджер</title>','<style>body{background:#09090a;color:#fff;font:16px system-ui;padding:32px}a{color:#fff;text-decoration-color:#e10600}</style>','</head><body><h1>CLOUX</h1><p>Відкрий свій реальний акаунт Cloux. Для синхронізації повідомлень потрібен інтернет.</p><a href="'+root+'">Відкрити CLOUX →</a>
+</body></html>'].join('');
+ const file=new Blob([html],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(file);
+ const a=document.createElement('a');a.href=url;a.download='CLOUX-6.5.0-index.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);
+};
+})();
+</script>
+<script defer src="/cloux-customize.js?v=6.5.0"></script><script defer src="/cloux-updates.js?v=6.5.0"></script>
+<script id="cloux-preview-script">
 (()=>{
 const field=document.getElementById('mock-input'),entries=document.getElementById('mock-entries'),area=document.getElementById('mock-chat-area');
 const form=document.getElementById('mock-form'),reaction=document.getElementById('mock-reaction'),voice=document.getElementById('mock-voice');
@@ -257,11 +265,4 @@ if(reaction)reaction.addEventListener('click',()=>{const active=reaction.classLi
 if(voice)voice.addEventListener('click',()=>{if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const text=new SpeechSynthesisUtterance('Привіт! Це демонстраційне голосове повідомлення у месенджері CLOUX.');text.lang='uk-UA';voice.closest('.mock-voice').classList.add('playing');text.onend=()=>voice.closest('.mock-voice')?.classList.remove('playing');text.onerror=()=>voice.closest('.mock-voice')?.classList.remove('playing');window.speechSynthesis.speak(text)});
 })();
 </script>
-</body></html>'].join('');
- const file=new Blob([html],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(file);
- const a=document.createElement('a');a.href=url;a.download='CLOUX-6.5.0-index.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);
-};
-})();
-</script>
-<script defer src="/cloux-customize.js?v=6.5.0"></script><script defer src="/cloux-updates.js?v=6.5.0"></script>
 </body></html>
