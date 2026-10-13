@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'cloux_product.py'
+      - 'cloux_identity.py'
+      - 'tests/test_identity.py'
       - 'main.py'
       - 'Dockerfile'
       - 'tests/test_product.py'
@@ -18,4 +20,4 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt httpx pytest
-      - run: PYTHONPATH=. pytest -q tests/test_product.py
+      - run: PYTHONPATH=. pytest -q tests/test_product.py tests/test_identity.py
