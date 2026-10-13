@@ -24,6 +24,9 @@ await page.route('**/api/**', async route=>{
  if(path==='/api/cloux/settings'&&method==='GET')return json(200,{settings:{friends_visibility:'all',show_online:true,allow_requests:true,allow_calls:true,show_message_preview:true,notifications_messages:true,notifications_calls:true,notifications_sound:true,language:'uk',backup_interval:'off',profile_accent:'#E11D2E',banner_gradient:'linear-gradient(120deg,#390c1b,#08090e)',status_icon:'✨',banner_video:false}});
  if(path==='/api/cloux/settings'&&method==='PUT')return json(200,{ok:true});
  if(path==='/api/cloux/wallpaper'&&method==='GET')return json(200,{wallpaper:null});
+ if(path==='/api/cloux/top')return json(200,{rows:[{id:'demo-user',username:'cloux_demo',display:'Cloux Tester',friends:0,streak:0,rank:1,reached:1700000000,badge:'rookie'}],me:{id:'demo-user',rank:1,friends:0,streak:0},total:1});
+ if(path==='/api/cloux/stories')return json(200,{stories:[]});
+ if(path==='/api/cloux/notifications')return json(200,{events:[],requests:[]});
  if(path==='/api/v5/ui-prefs'&&method==='GET')return json(200,{preferences:{}});
  if(path==='/api/v5/ui-prefs'&&method==='PUT')return json(200,{ok:true});
  if(path==='/api/chats'&&method==='GET')return json(200,{chats});
@@ -42,7 +45,7 @@ assert.equal(await page.locator('html').getAttribute('dir'),'rtl','Arabic direct
 await page.getByRole('combobox',{name:'اختر اللغة'}).selectOption('en');
 assert.equal(await page.locator('html').getAttribute('lang'),'en','English language');
 await page.getByRole('combobox',{name:'Choose language'}).selectOption('uk');
-await page.getByRole('button',{name:'Увійти',exact:true}).click();
+await page.getByRole('button',{name:/^Увійти/}).first().click();
 await page.getByRole('heading',{name:'Увійти до Cloux'}).waitFor();
 assert.equal(await page.getByRole('button',{name:'Зареєструватися',exact:true}).count(),1);
 assert.equal(await page.getByLabel('Номер телефону').count(),0);
