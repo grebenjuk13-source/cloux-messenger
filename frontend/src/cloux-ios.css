@@ -128,3 +128,53 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(170,164,255,.1
 :root[data-theme=light] #root .cx-setting-toggle input[type=checkbox],:root[data-theme=light] #root .cx-simple-switch input[type=checkbox]{background:#c9c8d1!important;box-shadow:inset 0 1px 3px rgba(0,0,0,.12)!important}
 :root[data-theme=light] .call-quick button,:root[data-theme=light] .call-log,:root[data-theme=light] .server-row,:root[data-theme=light] .server-member,:root[data-theme=light] .leaderboard-row{background:rgba(255,255,255,.76)!important;border-color:rgba(48,46,68,.09)!important;color:#282733!important}
 :root[data-theme=light] .call-quick button b,:root[data-theme=light] .call-log b,:root[data-theme=light] .server-row b,:root[data-theme=light] .leaderboard-row b{color:#282733}
+
+/* Ukrainian color pass: quiet blue highlights, warm sunflower notes, lightweight motion. */
+:root{
+  --ios-accent:#78a7f5;
+  --ios-lilac:#9abaff;
+  --ios-mint:#f0d27b;
+  --ios-glass:rgba(31,36,48,.72);
+  --ios-glass-strong:rgba(39,44,58,.86);
+  --ios-stroke:rgba(210,220,245,.12);
+  --ios-shadow:0 12px 30px rgba(0,0,0,.20);
+}
+button{transition:transform .14s ease-out,background-color .14s,border-color .14s,box-shadow .14s,opacity .14s}
+button:active{transform:scale(.985)}
+.app-shell{background:radial-gradient(ellipse at 12% 0%,rgba(91,142,228,.12),transparent 34%),radial-gradient(ellipse at 100% 20%,rgba(236,204,110,.055),transparent 32%),#080a10!important}
+.chat-sidebar{background:rgba(14,17,23,.94)!important}
+.chat-entry.active,.chat-list .item.selected{background:linear-gradient(120deg,rgba(101,151,238,.18),rgba(241,212,128,.075))!important}
+.chat-room .bubble.own,.chat-room .bubble.mine{background:linear-gradient(140deg,#5f91e7,#376bb9)!important}
+.primary,.composer-send{background:linear-gradient(125deg,#6899e9,#4a79c7)!important;box-shadow:0 6px 18px rgba(83,132,215,.20)!important}
+.liquid-nav button.active{background:linear-gradient(135deg,rgba(111,157,238,.20),rgba(240,211,122,.095))!important}
+.liquid-nav button.active .nav-orb{color:#91b8ff!important;position:relative}
+.liquid-nav button.active .nav-orb:after{content:"";position:absolute;right:-3px;top:-2px;width:5px;height:5px;border-radius:50%;background:#f0d27b;box-shadow:0 0 7px rgba(240,210,123,.4)}
+.call-quick button,.call-log,.server-row,.server-member,.leaderboard-row{box-shadow:0 12px 30px rgba(0,0,0,.17)!important}
+#root .cx-settings,#root .cx-wallpaper-studio{background:radial-gradient(ellipse at 86% 0%,rgba(105,151,228,.12),transparent 30%),#0b0d13!important}
+#root .cx-settings>header{background:rgba(16,19,27,.78);backdrop-filter:blur(12px) saturate(135%);-webkit-backdrop-filter:blur(12px) saturate(135%)}
+#root .cx-settings>header button:first-child{color:#89b1f6}
+#root .cx-settings-hero{background:linear-gradient(130deg,rgba(99,147,227,.16),rgba(241,211,122,.10) 74%,rgba(148,181,238,.10))!important;box-shadow:0 12px 30px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.11)!important}
+#root .cx-settings-avatar{box-shadow:0 7px 18px rgba(95,145,220,.17)}
+#root .cx-settings-search{backdrop-filter:blur(10px)}
+#root .cx-simple-switch,#root .cx-settings .cx-setting-card{backdrop-filter:blur(12px) saturate(130%);-webkit-backdrop-filter:blur(12px) saturate(130%);box-shadow:0 9px 24px rgba(0,0,0,.12),inset 0 1px rgba(255,255,255,.055)!important}
+#root .cx-settings .cx-setting-row>svg:first-child{background:rgba(104,153,233,.14)!important;color:#94b8f3!important}
+#root .cx-settings .cx-setting-row:nth-child(2)>svg:first-child{background:rgba(240,210,123,.12)!important;color:#e5ca7c!important}
+#root .cx-setting-toggle input[type=checkbox]:checked,#root .cx-simple-switch input[type=checkbox]:checked{background:linear-gradient(100deg,#77a8f3,#4b80ce)!important;box-shadow:0 0 12px rgba(104,153,233,.16)!important}
+#root .cx-setting-toggle input[type=checkbox]:focus-visible,#root .cx-simple-switch input[type=checkbox]:focus-visible{outline-color:rgba(121,169,245,.55)}
+#root .cx-wall-tabs button.cx-selected,#root .cx-language-item.chosen{background:linear-gradient(130deg,rgba(101,151,238,.20),rgba(241,212,128,.12))!important;border-color:rgba(137,174,238,.27)!important}
+#root .cx-settings .cx-notice{background:rgba(240,210,123,.09);border-color:rgba(240,210,123,.17);color:#edda9c}
+.modal-shade,.call-layer{backdrop-filter:blur(14px) saturate(125%)!important;-webkit-backdrop-filter:blur(14px) saturate(125%)!important}
+:root[data-theme=light] .app-shell{background:radial-gradient(ellipse at 10% 0%,rgba(117,164,241,.14),transparent 36%),radial-gradient(ellipse at 100% 15%,rgba(241,212,128,.13),transparent 34%),#f4f6fb!important}
+:root[data-theme=light] .liquid-nav button.active{background:linear-gradient(135deg,rgba(105,153,233,.14),rgba(241,212,128,.20))!important}
+:root[data-theme=light] .liquid-nav button.active .nav-orb{color:#4778c5!important}
+:root[data-theme=light] .chat-entry.active,:root[data-theme=light] .chat-list .item.selected{background:linear-gradient(120deg,rgba(101,151,238,.15),rgba(241,212,128,.13))!important}
+:root[data-theme=light] .primary,:root[data-theme=light] .composer-send{background:linear-gradient(125deg,#6e9ce7,#4c7bc6)!important;color:#fff!important}
+:root[data-theme=light] #root .cx-settings,:root[data-theme=light] #root .cx-wallpaper-studio{background:radial-gradient(ellipse at 85% 0%,rgba(105,151,228,.13),transparent 35%),#f4f6fb!important}
+:root[data-theme=light] #root .cx-settings-hero{background:linear-gradient(130deg,rgba(209,226,252,.76),rgba(251,239,196,.66) 72%,rgba(224,232,249,.68))!important}
+:root[data-theme=light] #root .cx-settings .cx-setting-row>svg:first-child{background:rgba(101,151,238,.12)!important;color:#4c78bd!important}
+:root[data-theme=light] #root .cx-settings .cx-setting-row:nth-child(2)>svg:first-child{background:rgba(237,202,103,.17)!important;color:#9f7d27!important}
+:root[data-theme=light] #root .cx-setting-toggle input[type=checkbox]:checked,:root[data-theme=light] #root .cx-simple-switch input[type=checkbox]:checked{background:linear-gradient(100deg,#77a8f3,#4b80ce)!important}
+@media(max-width:760px){
+  .liquid-nav{backdrop-filter:blur(16px) saturate(140%)!important;-webkit-backdrop-filter:blur(16px) saturate(140%)!important}
+  #root .cx-settings>header{backdrop-filter:blur(10px) saturate(130%);-webkit-backdrop-filter:blur(10px) saturate(130%)}
+}
