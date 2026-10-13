@@ -44,7 +44,7 @@ jobs:
           gh release view cloux-windows *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release upload cloux-windows publish/Cloux.exe --clobber
-            gh release edit cloux-windows --title "Cloux для Windows · 6.5.0" --notes "CLOUX 6.5.0 — програма для Windows 10/11 x64. Для відображення чату потрібен Microsoft Edge WebView2 Runtime; якщо його немає, програма покаже посилання на офіційний інсталятор Microsoft."
+            gh release edit cloux-windows --title "Cloux для Windows · 6.6.0" --notes "CLOUX 6.6.0 — програма для Windows 10/11 x64. Для відображення чату потрібен Microsoft Edge WebView2 Runtime; якщо його немає, програма покаже посилання на офіційний інсталятор Microsoft."
           } else {
-            gh release create cloux-windows publish/Cloux.exe --title "Cloux для Windows · 6.5.0" --notes "CLOUX 6.5.0 — програма для Windows 10/11 x64. Для відображення чату потрібен Microsoft Edge WebView2 Runtime; якщо його немає, програма покаже посилання на офіційний інсталятор Microsoft."
+            gh release create cloux-windows publish/Cloux.exe --title "Cloux для Windows · 6.6.0" --notes "CLOUX 6.6.0 — програма для Windows 10/11 x64. Для відображення чату потрібен Microsoft Edge WebView2 Runtime; якщо його немає, програма покаже посилання на офіційний інсталятор Microsoft."
           }
