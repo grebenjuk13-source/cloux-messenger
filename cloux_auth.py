@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 import re
-import sqlite3
 import time
 
 from argon2 import PasswordHasher
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from cloux_database import INTEGRITY_ERRORS
 
 HASHER = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=2)
 EMAIL = re.compile(r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$")
@@ -96,6 +96,6 @@ def install(app, db, fail, limit, set_cookie):
             with db() as conn:
                 conn.execute('INSERT INTO users(id,phone,username,display,password_hash,created,email) VALUES(?,?,?,?,?,?,?)',
                              (uid, phone, username, display, HASHER.hash(body.password), int(time.time()), email))
-        except sqlite3.IntegrityError:
+        except INTEGRITY_ERRORS:
             fail('Ця пошта, телефон або нікнейм уже використовуються.')
         return set_cookie(JSONResponse({'ok': True}), uid)

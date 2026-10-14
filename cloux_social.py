@@ -10,9 +10,10 @@ import time
 import uuid
 from pathlib import Path
 from fastapi import Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 from PIL import Image, UnidentifiedImageError
+from cloux_database import put_blob, remove_blob
 
 DEFAULT_AVATAR = '/assets/cloux-default-avatar.jpg'
 ALLOWED_REACTIONS = {'❤️','👍','😂','🔥','🎉','😮','😢','👏','🤝','⭐','💯','👀','🤍','😁','👎'}
@@ -78,8 +79,6 @@ def init(db):
 
 
 def install(app,db,auth,member,fail,limit,data_dir,base_dir):
-    media_dir=Path(data_dir)/'profile-media'
-    media_dir.mkdir(parents=True,exist_ok=True)
     with db() as c:
         c.execute('''CREATE TABLE IF NOT EXISTS cloux_follows(
             follower_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -130,9 +129,11 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
         with db() as c:
             if not c.execute('SELECT 1 FROM users WHERE id=?',(uid,)).fetchone():fail('Користувача не знайдено.',404)
         if kind=='wallpaper' and uid != auth(request)['id']:fail('Приватні шпалери.',403)
-        file=media_dir/f'{uid}-{kind}.webp'
-        if not file.is_file():fail('Фото не встановлено.',404)
-        return FileResponse(file,media_type='image/webp',headers={'Cache-Control':'private,no-store'})
+        with db() as c:
+            media=c.execute('SELECT content FROM cloux_blobs WHERE storage_key=?',
+                ('profile/'+uid+'/'+kind,)).fetchone()
+        if not media:fail('Фото не встановлено.',404)
+        return Response(content=bytes(media['content']),media_type='image/webp',headers={'Cache-Control':'private,no-store'})
 
     @app.post('/api/profile/media/{kind}')
     async def upload_profile_image(kind:str,request:Request):
@@ -159,11 +160,8 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
                 rgb.save(out,'WEBP',quality=82,method=4)
         except (UnidentifiedImageError,OSError,ValueError):
             fail('Неможливо відкрити зображення.',415)
-        target=media_dir/f'{me["id"]}-{kind}.webp'
-        temp=media_dir/f'{me["id"]}-{kind}-{secrets.token_hex(5)}.tmp'
-        temp.write_bytes(out.getvalue())
-        temp.replace(target)
         with db() as c:
+            put_blob(c,'profile/'+me['id']+'/'+kind,'image/webp',out.getvalue(),int(time.time()))
             c.execute('UPDATE cloux_preferences SET photo_version=photo_version+1 WHERE uid=?',(me['id'],))
             row=c.execute('SELECT photo_version FROM cloux_preferences WHERE uid=?',(me['id'],)).fetchone()
         return {'ok':True,'url':f'/api/profile/{me["id"]}/media/{kind}?v={row["photo_version"]}','version':row['photo_version']}
@@ -172,8 +170,8 @@ def install(app,db,auth,member,fail,limit,data_dir,base_dir):
     def reset_profile_photo(kind:str,request:Request):
         me=auth(request)
         if kind not in ('avatar','banner','wallpaper'):fail('Невідоме фото.',404)
-        (media_dir/f'{me["id"]}-{kind}.webp').unlink(missing_ok=True)
         with db() as c:
+            remove_blob(c,'profile/'+me['id']+'/'+kind)
             c.execute('UPDATE cloux_preferences SET photo_version=photo_version+1 WHERE uid=?',(me['id'],))
         return {'ok':True}
 

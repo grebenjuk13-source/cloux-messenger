@@ -1,10 +1,9 @@
-"""Cloux early-access web messenger. Warning: Render Free storage is ephemeral."""
+"""Cloux early-access messenger; production data can use remote Turso storage."""
 import hashlib
 import hmac
 import os
 import re
 import secrets
-import sqlite3
 import time
 import uuid
 from collections import defaultdict, deque
@@ -14,6 +13,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
+from cloux_database import connect as connect_database, initialize_blob_table, REMOTE_DATABASE
 
 BASE = Path(__file__).parent
 DATA = Path(os.getenv("CLOUX_DATA", str(BASE / "data")))
@@ -24,9 +24,7 @@ requests_by_ip = defaultdict(deque)
 
 @contextmanager
 def db():
-    c = sqlite3.connect(DB, timeout=12)
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA foreign_keys=ON")
+    c = connect_database(DB, timeout=12)
     try:
         yield c
         c.commit()
@@ -56,6 +54,8 @@ with db() as c:
       PRIMARY KEY(uid,message_id));
     CREATE INDEX IF NOT EXISTS cloux_hidden_by_uid ON cloux_hidden_messages(uid,message_id);
     """)
+
+initialize_blob_table(db)
 
 class Login(BaseModel):
     phone: str
@@ -152,7 +152,9 @@ def classic():
 
 @app.get("/api/health")
 def health():
-    return {"status":"ok","app":"cloux","stage":"early-access","persistent_storage": False}
+    return {"status":"ok","app":"cloux","stage":"early-access",
+            "persistent_storage": REMOTE_DATABASE,
+            "storage_backend": "turso" if REMOTE_DATABASE else "local-ephemeral"}
 
 @app.get("/api/me")
 def me(request: Request):
@@ -349,6 +351,10 @@ def cloux_official_icon(size: int):
     if size not in (192,512):
         fail("Невідомий розмір іконки.",404)
     return FileResponse(_ClouxPath(__file__).parent/"assets"/f"cloux-official-{size}.jpg",media_type="image/jpeg",headers={"Cache-Control":"public, max-age=3600"})
+
+@app.get("/assets/cloux-mark.jpg")
+def cloux_download_mark():
+    return FileResponse(_ClouxPath(__file__).parent/"assets"/"cloux-official-512.jpg",media_type="image/jpeg",headers={"Cache-Control":"public, max-age=3600"})
 
 import cloux_messages
 cloux_messages.init(db)
