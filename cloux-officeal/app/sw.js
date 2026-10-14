@@ -1,5 +1,5 @@
-const CACHE = 'cloux-app-v2.0.0';
-const SHELL = ['/app/', '/app/manifest.webmanifest', '/app/icons/cloux-192.png', '/app/icons/cloux-512.png', '/cloux.svg'];
+const CACHE = 'cloux-app-v2.1.0';
+const SHELL = ['/app/', '/app/manifest.webmanifest', '/app/icons/cloux-192.png', '/app/icons/cloux-512.png', '/icons/cloux-mark.jpg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
