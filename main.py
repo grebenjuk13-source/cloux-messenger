@@ -344,6 +344,14 @@ def cloux_mac_download():
 def cloux_windows_download():
     return RedirectResponse("https://github.com/grebenjuk13-source/cloux-messenger/releases/download/cloux-windows/Cloux.exe",status_code=302)
 
+@app.get("/assets/cloux-mark.jpg")
+def cloux_mark():
+    return FileResponse(_ClouxPath(__file__).parent/"assets"/"cloux-mark.jpg",media_type="image/jpeg")
+
+@app.get("/apple-touch-icon.jpg")
+def cloux_apple_touch_icon():
+    return FileResponse(_ClouxPath(__file__).parent/"apple-touch-icon.jpg",media_type="image/jpeg")
+
 @app.get("/assets/cloux-official-{size}.jpg")
 def cloux_official_icon(size: int):
     if size not in (192,512):
