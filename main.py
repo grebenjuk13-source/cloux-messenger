@@ -352,6 +352,10 @@ def cloux_official_icon(size: int):
         fail("Невідомий розмір іконки.",404)
     return FileResponse(_ClouxPath(__file__).parent/"assets"/f"cloux-official-{size}.jpg",media_type="image/jpeg",headers={"Cache-Control":"public, max-age=3600"})
 
+@app.get("/assets/cloux-mark.jpg")
+def cloux_download_mark():
+    return FileResponse(_ClouxPath(__file__).parent/"assets"/"cloux-official-512.jpg",media_type="image/jpeg",headers={"Cache-Control":"public, max-age=3600"})
+
 import cloux_messages
 cloux_messages.init(db)
 cloux_messages.install(app,db,auth,member,fail,limit)
