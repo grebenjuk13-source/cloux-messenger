@@ -1,7 +1,7 @@
 """Cloux user features: saved messages, official news, profile, preferences and channels."""
 import re
 import secrets
-import sqlite3
+from cloux_database import INTEGRITY_ERRORS
 import time
 import uuid
 from fastapi import Request
@@ -159,7 +159,7 @@ def install(app, db, auth, fail, hash_password, check_password, member, limit):
             with db() as c:
                 c.execute("UPDATE users SET display=?, username=? WHERE id=?",(display,username,me["id"]))
                 c.execute("UPDATE cloux_preferences SET bio=? WHERE uid=?",(data.bio.strip(),me["id"]))
-        except sqlite3.IntegrityError: fail("Такий позивний уже зайнятий.",409)
+        except INTEGRITY_ERRORS: fail("Такий позивний уже зайнятий.",409)
         return profile(request)
 
     @app.post("/api/password")

@@ -3,10 +3,10 @@ import os
 import time
 import uuid
 import mimetypes
-from pathlib import Path
 from urllib.parse import urlparse
 from fastapi import Request
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
+from cloux_database import put_blob
 
 MAX_SIZE=5*1024*1024
 TYPES={
@@ -49,9 +49,6 @@ def init(db):
          created INTEGER NOT NULL)""")
 
 def install(app,db,auth,member,fail,limit,storage_root):
-    folder=Path(storage_root)/"uploads"
-    folder.mkdir(exist_ok=True,parents=True)
-
     @app.post("/api/chats/{cid}/media")
     async def upload(cid:str, request:Request):
         user=auth(request)
@@ -81,16 +78,12 @@ def install(app,db,auth,member,fail,limit,storage_root):
                 if not owner or owner["owner_id"]!=user["id"]:fail("Лише власник каналу може надсилати файли.",403)
             aid=str(uuid.uuid4())
             ext,cat=TYPES[mime]
-            file=folder/(aid+ext)
-            file.write_bytes(data)
-            try:
-                c.execute("INSERT INTO cloux_attachments(id,chat_id,sender,filename,mime,bytes,created) VALUES(?,?,?,?,?,?,?)",
-                  (aid,cid,user["id"],name,mime,len(data),int(time.time())))
-                cur=c.execute("INSERT INTO messages(chat_id,sender,text,created,attachment_id) VALUES(?,?,?,?,?)",
-                  (cid,user["id"],"📎 "+name,int(time.time()),aid))
-            except Exception:
-                file.unlink(missing_ok=True)
-                raise
+            now=int(time.time())
+            c.execute("INSERT INTO cloux_attachments(id,chat_id,sender,filename,mime,bytes,created) VALUES(?,?,?,?,?,?,?)",
+              (aid,cid,user["id"],name,mime,len(data),now))
+            put_blob(c,"chat-attachment/"+aid,mime,bytes(data),now)
+            cur=c.execute("INSERT INTO messages(chat_id,sender,text,created,attachment_id) VALUES(?,?,?,?,?)",
+              (cid,user["id"],"📎 "+name,now,aid))
         __import__("cloux_realtime").hub.emit(cid,"new_message",message_id=cur.lastrowid)
         return {"ok":True,"id":cur.lastrowid,"media_id":aid,"mime":mime,"bytes":len(data)}
 
@@ -99,14 +92,14 @@ def install(app,db,auth,member,fail,limit,storage_root):
         user=auth(request)
         with db() as c:
             if not member(c,user["id"],cid):fail("Немає доступу до файлу.",403)
-            item=c.execute("SELECT * FROM cloux_attachments WHERE id=? AND chat_id=?",(aid,cid)).fetchone()
+            item=c.execute("""SELECT a.*,b.content FROM cloux_attachments a
+              JOIN cloux_blobs b ON b.storage_key=?
+              WHERE a.id=? AND a.chat_id=?""",("chat-attachment/"+aid,aid,cid)).fetchone()
         if not item:fail("Файл не знайдено.",404)
         mime=item["mime"]
         ext=TYPES[mime][0]
-        path=folder/(aid+ext)
-        if not path.is_file():fail("Файл недоступний на сервері.",404)
         disposition="inline" if mime.startswith(("image/","audio/","video/")) else "attachment"
         filename=item["filename"].replace('"',"").replace("\\","_")
-        return FileResponse(path,media_type=mime,
+        return Response(content=bytes(item["content"]),media_type=mime,
           headers={"Cache-Control":"private,no-store","X-Content-Type-Options":"nosniff",
                    "Content-Disposition":f'{disposition}; filename="cloux-file{ext}"'})

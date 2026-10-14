@@ -57,6 +57,15 @@ def test_scoped_wallpaper_backup_and_restore():
         own=client.get("/api/cloux/wallpaper?scope="+chat+"&mode=dark").json()["wallpaper"]
         assert own["pattern"]=="stars"
         assert client.get("/api/cloux/wallpaper?scope="+chat+"&mode=light").json()["wallpaper"] is None
+        import io
+        from PIL import Image
+        image=Image.new('RGB',(40,40),(130,25,45));buffer=io.BytesIO();image.save(buffer,'PNG')
+        uploaded=client.post('/api/cloux/wallpaper/media?scope=all&mode=dark',content=buffer.getvalue(),headers={'content-type':'image/png'})
+        assert uploaded.status_code==200,uploaded.text
+        image_wall={**wall,'kind':'image'}
+        assert client.put('/api/cloux/wallpaper?scope=all&mode=dark',json=image_wall).status_code==200
+        image_response=client.get('/api/cloux/wallpaper/media?scope=all&mode=dark')
+        assert image_response.status_code==200 and image_response.headers['content-type']=='image/webp'
         created=client.post("/api/cloux/backups")
         assert created.status_code==200,created.text
         entry=client.get("/api/cloux/backups").json()["backups"][0]

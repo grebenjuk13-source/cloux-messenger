@@ -8,7 +8,7 @@ FROM python:3.12-slim
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY cloux_product.py cloux_experience.py cloux_identity.py cloux_sync.py main.py index.html modern.html cloux_social.py cloux_preferences.py cloux_auth.py cloux_features.py cloux-plus.js cloux_calls.py cloux_realtime.py cloux_messages.py cloux_media.py cloux-v2.js cloux-v3.js cloux-media.js manifest.webmanifest manifest.json version.json sw.js cloux-updates.js cloux-customize.js cloux-customize.css cloux-extras.js cloux-icon.svg download.html ./
+COPY cloux_database.py cloux_product.py cloux_experience.py cloux_identity.py cloux_sync.py main.py index.html modern.html cloux_social.py cloux_preferences.py cloux_auth.py cloux_features.py cloux-plus.js cloux_calls.py cloux_realtime.py cloux_messages.py cloux_media.py cloux-v2.js cloux-v3.js cloux-media.js manifest.webmanifest manifest.json version.json sw.js cloux-updates.js cloux-customize.js cloux-customize.css cloux-extras.js cloux-icon.svg download.html ./
 COPY assets/ ./assets/
 COPY offline/ ./offline/
 COPY studio/ ./studio/

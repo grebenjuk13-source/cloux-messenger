@@ -3,18 +3,17 @@
 Per-account storage is access-checked. Render's default /tmp database remains ephemeral.
 """
 from __future__ import annotations
-import hashlib
 import asyncio
 import io
 import json
 import re
 import time
-from pathlib import Path
 from typing import Literal
 from fastapi import Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 from PIL import Image, UnidentifiedImageError
+from cloux_database import put_blob, remove_blob
 
 class ProductSettings(BaseModel):
     friends_visibility: Literal['all','friends','none']='all'
@@ -62,8 +61,6 @@ def checked_style(d):
         raise ValueError('Некоректний статус.')
 
 def install(app,db,auth,member,fail,limit,data_dir):
-    root=Path(data_dir)/'cloux-wallpaper-media'
-    root.mkdir(parents=True,exist_ok=True)
     with db() as c:
         c.executescript("""
         CREATE TABLE IF NOT EXISTS cloux_product_settings(
@@ -199,17 +196,14 @@ def install(app,db,auth,member,fail,limit,data_dir):
                  duration=delays,loop=0,quality=73,method=4)
                 if buffer.tell()>4_000_000:fail('Анімація не вміщується у 4 МБ.',413)
         except (UnidentifiedImageError,OSError,ValueError):fail('Анімацію не вдалося обробити.',415)
-        destination=Path(data_dir)/'profile-media'
-        destination.mkdir(exist_ok=True,parents=True)
-        target=destination/(u['id']+'-avatar.webp')
-        temp=target.with_suffix('.tmp');temp.write_bytes(buffer.getvalue());temp.replace(target)
         with db() as c:
+            put_blob(c,'profile/'+u['id']+'/avatar','image/webp',buffer.getvalue(),int(time.time()))
             c.execute('UPDATE cloux_preferences SET photo_version=photo_version+1 WHERE uid=?',(u['id'],))
             row=c.execute('SELECT photo_version FROM cloux_preferences WHERE uid=?',(u['id'],)).fetchone()
         return {'ok':True,'version':row['photo_version']}
 
-    def video_path(uid,ext):
-        return Path(data_dir)/'profile-media'/(uid+'-banner.'+ext)
+    def video_key(uid):
+        return 'profile/'+uid+'/banner-video'
 
     @app.post('/api/cloux/banner/video')
     async def upload_banner_video(request:Request):
@@ -223,10 +217,8 @@ def install(app,db,auth,member,fail,limit,data_dir):
         ext='mp4' if mime=='video/mp4' else 'webm'
         if len(data)<32 or (ext=='mp4' and bytes(data[4:8])!=b'ftyp') or (ext=='webm' and bytes(data[:4])!=bytes.fromhex('1a45dfa3')):
             fail('Це не підтримуваний відеофайл.',415)
-        dest=video_path(u['id'],ext);dest.parent.mkdir(exist_ok=True,parents=True)
-        temp=dest.with_suffix('.tmp');temp.write_bytes(data);temp.replace(dest)
-        video_path(u['id'],'webm' if ext=='mp4' else 'mp4').unlink(missing_ok=True)
         with db() as c:
+            put_blob(c,video_key(u['id']),mime,bytes(data),int(time.time()))
             st=settings(c,u['id']);st['banner_video']=True
             c.execute("""INSERT INTO cloux_product_settings(uid,value,updated) VALUES(?,?,?)
               ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated""",
@@ -238,16 +230,15 @@ def install(app,db,auth,member,fail,limit,data_dir):
         auth(request)
         with db() as c:
             if not c.execute('SELECT 1 FROM users WHERE id=?',(uid,)).fetchone():fail('Профіль не знайдено.',404)
-        for ext,mime in [('mp4','video/mp4'),('webm','video/webm')]:
-            path=video_path(uid,ext)
-            if path.is_file():return FileResponse(path,media_type=mime,headers={'Cache-Control':'private,max-age=120'})
-        fail('Банер не знайдено.',404)
+            media=c.execute('SELECT mime,content FROM cloux_blobs WHERE storage_key=?',(video_key(uid),)).fetchone()
+        if not media:fail('Банер не знайдено.',404)
+        return Response(content=bytes(media['content']),media_type=media['mime'],headers={'Cache-Control':'private,max-age=120'})
 
     @app.delete('/api/cloux/banner/video')
     def delete_banner_video(request:Request):
         u=auth(request)
-        for ext in ('webm','mp4'):video_path(u['id'],ext).unlink(missing_ok=True)
         with db() as c:
+            remove_blob(c,video_key(u['id']))
             st=settings(c,u['id']);st['banner_video']=False
             c.execute("""INSERT INTO cloux_product_settings(uid,value,updated) VALUES(?,?,?)
               ON CONFLICT(uid) DO UPDATE SET value=excluded.value,updated=excluded.updated""",
@@ -432,7 +423,8 @@ def install(app,db,auth,member,fail,limit,data_dir):
             restored=0
             for scope,mode,wall in styles:
                 if scope!='all' and not member(c,u['id'],scope):continue
-                if wall['kind']=='image' and not image_path(u['id'],scope,mode).is_file():continue
+                if wall['kind']=='image' and not c.execute('SELECT 1 FROM cloux_blobs WHERE storage_key=?',
+                    (image_key(u['id'],scope,mode),)).fetchone():continue
                 c.execute('''INSERT INTO cloux_wallpaper_settings(uid,scope,mode,value,updated) VALUES(?,?,?,?,?)
                   ON CONFLICT(uid,scope,mode) DO UPDATE SET value=excluded.value,updated=excluded.updated''',
                   (u['id'],scope,mode,json.dumps(wall),int(time.time())))
@@ -511,9 +503,8 @@ def install(app,db,auth,member,fail,limit,data_dir):
         task=getattr(app.state,'cloux_backup_task',None)
         if task:task.cancel()
 
-    def image_path(uid,scope,mode):
-        slug=hashlib.sha256((uid+':'+scope+':'+mode).encode()).hexdigest()
-        return root/(slug+'.webp')
+    def image_key(uid,scope,mode):
+        return 'wallpaper/'+uid+'/'+scope+'/'+mode
 
     @app.get('/api/cloux/wallpaper')
     def get_wallpaper(request:Request,scope:str='all',mode:str='dark'):
@@ -529,7 +520,8 @@ def install(app,db,auth,member,fail,limit,data_dir):
         data=verify_wall(value)
         with db() as c:
             scope_key(c,u['id'],scope)
-            if data['kind']=='image' and not image_path(u['id'],scope,mode).exists():fail('Спочатку завантаж фото.',400)
+            if data['kind']=='image' and not c.execute('SELECT 1 FROM cloux_blobs WHERE storage_key=?',
+                (image_key(u['id'],scope,mode),)).fetchone():fail('Спочатку завантаж фото.',400)
             c.execute('''INSERT INTO cloux_wallpaper_settings(uid,scope,mode,value,updated) VALUES(?,?,?,?,?)
             ON CONFLICT(uid,scope,mode) DO UPDATE SET value=excluded.value,updated=excluded.updated''',
             (u['id'],scope,mode,json.dumps(data),int(time.time())))
@@ -558,15 +550,17 @@ def install(app,db,auth,member,fail,limit,data_dir):
                 image=image.convert('RGB');image.thumbnail((1600,2200),Image.Resampling.LANCZOS)
                 out=io.BytesIO();image.save(out,'WEBP',quality=85)
         except (UnidentifiedImageError,OSError,ValueError):fail('Неправильне фото.',415)
-        target=image_path(u['id'],scope,mode)
-        temp=target.with_suffix('.tmp');temp.write_bytes(out.getvalue());temp.replace(target)
+        with db() as c:
+            put_blob(c,image_key(u['id'],scope,mode),'image/webp',out.getvalue(),int(time.time()))
         return {'ok':True,'url':f'/api/cloux/wallpaper/media?scope={scope}&mode={mode}&t={int(time.time())}'}
 
     @app.get('/api/cloux/wallpaper/media')
     def wallpaper_media(request:Request,scope:str='all',mode:str='dark'):
         u=auth(request);mode_key(mode)
-        with db() as c:scope_key(c,u['id'],scope)
-        path=image_path(u['id'],scope,mode)
-        if not path.is_file():fail('Фото не знайдено.',404)
-        return FileResponse(path,media_type='image/webp',headers={'Cache-Control':'private,no-store'})
+        with db() as c:
+            scope_key(c,u['id'],scope)
+            media=c.execute('SELECT content FROM cloux_blobs WHERE storage_key=?',
+                (image_key(u['id'],scope,mode),)).fetchone()
+        if not media:fail('Фото не знайдено.',404)
+        return Response(content=bytes(media['content']),media_type='image/webp',headers={'Cache-Control':'private,no-store'})
 
