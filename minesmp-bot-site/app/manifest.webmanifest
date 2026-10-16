@@ -1,0 +1,18 @@
+{
+  "name": "Mine SMP Bot",
+  "short_name": "Mine SMP",
+  "description": "Мобільна панель Mine SMP Bot",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07121c",
+  "theme_color": "#07121c",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
