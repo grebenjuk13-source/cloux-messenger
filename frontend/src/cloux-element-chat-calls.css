@@ -1,0 +1,305 @@
+/* CLOUX Element-inspired chat timeline and call experience.
+   Original CLOUX styling; existing message API and WebRTC signalling remain unchanged. */
+:root {
+  --cx-element-call-bg: #101218;
+  --cx-element-call-panel: #1b1e27;
+  --cx-element-call-border: #343945;
+  --cx-element-call-muted: #a5adbc;
+}
+
+/* Message timeline: a calm, readable room-first layout. */
+.chat-room { background: var(--cx-e-bg) !important; }
+.chat-room .messages-area {
+  background: var(--cx-e-bg) !important;
+  scrollbar-color: #555b69 transparent;
+}
+.chat-room .message-stack {
+  width: min(100%, 1120px) !important;
+  max-width: 1120px !important;
+  margin-inline: auto !important;
+  padding: 26px clamp(16px, 4vw, 64px) 34px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+.chat-room .msg-line {
+  display: flex !important;
+  width: 100% !important;
+  justify-content: flex-start !important;
+  margin: 2px 0 !important;
+}
+.chat-room .msg-line.own { justify-content: flex-start !important; }
+.chat-room .bubble {
+  position: relative !important;
+  max-width: min(78%, 760px) !important;
+  min-width: 90px;
+  padding: 9px 13px 7px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  overflow-wrap: anywhere;
+  transition: background .15s ease, border-color .15s ease;
+}
+.chat-room .msg-line.other .bubble {
+  background: var(--cx-e-panel) !important;
+  border: 1px solid var(--cx-e-line) !important;
+  color: var(--cx-e-text) !important;
+}
+.chat-room .msg-line.own .bubble {
+  background: color-mix(in srgb, var(--cx-e-accent) 15%, var(--cx-e-panel)) !important;
+  border: 1px solid color-mix(in srgb, var(--cx-e-accent) 38%, var(--cx-e-line)) !important;
+  color: var(--cx-e-text) !important;
+}
+.chat-room .msg-line.cx-grouped .bubble { margin-top: 0 !important; }
+.chat-room .cx-message-author {
+  margin: 0 0 4px;
+  color: var(--cx-e-accent);
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.chat-room .bubble-text {
+  display: block;
+  color: inherit !important;
+  font-size: 14px;
+  line-height: 1.48;
+}
+.chat-room .msg-foot {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 0 !important;
+  color: var(--cx-e-muted) !important;
+  font-size: 10px !important;
+}
+.chat-room .msg-foot time { color: var(--cx-e-muted) !important; }
+.chat-room .cx-date-divider {
+  position: sticky;
+  top: 10px;
+  z-index: 3;
+  width: fit-content;
+  align-self: center;
+  margin: 12px auto 16px !important;
+  padding: 5px 12px !important;
+  border: 1px solid var(--cx-e-line);
+  border-radius: 7px !important;
+  background: var(--cx-e-sidebar) !important;
+  color: var(--cx-e-muted) !important;
+  font-size: 11px !important;
+  box-shadow: 0 2px 8px #0002;
+}
+.chat-room .composer-wrap {
+  background: var(--cx-e-bg) !important;
+  padding: 10px clamp(12px, 3vw, 40px) max(12px, env(safe-area-inset-bottom)) !important;
+}
+.chat-room .composer {
+  width: min(100%, 1060px) !important;
+  min-height: 52px !important;
+  margin-inline: auto !important;
+  border: 1px solid var(--cx-e-line) !important;
+  border-radius: 12px !important;
+  background: var(--cx-e-sidebar) !important;
+  box-shadow: none !important;
+  padding: 6px 9px !important;
+}
+.chat-room .composer:focus-within {
+  border-color: color-mix(in srgb, var(--cx-e-accent) 65%, var(--cx-e-line)) !important;
+}
+.chat-room .composer input {
+  min-width: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.chat-room .composer button {
+  border-radius: 8px !important;
+  color: var(--cx-e-muted) !important;
+}
+.chat-room .composer button.composer-send,
+.chat-room .composer button.composer-send:active {
+  background: var(--cx-e-accent) !important;
+  color: white !important;
+}
+.chat-room .msg-actions {
+  border: 1px solid var(--cx-e-line) !important;
+  border-radius: 10px !important;
+  background: var(--cx-e-sidebar) !important;
+  box-shadow: 0 12px 36px #0006 !important;
+}
+.chat-room .msg-actions button:hover { background: var(--cx-e-hover) !important; }
+.chat-room .typing-line { color: var(--cx-e-muted) !important; }
+
+/* Element-like full-window call room, keeping CLOUX's live WebRTC controls. */
+.cloux-call-overlay {
+  background: rgba(9, 11, 16, .96) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  padding: max(12px, env(safe-area-inset-top)) 18px max(12px, env(safe-area-inset-bottom)) !important;
+}
+.cloux-call-panel {
+  width: min(100%, 1080px) !important;
+  height: min(94dvh, 900px) !important;
+  max-height: 94dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: auto !important;
+  padding: 18px 22px 20px !important;
+  border: 1px solid var(--cx-element-call-border) !important;
+  border-radius: 16px !important;
+  background: var(--cx-element-call-bg) !important;
+  box-shadow: 0 28px 90px #0009 !important;
+}
+.cloux-call-heading {
+  min-height: 42px;
+  padding: 0 0 10px !important;
+  border-bottom: 1px solid var(--cx-element-call-border);
+}
+.cloux-call-badge {
+  padding: 6px 10px !important;
+  border: 1px solid var(--cx-element-call-border) !important;
+  border-radius: 7px !important;
+  background: var(--cx-element-call-panel) !important;
+  color: var(--cx-e-text) !important;
+  letter-spacing: .08em !important;
+}
+.cloux-call-panel h2 {
+  margin: 16px 0 2px !important;
+  color: var(--cx-e-text) !important;
+  font-size: 20px !important;
+  font-weight: 650 !important;
+}
+.cloux-call-clock { color: var(--cx-element-call-muted) !important; font-size: 13px !important; }
+.cloux-call-status { color: var(--cx-element-call-muted) !important; }
+.cloux-call-stage {
+  flex: 1 1 auto !important;
+  min-height: 260px !important;
+  height: auto !important;
+  margin: 14px 0 !important;
+  border: 1px solid var(--cx-element-call-border);
+  border-radius: 13px !important;
+  background: #171a22 !important;
+  box-shadow: none !important;
+}
+.cloux-call-stage .cloux-remote {
+  object-fit: contain !important;
+  background: #11141b;
+}
+.cloux-call-placeholder { color: #c6cad4 !important; }
+.cloux-call-stage .cloux-local {
+  width: min(24%, 220px) !important;
+  height: auto !important;
+  aspect-ratio: 16 / 10;
+  object-fit: cover !important;
+  right: 16px !important;
+  bottom: 16px !important;
+  border: 1px solid #626a79 !important;
+  border-radius: 10px !important;
+  background: #20242d !important;
+}
+.cloux-call-controls {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px !important;
+  margin: 2px auto 0 !important;
+}
+.cloux-call-controls button {
+  min-width: 88px !important;
+  min-height: 68px !important;
+  padding: 10px 14px !important;
+  border: 1px solid var(--cx-element-call-border) !important;
+  border-radius: 11px !important;
+  background: var(--cx-element-call-panel) !important;
+  color: var(--cx-e-text) !important;
+  font-size: 11px !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.cloux-call-controls button:hover { background: #292e39 !important; }
+.cloux-call-controls button.off { background: #3a252b !important; border-color: #75404b !important; }
+.cloux-call-controls button.sharing { background: #1f3b32 !important; border-color: #386b59 !important; }
+.cloux-call-controls button.cloux-hangup {
+  background: #b83243 !important;
+  border-color: #d24b5b !important;
+  color: white !important;
+}
+.cloux-call-note { color: var(--cx-element-call-muted) !important; }
+.cloux-signal i.good { background: #55c99a !important; box-shadow: none !important; }
+
+/* Calls history and contact selection. */
+.call-hub { max-width: 1040px; margin: 0 auto; }
+.call-hub .call-quick {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px !important;
+  margin: 22px 0 28px !important;
+}
+.call-hub .call-quick button {
+  min-height: 108px;
+  display: grid !important;
+  grid-template-columns: 42px 1fr;
+  grid-template-rows: auto auto;
+  align-content: center;
+  align-items: center;
+  gap: 4px 12px !important;
+  padding: 18px !important;
+  text-align: left;
+}
+.call-hub .call-quick button > svg { grid-row: 1 / 3; width: 25px; height: 25px; color: var(--cx-e-accent); }
+.call-hub .call-quick button b { color: var(--cx-e-text); font-size: 14px; }
+.call-hub .call-quick button small { color: var(--cx-e-muted); font-size: 12px; }
+.call-hub .call-log {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 7px 0;
+  padding: 10px 14px !important;
+}
+.call-hub .call-log > span:nth-child(2) { flex: 1; min-width: 0; }
+.call-hub .call-log small { color: var(--cx-e-muted); }
+.call-hub .call-log-icon {
+  width: 38px; height: 38px; flex: 0 0 38px;
+  display: grid; place-items: center;
+  border-radius: 9px; background: var(--cx-e-hover); color: var(--cx-e-accent);
+}
+.call-hub .call-redial {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border-radius: 9px; background: var(--cx-e-hover); color: var(--cx-e-text);
+}
+.call-contact-picker { padding: 14px !important; }
+.call-contact-picker input {
+  width: 100%; min-height: 42px; margin: 8px 0;
+  border: 1px solid var(--cx-e-line); border-radius: 8px;
+  background: var(--cx-e-bg); color: var(--cx-e-text); padding: 9px 12px;
+}
+.call-contact {
+  width: 100%; display: flex; align-items: center; gap: 11px;
+  padding: 10px; border-radius: 8px; text-align: left;
+  color: var(--cx-e-text);
+}
+.call-contact:hover { background: var(--cx-e-hover); }
+.call-contact span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.call-contact small { color: var(--cx-e-muted); }
+@media(max-width:760px) {
+  .chat-room .message-stack { padding: 18px 12px 26px !important; }
+  .chat-room .bubble { max-width: 90% !important; }
+  .chat-room .composer-wrap { padding-inline: 9px !important; }
+  .cloux-call-overlay { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) !important; }
+  .cloux-call-panel {
+    width: 100% !important; height: 100dvh !important; max-height: 100dvh !important;
+    border-radius: 0 !important; padding: calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom)) !important;
+  }
+  .cloux-call-stage { min-height: 180px !important; }
+  .cloux-call-stage .cloux-local { width: 31% !important; right: 9px !important; bottom: 9px !important; }
+  .cloux-call-controls { gap: 7px !important; }
+  .cloux-call-controls button { min-width: 70px !important; min-height: 62px !important; padding: 8px 9px !important; }
+  .cloux-call-note { font-size: 10px !important; }
+  .call-hub .call-quick { grid-template-columns: 1fr; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .chat-room .bubble, .cloux-call-controls button { transition: none !important; }
+}
