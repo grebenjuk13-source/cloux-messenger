@@ -6,7 +6,7 @@
     }
   },
   "brand": "CLOUX",
-  "default_theme": "dark",
+  "default_theme": "custom-REDLINE",
   "default_country_code": "UA",
   "disable_custom_urls": false,
   "disable_guests": true,
@@ -15,5 +15,52 @@
     "brand": "CLOUX Call",
     "disable": false,
     "use_exclusively": false
+  },
+  "setting_defaults": {
+    "custom_themes": [
+      {
+        "name": "REDLINE",
+        "is_dark": true,
+        "fonts": {
+          "general": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          "monospace": "ui-monospace, SFMono-Regular, Consolas, monospace"
+        },
+        "colors": {
+          "accent-color": "#E10600",
+          "primary-color": "#E10600",
+          "warning-color": "#FF453A",
+          "sidebar-color": "#0A0A0A",
+          "roomlist-background-color": "#101010",
+          "roomlist-text-color": "#F5F5F5",
+          "roomlist-text-secondary-color": "#A1A1AA",
+          "roomlist-highlights-color": "#1C1C1C",
+          "roomlist-separator-color": "#292929",
+          "timeline-background-color": "#0A0A0A",
+          "timeline-text-color": "#F5F5F5",
+          "timeline-text-secondary-color": "#A1A1AA",
+          "timeline-highlights-color": "#141414",
+          "username-colors": [
+            "#E10600",
+            "#FF4545",
+            "#FF6B6B",
+            "#CC3333",
+            "#F87171",
+            "#B91C1C",
+            "#EF4444",
+            "#991B1B"
+          ],
+          "avatar-background-colors": [
+            "#7F1D1D",
+            "#991B1B",
+            "#B91C1C",
+            "#DC2626",
+            "#E10600",
+            "#450A0A",
+            "#5F1515",
+            "#3F0A0A"
+          ]
+        }
+      }
+    ]
   }
 }

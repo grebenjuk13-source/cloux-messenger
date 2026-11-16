@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="CLOUX">
+  <rect width="128" height="128" rx="30" fill="#0A0A0A"/>
+  <path d="M89 39a38 38 0 1 0 0 50" fill="none" stroke="#E10600" stroke-width="13" stroke-linecap="round"/>
+  <path d="M43 64h42" stroke="#F5F5F5" stroke-width="10" stroke-linecap="round"/>
+</svg>
